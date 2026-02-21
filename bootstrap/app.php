@@ -11,6 +11,13 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    // bootstrap/app.php
+
+->withMiddleware(function (Middleware $middleware) {
+    $middleware->alias([
+        'owner' => \App\Http\Middleware\CheckOwner::class,
+    ]);
+})
     ->withMiddleware(function (Middleware $middleware): void {
         // ثبت middlewareهای مستعار (alias) برای استفاده در route‌ها
         $middleware->alias([
@@ -18,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
+        
         
         // می‌تونی middlewareهای گروهی رو هم اضافه کنی (اختیاری)
         // $middleware->group('web', [

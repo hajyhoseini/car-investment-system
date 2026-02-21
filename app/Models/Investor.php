@@ -26,4 +26,12 @@ class Investor extends Model
         $this->total_invested = $this->investments()->sum('amount');
         $this->save();
     }
+    
+
+public function user()
+{
+    return $this->belongsTo(User::class);
+}
+
+
 }

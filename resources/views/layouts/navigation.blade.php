@@ -18,6 +18,7 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden md:flex items-center gap-x-1.5 lg:gap-x-2 xl:gap-x-4">
+                    {{-- داشبورد اصلی - همه کاربران --}}
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="px-3 py-2 text-sm lg:text-base rounded-lg hover:bg-blue-50 transition whitespace-nowrap">
                         <svg class="h-5 w-5 inline ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
@@ -25,27 +26,55 @@
                         {{ __('داشبورد') }}
                     </x-nav-link>
 
-                    <x-nav-link :href="route('cars.index')" :active="request()->routeIs('cars.*')" class="px-3 py-2 text-sm lg:text-base rounded-lg hover:bg-blue-50 transition whitespace-nowrap">
+                    {{-- داشبورد شخصی - همه کاربران --}}
+                    <x-nav-link :href="route('user.dashboard')" :active="request()->routeIs('user.dashboard')" class="px-3 py-2 text-sm lg:text-base rounded-lg hover:bg-green-50 transition whitespace-nowrap">
                         <svg class="h-5 w-5 inline ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                         </svg>
-                        {{ __('خودروها') }}
+                        {{ __('داشبورد شخصی') }}
                     </x-nav-link>
 
-                    <x-nav-link :href="route('investors.index')" :active="request()->routeIs('investors.*')" class="px-3 py-2 text-sm lg:text-base rounded-lg hover:bg-blue-50 transition whitespace-nowrap">
-                        <svg class="h-5 w-5 inline ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                        {{ __('سرمایه‌گذاران') }}
-                    </x-nav-link>
+                    {{-- خودروها - فقط کاربران با دسترسی view cars --}}
+                    @can('view cars')
+                        <x-nav-link :href="route('cars.index')" :active="request()->routeIs('cars.*')" class="px-3 py-2 text-sm lg:text-base rounded-lg hover:bg-blue-50 transition whitespace-nowrap">
+                            <svg class="h-5 w-5 inline ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                            </svg>
+                            {{ __('خودروها') }}
+                        </x-nav-link>
+                    @endcan
 
-                    <x-nav-link :href="route('investments.index')" :active="request()->routeIs('investments.*')" class="px-3 py-2 text-sm lg:text-base rounded-lg hover:bg-blue-50 transition whitespace-nowrap">
-                        <svg class="h-5 w-5 inline ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        {{ __('سرمایه‌گذاری‌ها') }}
-                    </x-nav-link>
+                    {{-- سرمایه‌گذاران - فقط کاربران با دسترسی view investors --}}
+                    @can('view investors')
+                        <x-nav-link :href="route('investors.index')" :active="request()->routeIs('investors.*')" class="px-3 py-2 text-sm lg:text-base rounded-lg hover:bg-blue-50 transition whitespace-nowrap">
+                            <svg class="h-5 w-5 inline ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            {{ __('سرمایه‌گذاران') }}
+                        </x-nav-link>
+                    @endcan
 
+                    {{-- سرمایه‌گذاری‌ها - فقط کاربران با دسترسی view investments --}}
+                    @can('view investments')
+                        <x-nav-link :href="route('investments.index')" :active="request()->routeIs('investments.*')" class="px-3 py-2 text-sm lg:text-base rounded-lg hover:bg-blue-50 transition whitespace-nowrap">
+                            <svg class="h-5 w-5 inline ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            {{ __('سرمایه‌گذاری‌ها') }}
+                        </x-nav-link>
+                    @endcan
+
+                    {{-- فروش‌ها - فقط کاربران با دسترسی view sales --}}
+                    @can('view sales')
+                        <x-nav-link :href="route('car-sales.index')" :active="request()->routeIs('car-sales.*')" class="px-3 py-2 text-sm lg:text-base rounded-lg hover:bg-blue-50 transition whitespace-nowrap">
+                            <svg class="h-5 w-5 inline ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path>
+                            </svg>
+                            {{ __('فروش‌ها') }}
+                        </x-nav-link>
+                    @endcan
+
+                    {{-- مدیریت کاربران - فقط ادمین --}}
                     @can('view users')
                         <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')" class="px-3 py-2 text-sm lg:text-base rounded-lg hover:bg-red-50 transition whitespace-nowrap">
                             <svg class="h-5 w-5 inline ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,33 +84,40 @@
                         </x-nav-link>
                     @endcan
 
-                    <!-- منوی کشویی مدیریت مالی -->
-                    <div class="relative" x-data="{ open: false }">
-                        <button @click="open = !open" class="flex items-center gap-x-1.5 px-3 py-2 text-sm lg:text-base rounded-lg hover:bg-blue-50 transition whitespace-nowrap text-gray-700 hover:text-gray-900">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                            </svg>
-                            {{ __('مدیریت مالی') }}
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </button>
+                    {{-- منوی کشویی مدیریت مالی - فقط کاربران مجاز --}}
+                    @if(auth()->user()->can('view assets') || auth()->user()->can('view liabilities'))
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open" class="flex items-center gap-x-1.5 px-3 py-2 text-sm lg:text-base rounded-lg hover:bg-blue-50 transition whitespace-nowrap text-gray-700 hover:text-gray-900">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                                {{ __('مدیریت مالی') }}
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
 
-                        <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-200">
-                            <a href="{{ route('assets.index') }}" class="block px-4 py-2.5 text-gray-800 hover:bg-blue-50 transition flex items-center gap-x-2">
-                                <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                {{ __('دارایی‌ها') }}
-                            </a>
-                            <a href="{{ route('liabilities.index') }}" class="block px-4 py-2.5 text-gray-800 hover:bg-blue-50 transition flex items-center gap-x-2">
-                                <svg class="h-5 w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                {{ __('تعهدات') }}
-                            </a>
+                            <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-200">
+                                @can('view assets')
+                                    <a href="{{ route('assets.index') }}" class="block px-4 py-2.5 text-gray-800 hover:bg-blue-50 transition flex items-center gap-x-2">
+                                        <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        {{ __('دارایی‌ها') }}
+                                    </a>
+                                @endcan
+                                
+                                @can('view liabilities')
+                                    <a href="{{ route('liabilities.index') }}" class="block px-4 py-2.5 text-gray-800 hover:bg-blue-50 transition flex items-center gap-x-2">
+                                        <svg class="h-5 w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        {{ __('تعهدات') }}
+                                    </a>
+                                @endcan
+                            </div>
                         </div>
-                    </div>
+                    @endif
                 </div>
             </div>
 
@@ -140,25 +176,78 @@
                 <svg class="h-5 w-5 inline ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                 </svg>
-                {{ __('داشبورد') }}
+                {{ __('داشبورد اصلی') }}
             </x-responsive-nav-link>
 
-            <!-- بقیه لینک‌های موبایل رو هم مثل قبل کپی کن -->
-
-            <!-- مدیریت مالی در موبایل -->
-            <x-responsive-nav-link :href="route('assets.index')" :active="request()->routeIs('assets.*')">
-                <svg class="h-5 w-5 inline ml-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            <x-responsive-nav-link :href="route('user.dashboard')" :active="request()->routeIs('user.dashboard')">
+                <svg class="h-5 w-5 inline ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                 </svg>
-                {{ __('دارایی‌ها') }}
+                {{ __('داشبورد شخصی') }}
             </x-responsive-nav-link>
 
-            <x-responsive-nav-link :href="route('liabilities.index')" :active="request()->routeIs('liabilities.*')">
-                <svg class="h-5 w-5 inline ml-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                {{ __('تعهدات') }}
-            </x-responsive-nav-link>
+            @can('view cars')
+                <x-responsive-nav-link :href="route('cars.index')" :active="request()->routeIs('cars.*')">
+                    <svg class="h-5 w-5 inline ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                    </svg>
+                    {{ __('خودروها') }}
+                </x-responsive-nav-link>
+            @endcan
+
+            @can('view investors')
+                <x-responsive-nav-link :href="route('investors.index')" :active="request()->routeIs('investors.*')">
+                    <svg class="h-5 w-5 inline ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    {{ __('سرمایه‌گذاران') }}
+                </x-responsive-nav-link>
+            @endcan
+
+            @can('view investments')
+                <x-responsive-nav-link :href="route('investments.index')" :active="request()->routeIs('investments.*')">
+                    <svg class="h-5 w-5 inline ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    {{ __('سرمایه‌گذاری‌ها') }}
+                </x-responsive-nav-link>
+            @endcan
+
+            @can('view sales')
+                <x-responsive-nav-link :href="route('car-sales.index')" :active="request()->routeIs('car-sales.*')">
+                    <svg class="h-5 w-5 inline ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path>
+                    </svg>
+                    {{ __('فروش‌ها') }}
+                </x-responsive-nav-link>
+            @endcan
+
+            @can('view assets')
+                <x-responsive-nav-link :href="route('assets.index')" :active="request()->routeIs('assets.*')">
+                    <svg class="h-5 w-5 inline ml-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    {{ __('دارایی‌ها') }}
+                </x-responsive-nav-link>
+            @endcan
+
+            @can('view liabilities')
+                <x-responsive-nav-link :href="route('liabilities.index')" :active="request()->routeIs('liabilities.*')">
+                    <svg class="h-5 w-5 inline ml-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    {{ __('تعهدات') }}
+                </x-responsive-nav-link>
+            @endcan
+
+            @can('view users')
+                <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                    <svg class="h-5 w-5 inline ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    {{ __('مدیریت کاربران') }}
+                </x-responsive-nav-link>
+            @endcan
         </div>
 
         <!-- تنظیمات موبایل -->

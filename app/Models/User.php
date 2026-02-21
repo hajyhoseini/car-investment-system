@@ -50,4 +50,49 @@ public function getAvatarUrlAttribute()
         $hash = md5(strtolower(trim($this->email)));
         return "https://www.gravatar.com/avatar/{$hash}?s=200&d=mp";
     }
+    
+
+public function investor()
+{
+    return $this->hasOne(Investor::class);
+}
+
+public function investments()
+{
+    return $this->hasManyThrough(Investment::class, Investor::class);
+}
+
+public function cars()
+{
+    return $this->hasManyThrough(Car::class, Investment::class, 'investor_id', 'id', 'id', 'car_id');
+}
+// اضافه کردن این متد به کلاس User
+public function isInvestor(): bool
+{
+    return $this->investor !== null;
+}
+
+public function getInvestorProfile()
+{
+    if (!$this->isInvestor()) {
+        // اگر سرمایه‌گذار نبود، می‌تونیم به صورت خودکار بسازیمش
+        return $this->createInvestorProfile();
+    }
+    return $this->investor;
+}
+
+public function createInvestorProfile()
+{
+    return Investor::firstOrCreate(
+        ['email' => $this->email],
+        [
+            'user_id' => $this->id,
+            'full_name' => $this->name,
+            'national_code' => '0000000000',
+            'phone' => '09120000000',
+            'address' => 'تهران',
+            'total_invested' => 0,
+        ]
+    );
+}
 }
