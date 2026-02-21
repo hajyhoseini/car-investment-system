@@ -59,12 +59,17 @@
                         </div>
 
                         <!-- تاریخ سرمایه‌گذاری -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">تاریخ سرمایه‌گذاری <span class="text-red-500">*</span></label>
-                            <input type="date" name="investment_date" value="{{ old('investment_date', date('Y-m-d')) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required>
-                            @error('investment_date') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
+                    
+<div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ سرمایه‌گذاری <span class="text-red-500">*</span></label>
+    <input type="text" name="investment_date" id="investment_date" value="{{ old('investment_date', $todayJalali ?? '') }}" 
+           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition @error('investment_date') border-red-500 @enderror"
+           placeholder="مثال: 1402/12/25" autocomplete="off">
+    @error('investment_date') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+    <p class="text-xs text-gray-500 mt-1">تاریخ را به فرمت شمسی وارد کنید (مثال: 1402/12/25)</p>
+</div>
+</div>
+
 
                     <!-- نمایش خلاصه سرمایه‌گذاری‌های قبلی این خودرو -->
                     <div id="investmentSummary" class="mt-6 p-4 bg-blue-50 rounded-lg hidden">
@@ -104,6 +109,23 @@
 </div>
 
 @push('scripts')
+
+<script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
+<script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+
+<script>
+    $(document).ready(function() {
+        $('#investment_date').persianDatepicker({
+            format: 'YYYY/MM/DD',
+            autoClose: true,
+            initialValue: true,
+            calendar: {
+                persian: true
+            }
+        });
+    });
+</script>
 <script>
 document.getElementById('car_id').addEventListener('change', function() {
     const selected = this.options[this.selectedIndex];

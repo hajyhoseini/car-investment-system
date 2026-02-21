@@ -4,18 +4,29 @@ namespace App\Http\Controllers;
 
 use App\Models\Car;
 use Illuminate\Http\Request;
+use App\Traits\JalaliDateTrait;
 
 class CarController extends Controller
 {
+    use JalaliDateTrait;
+
     public function index()
     {
         $cars = Car::latest()->paginate(10);
+        
+        // تبدیل تاریخ خرید به شمسی برای نمایش
+        foreach ($cars as $car) {
+            $car->jalali_purchase_date = $this->convertToJalali($car->purchase_date);
+        }
+        
         return view('cars.index', compact('cars'));
     }
 
     public function create()
     {
-        return view('cars.create');
+        // تاریخ پیش‌فرض شمسی برای امروز
+        $todayJalali = $this->nowJalali();
+        return view('cars.create', compact('todayJalali'));
     }
 
     public function store(Request $request)
@@ -31,8 +42,11 @@ class CarController extends Controller
             'color' => 'nullable|string|max:50',
             'description' => 'nullable|string',
             'purchase_price' => 'required|numeric|min:0',
-            'purchase_date' => 'required|date',
+            'purchase_date' => 'required|string', // تاریخ به صورت شمسی دریافت می‌شود
         ]);
+
+        // تبدیل تاریخ شمسی به میلادی برای ذخیره در دیتابیس
+        $validated['purchase_date'] = $this->convertToGregorian($request->purchase_date);
 
         Car::create($validated);
 
@@ -41,11 +55,18 @@ class CarController extends Controller
 
     public function show(Car $car)
     {
+        $car->load('investments.investor');
+        // تبدیل تاریخ به شمسی برای نمایش
+        $car->jalali_purchase_date = $this->convertToJalali($car->purchase_date);
+        
         return view('cars.show', compact('car'));
     }
 
     public function edit(Car $car)
     {
+        // تبدیل تاریخ ذخیره شده به شمسی برای نمایش در فرم ویرایش
+        $car->jalali_purchase_date = $this->convertToJalali($car->purchase_date);
+        
         return view('cars.edit', compact('car'));
     }
 
@@ -62,9 +83,12 @@ class CarController extends Controller
             'color' => 'nullable|string|max:50',
             'description' => 'nullable|string',
             'purchase_price' => 'required|numeric|min:0',
-            'purchase_date' => 'required|date',
+            'purchase_date' => 'required|string',
             'status' => 'required|in:available,sold,reserved',
         ]);
+
+        // تبدیل تاریخ شمسی به میلادی برای ذخیره در دیتابیس
+        $validated['purchase_date'] = $this->convertToGregorian($request->purchase_date);
 
         $car->update($validated);
 
