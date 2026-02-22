@@ -25,7 +25,7 @@
                     <div class="bg-blue-50 border border-blue-100 rounded-xl p-5 text-center">
                         <div class="text-sm text-blue-700 font-medium mb-1">کل مبلغ سرمایه‌گذاری شده</div>
                         <div class="text-3xl font-bold text-blue-800">
-                            {{ number_format($investments->sum('amount')) }} <span class="text-xl">ریال</span>
+                            {{ fa_currency($investments->sum('amount')) }} <span class="text-xl">ریال</span>
                         </div>
                     </div>
 
@@ -37,7 +37,7 @@
                     <div class="bg-purple-50 border border-purple-100 rounded-xl p-5 text-center">
                         <div class="text-sm text-purple-700 font-medium mb-1">میانگین هر سرمایه‌گذاری</div>
                         <div class="text-3xl font-bold text-purple-800">
-                            {{ number_format($investments->avg('amount') ?? 0) }} <span class="text-xl">ریال</span>
+                            {{ fa_currency($investments->avg('amount') ?? 0) }} <span class="text-xl">ریال</span>
                         </div>
                     </div>
                 </div>
@@ -71,11 +71,11 @@
                                         </a>
                                     </td>
                                     <td class="px-4 py-4 text-sm font-bold text-green-700">
-                                        {{ number_format($investment->amount) }} ریال
+                                        {{ fa_currency($investment->amount) }} ریال
                                     </td>
                                     <td class="px-4 py-4 text-sm">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                            {{ number_format($investment->percentage ?? 0, 2) }}%
+                                            {{ fa_currency($investment->percentage ?? 0, 2) }}%
                                         </span>
                                     </td>
                                     {{-- در بخش نمایش تاریخ --}}

@@ -36,7 +36,7 @@
             <div class="flex-1">
                 <div class="text-sm text-gray-600 font-medium">{{ $title }}</div>
                 <div class="text-3xl font-bold text-gray-900 mt-1">
-                    {{ $isFormatted ? $count : number_format($count) }} @if(!$isFormatted && $title != 'سرمایه‌گذاران') ریال @endif
+                    {{ $isFormatted ? $count : fa_currency($count) }} @if(!$isFormatted && $title != 'سرمایه‌گذاران') ریال @endif
                 </div>
                 {{ $slot ?? '' }}
             </div>

@@ -26,9 +26,9 @@
                 data-remaining="{{ $remaining }}"
                 {{ old('car_id') == $car->id ? 'selected' : '' }}>
                 {{ $car->title }} - {{ $car->brand }} {{ $car->model }} 
-                ({{ number_format($car->purchase_price) }} ریال) 
-                - تأمین شده: {{ number_format($fundedPercentage, 1) }}% 
-                - باقی‌مانده: {{ number_format($remaining) }} ریال
+                ({{ fa_currency($car->purchase_price) }} ریال) 
+                - تأمین شده: {{ fa_currency($fundedPercentage, 1) }}% 
+                - باقی‌مانده: {{ fa_currency($remaining) }} ریال
             </option>
         @endforeach
     </select>

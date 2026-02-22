@@ -31,7 +31,7 @@
                     </div>
                 @endif
 
-                <!-- فیلتر و جستجو (اختیاری) -->
+                <!-- فیلتر و جستجو -->
                 <div class="mb-6 flex flex-wrap gap-4">
                     <div class="flex-1 min-w-[200px]">
                         <input type="text" id="search" placeholder="جستجوی خودرو..." 
@@ -65,34 +65,34 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach($cars as $index => $car)
-                            <tr class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $cars->firstItem() + $index }}</td>
+                            <tr class="hover:bg-gray-50 transition" data-status="{{ $car->status }}">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ fa_number($cars->firstItem() + $index) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap font-medium">{{ $car->title }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $car->brand }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $car->model }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $car->year }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $car->jalali_purchase_date ?? $car->purchase_date }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap font-bold text-blue-600">{{ number_format($car->purchase_price) }} ریال</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ fa_number($car->year) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ fa_number($car->jalali_purchase_date ?? $car->purchase_date) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-blue-600">{{ fa_currency($car->purchase_price) }}</td>
                                
-<td class="px-6 py-4 whitespace-nowrap">
-    @php
-        $fundedPercentage = ($car->total_invested / $car->purchase_price) * 100;
-    @endphp
-    <div class="flex flex-col">
-        <div class="flex justify-between text-xs mb-1">
-            <span>{{ number_format($fundedPercentage, 1) }}%</span>
-            <span>{{ number_format($car->total_invested) }} / {{ number_format($car->purchase_price) }}</span>
-        </div>
-        <div class="w-full bg-gray-200 rounded-full h-2">
-            <div class="bg-green-500 h-2 rounded-full" style="width: {{ min($fundedPercentage, 100) }}%"></div>
-        </div>
-        @if($fundedPercentage >= 100)
-            <span class="text-xs text-green-600 mt-1">تکمیل شده</span>
-        @else
-            <span class="text-xs text-blue-600 mt-1">{{ number_format($car->purchase_price - $car->total_invested) }} ریال باقی‌مانده</span>
-        @endif
-    </div>
-</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @php
+                                        $fundedPercentage = ($car->total_invested / $car->purchase_price) * 100;
+                                    @endphp
+                                    <div class="flex flex-col min-w-[180px]">
+                                        <div class="flex justify-between text-xs mb-1">
+                                            <span>{{ fa_number($fundedPercentage, 1) }}%</span>
+                                            <span>{{ fa_currency($car->total_invested) }} / {{ fa_currency($car->purchase_price) }}</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-green-500 h-2 rounded-full" style="width: {{ min($fundedPercentage, 100) }}%"></div>
+                                        </div>
+                                        @if($fundedPercentage >= 100)
+                                            <span class="text-xs text-green-600 mt-1">تکمیل شده</span>
+                                        @else
+                                            <span class="text-xs text-blue-600 mt-1">{{ fa_currency($car->purchase_price - $car->total_invested) }} باقی‌مانده</span>
+                                        @endif
+                                    </div>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($car->status == 'available')
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
@@ -168,15 +168,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                         <div>
                             <span class="text-gray-600">تعداد کل خودروها:</span>
-                            <span class="font-bold mr-2">{{ $cars->total() }}</span>
+                            <span class="font-bold mr-2">{{ fa_number($cars->total()) }}</span>
                         </div>
                         <div>
                             <span class="text-gray-600">موجود:</span>
-                            <span class="font-bold text-green-600 mr-2">{{ $cars->where('status', 'available')->count() }}</span>
+                            <span class="font-bold text-green-600 mr-2">{{ fa_number($cars->where('status', 'available')->count()) }}</span>
                         </div>
                         <div>
                             <span class="text-gray-600">فروخته شده:</span>
-                            <span class="font-bold text-red-600 mr-2">{{ $cars->where('status', 'sold')->count() }}</span>
+                            <span class="font-bold text-red-600 mr-2">{{ fa_number($cars->where('status', 'sold')->count()) }}</span>
                         </div>
                     </div>
                 </div>
@@ -188,14 +188,6 @@
 
 @push('scripts')
 <script>
-    // اضافه کردن تابع confirm برای حذف
-    window.confirmDelete = function(form) {
-        if (confirm('آیا از حذف این خودرو اطمینان دارید؟')) {
-            form.submit();
-        }
-        return false;
-    }
-
     // فیلتر ساده با جاوااسکریپت
     document.getElementById('search').addEventListener('keyup', function() {
         filterTable();
@@ -211,21 +203,14 @@
         const rows = document.querySelectorAll('tbody tr');
 
         rows.forEach(row => {
-            const title = row.cells[1]?.textContent.toLowerCase() || '';
-            const brand = row.cells[2]?.textContent.toLowerCase() || '';
-            const model = row.cells[3]?.textContent.toLowerCase() || '';
-            const year = row.cells[4]?.textContent || '';
-            const statusCell = row.cells[7]?.textContent.trim() || '';
+            // استفاده از data-status که به هر ردیف اضافه کردیم
+            const status = row.dataset.status;
             
-            let status = 'available';
-            if (statusCell.includes('فروخته')) status = 'sold';
-            else if (statusCell.includes('رزرو')) status = 'reserved';
-
-            const matchesSearch = title.includes(searchText) || 
-                                 brand.includes(searchText) || 
-                                 model.includes(searchText) || 
-                                 year.includes(searchText);
+            // جستجو در متن ردیف
+            const rowText = row.textContent.toLowerCase();
+            const matchesSearch = searchText === '' || rowText.includes(searchText);
             
+            // فیلتر بر اساس وضعیت
             const matchesStatus = statusFilter === 'all' || status === statusFilter;
 
             row.style.display = matchesSearch && matchesStatus ? '' : 'none';

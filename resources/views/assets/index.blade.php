@@ -32,7 +32,7 @@
                         </div>
                         <div class="text-sm text-blue-700 font-medium">موجودی حساب‌های بانکی</div>
                         <div class="text-3xl font-bold text-blue-800 mt-2">
-                            {{ number_format($assets->where('type', 'bank')->sum('amount')) }}
+                            {{ fa_currency($assets->where('type', 'bank')->sum('amount')) }}
                             <span class="text-xl">ریال</span>
                         </div>
                     </div>
@@ -47,7 +47,7 @@
                         </div>
                         <div class="text-sm text-amber-700 font-medium">ارزش کل دارایی‌ها</div>
                         <div class="text-3xl font-bold text-amber-800 mt-2">
-                            {{ number_format($totalValue ?? 0) }}
+                            {{ fa_currency($totalValue ?? 0) }}
                             <span class="text-xl">ریال</span>
                         </div>
                     </div>
@@ -85,7 +85,7 @@
                                         </div>
                                         <div class="text-right shrink-0">
                                             <div class="text-2xl font-bold text-blue-700">
-                                                {{ number_format($asset->amount) }}
+                                                {{ fa_currency($asset->amount) }}
                                                 <span class="text-base font-normal">ریال</span>
                                             </div>
                                         </div>
@@ -137,12 +137,12 @@
                                             </div>
                                             <div class="text-right shrink-0">
                                                 <div class="text-2xl font-bold text-green-700">
-                                                    {{ number_format($asset->amount, 2) }}
+                                                    {{ fa_currency($asset->amount, 2) }}
                                                     <span class="text-base font-normal">دلار</span>
                                                 </div>
                                                 @if($asset->value)
                                                     <div class="text-sm text-gray-600 mt-1">
-                                                        ≈ {{ number_format($asset->value) }} ریال
+                                                        ≈ {{ fa_currency($asset->value) }} ریال
                                                     </div>
                                                 @endif
                                             </div>
@@ -189,12 +189,12 @@
                                             </div>
                                             <div class="text-right shrink-0">
                                                 <div class="text-2xl font-bold text-yellow-700">
-                                                    {{ number_format($asset->amount, 2) }}
+                                                    {{ fa_currency($asset->amount, 2) }}
                                                     <span class="text-base font-normal">گرم</span>
                                                 </div>
                                                 @if($asset->value)
                                                     <div class="text-sm text-gray-600 mt-1">
-                                                        ≈ {{ number_format($asset->value) }} ریال
+                                                        ≈ {{ fa_currency($asset->value) }} ریال
                                                     </div>
                                                 @endif
                                             </div>

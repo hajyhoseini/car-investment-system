@@ -17,15 +17,15 @@
                     </div>
                     <div class="bg-green-50 p-4 rounded-lg">
                         <div class="text-sm text-gray-600">کل فروش</div>
-                        <div class="text-2xl font-bold text-green-600">{{ number_format($sales->sum('selling_price')) }} ریال</div>
+                        <div class="text-2xl font-bold text-green-600">{{ fa_currency($sales->sum('selling_price')) }} ریال</div>
                     </div>
                     <div class="bg-purple-50 p-4 rounded-lg">
                         <div class="text-sm text-gray-600">کل سود</div>
-                        <div class="text-2xl font-bold text-purple-600">{{ number_format($sales->sum('total_profit')) }} ریال</div>
+                        <div class="text-2xl font-bold text-purple-600">{{ fa_currency($sales->sum('total_profit')) }} ریال</div>
                     </div>
                     <div class="bg-yellow-50 p-4 rounded-lg">
                         <div class="text-sm text-gray-600">میانگین سود</div>
-                        <div class="text-2xl font-bold text-yellow-600">{{ number_format($sales->avg('total_profit')) }} ریال</div>
+                        <div class="text-2xl font-bold text-yellow-600">{{ fa_currency($sales->avg('total_profit')) }} ریال</div>
                     </div>
                 </div>
 
@@ -51,12 +51,12 @@
                                         {{ $sale->car->title }}
                                     </a>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ number_format($sale->car->purchase_price) }} ریال</td>
-                                <td class="px-6 py-4 whitespace-nowrap font-bold text-green-600">{{ number_format($sale->selling_price) }} ریال</td>
-                                <td class="px-6 py-4 whitespace-nowrap font-bold text-purple-600">{{ number_format($sale->total_profit) }} ریال</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ fa_currency($sale->car->purchase_price) }} ریال</td>
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-green-600">{{ fa_currency($sale->selling_price) }} ریال</td>
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-purple-600">{{ fa_currency($sale->total_profit) }} ریال</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-                                        {{ number_format(($sale->total_profit / $sale->car->purchase_price) * 100, 1) }}%
+                                        {{ fa_currency(($sale->total_profit / $sale->car->purchase_price) * 100, 1) }}%
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $sale->sale_date }}</td>

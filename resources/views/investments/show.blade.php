@@ -36,7 +36,7 @@
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">قیمت خرید:</span>
-                                <div class="text-lg font-bold text-blue-600">{{ number_format($investment->car->purchase_price) }} ریال</div>
+                                <div class="text-lg font-bold text-blue-600">{{ fa_currency($investment->car->purchase_price) }} ریال</div>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">وضعیت:</span>
@@ -82,7 +82,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div>
                                 <span class="text-sm text-gray-600">مبلغ سرمایه‌گذاری:</span>
-                                <div class="text-xl font-bold text-purple-600">{{ number_format($investment->amount) }} ریال</div>
+                                <div class="text-xl font-bold text-purple-600">{{ fa_currency($investment->amount) }} ریال</div>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">درصد مشارکت:</span>

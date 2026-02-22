@@ -42,18 +42,18 @@
                                 <span class="text-sm text-gray-600">مقدار:</span>
                                 <div class="text-lg font-medium">
                                     @if($asset->type == 'bank')
-                                        {{ number_format($asset->amount) }} ریال
+                                        {{ fa_currency($asset->amount) }} ریال
                                     @elseif($asset->type == 'dollar')
-                                        {{ number_format($asset->amount) }} دلار
+                                        {{ fa_currency($asset->amount) }} دلار
                                     @elseif($asset->type == 'gold')
-                                        {{ number_format($asset->amount) }} گرم
+                                        {{ fa_currency($asset->amount) }} گرم
                                     @endif
                                 </div>
                             </div>
                             @if($asset->type != 'bank')
                             <div>
                                 <span class="text-sm text-gray-600">ارزش به ریال:</span>
-                                <div class="text-xl font-bold text-amber-600">{{ number_format($asset->value) }} ریال</div>
+                                <div class="text-xl font-bold text-amber-600">{{ fa_currency($asset->value) }} ریال</div>
                             </div>
                             @endif
                         </div>

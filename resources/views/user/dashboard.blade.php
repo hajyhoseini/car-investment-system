@@ -28,7 +28,7 @@
                 <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
                     <div class="text-sm text-gray-600">کل سرمایه‌گذاری</div>
                     <div class="text-2xl font-bold text-green-600">
-                        {{ number_format($investor->total_invested) }} ریال
+                        {{ fa_currency($investor->total_invested) }} ریال
                     </div>
                 </div>
                 
@@ -42,7 +42,7 @@
                 <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
                     <div class="text-sm text-gray-600">سود دریافتی</div>
                     <div class="text-2xl font-bold text-purple-600">
-                        {{ number_format($totalProfit) }} ریال
+                        {{ fa_currency($totalProfit) }} ریال
                     </div>
                 </div>
             </div>
@@ -73,7 +73,7 @@
                                         {{ $investment->car->title }}
                                     </a>
                                 </td>
-                                <td class="py-3">{{ number_format($investment->amount) }} ریال</td>
+                                <td class="py-3">{{ fa_currency($investment->amount) }} ریال</td>
                                 <td class="py-3">{{ $investment->percentage }}%</td>
                                 <td class="py-3">
                                     @if($investment->car->status == 'available')

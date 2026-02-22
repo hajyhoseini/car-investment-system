@@ -20,11 +20,11 @@
                     </div>
                     <div>
                         <div class="text-sm text-gray-600">قیمت فروش</div>
-                        <div class="text-lg font-bold text-green-600">{{ number_format($carSale->selling_price) }} ریال</div>
+                        <div class="text-lg font-bold text-green-600">{{ fa_currency($carSale->selling_price) }} ریال</div>
                     </div>
                     <div>
                         <div class="text-sm text-gray-600">سود کل</div>
-                        <div class="text-lg font-bold text-purple-600">{{ number_format($carSale->total_profit) }} ریال</div>
+                        <div class="text-lg font-bold text-purple-600">{{ fa_currency($carSale->total_profit) }} ریال</div>
                     </div>
                     <div>
                         <div class="text-sm text-gray-600">تاریخ فروش</div>
@@ -56,17 +56,17 @@
                                         {{ $item['investor']->full_name }}
                                     </a>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ number_format($item['invested_amount']) }} ریال</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ fa_currency($item['invested_amount']) }} ریال</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
                                         {{ $item['percentage'] }}%
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap font-bold text-green-600">
-                                    {{ number_format($item['profit']) }} ریال
+                                    {{ fa_currency($item['profit']) }} ریال
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap font-bold text-purple-600">
-                                    {{ number_format($item['total_return']) }} ریال
+                                    {{ fa_currency($item['total_return']) }} ریال
                                 </td>
                             </tr>
                             @endforeach
@@ -74,10 +74,10 @@
                         <tfoot class="bg-gray-50">
                             <tr>
                                 <td colspan="2" class="px-6 py-4 text-left font-bold">جمع کل:</td>
-                                <td class="px-6 py-4 font-bold">{{ number_format(collect($profits)->sum('invested_amount')) }} ریال</td>
+                                <td class="px-6 py-4 font-bold">{{ fa_currency(collect($profits)->sum('invested_amount')) }} ریال</td>
                                 <td class="px-6 py-4"></td>
-                                <td class="px-6 py-4 font-bold text-green-600">{{ number_format(collect($profits)->sum('profit')) }} ریال</td>
-                                <td class="px-6 py-4 font-bold text-purple-600">{{ number_format(collect($profits)->sum('total_return')) }} ریال</td>
+                                <td class="px-6 py-4 font-bold text-green-600">{{ fa_currency(collect($profits)->sum('profit')) }} ریال</td>
+                                <td class="px-6 py-4 font-bold text-purple-600">{{ fa_currency(collect($profits)->sum('total_return')) }} ریال</td>
                             </tr>
                         </tfoot>
                     </table>

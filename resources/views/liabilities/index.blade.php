@@ -25,7 +25,7 @@
                     <div class="bg-red-50 border border-red-100 rounded-xl p-5 text-center">
                         <div class="text-sm text-red-700 font-medium mb-1">جمع کل تعهدات</div>
                         <div class="text-3xl font-bold text-red-800">
-                            {{ number_format($liabilities->sum('amount')) }}
+                            {{ fa_currency($liabilities->sum('amount')) }}
                             <span class="text-xl">ریال</span>
                         </div>
                     </div>
@@ -33,7 +33,7 @@
                     <div class="bg-amber-50 border border-amber-100 rounded-xl p-5 text-center">
                         <div class="text-sm text-amber-700 font-medium mb-1">باقیمانده پرداخت‌نشده</div>
                         <div class="text-3xl font-bold text-amber-800">
-                            {{ number_format($liabilities->sum('remaining_amount')) }}
+                            {{ fa_currency($liabilities->sum('remaining_amount')) }}
                             <span class="text-xl">ریال</span>
                         </div>
                     </div>
@@ -77,11 +77,11 @@
                                             </div>
                                             <div class="text-right shrink-0">
                                                 <div class="text-xl font-bold text-red-700">
-                                                    {{ number_format($liability->remaining_amount) }}
+                                                    {{ fa_currency($liability->remaining_amount) }}
                                                     <span class="text-base font-normal">ریال</span>
                                                 </div>
                                                 <div class="text-xs text-gray-600 mt-1">
-                                                    از {{ number_format($liability->amount) }} ریال
+                                                    از {{ fa_currency($liability->amount) }} ریال
                                                 </div>
                                             </div>
                                         </div>
@@ -141,11 +141,11 @@
                                             </div>
                                             <div class="text-right shrink-0">
                                                 <div class="text-xl font-bold text-blue-700">
-                                                    {{ number_format($liability->remaining_amount) }}
+                                                    {{ fa_currency($liability->remaining_amount) }}
                                                     <span class="text-base font-normal">ریال</span>
                                                 </div>
                                                 <div class="text-xs text-gray-600 mt-1">
-                                                    از {{ number_format($liability->amount) }} ریال
+                                                    از {{ fa_currency($liability->amount) }} ریال
                                                 </div>
                                             </div>
                                         </div>
@@ -205,11 +205,11 @@
                                             </div>
                                             <div class="text-right shrink-0">
                                                 <div class="text-xl font-bold text-green-700">
-                                                    {{ number_format($liability->remaining_amount) }}
+                                                    {{ fa_currency($liability->remaining_amount) }}
                                                     <span class="text-base font-normal">ریال</span>
                                                 </div>
                                                 <div class="text-xs text-gray-600 mt-1">
-                                                    از {{ number_format($liability->amount) }} ریال
+                                                    از {{ fa_currency($liability->amount) }} ریال
                                                 </div>
                                             </div>
                                         </div>

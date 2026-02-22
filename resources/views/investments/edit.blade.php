@@ -41,7 +41,7 @@
                     </div>
                     <div>
                         <span class="text-sm text-gray-600">قیمت خودرو:</span>
-                        <span class="text-lg font-bold text-purple-600 mr-2">{{ number_format($investment->car->purchase_price) }} ریال</span>
+                        <span class="text-lg font-bold text-purple-600 mr-2">{{ fa_currency($investment->car->purchase_price) }} ریال</span>
                     </div>
                 </div>
 
@@ -58,7 +58,7 @@
             <option value="{{ $car->id }}" 
                 data-price="{{ $car->purchase_price }}"
                 {{ old('car_id', $investment->car_id) == $car->id ? 'selected' : '' }}>
-                {{ $car->title }} - {{ $car->brand }} {{ $car->model }} ({{ number_format($car->purchase_price) }} ریال)
+                {{ $car->title }} - {{ $car->brand }} {{ $car->model }} ({{ fa_currency($car->purchase_price) }} ریال)
             </option>
         @endforeach
     </select>
@@ -119,19 +119,19 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <span class="text-sm text-gray-600">قیمت خودرو:</span>
-                                <span class="text-lg font-bold text-blue-600 mr-2" id="carPrice">{{ number_format($investment->car->purchase_price) }} ریال</span>
+                                <span class="text-lg font-bold text-blue-600 mr-2" id="carPrice">{{ fa_currency($investment->car->purchase_price) }} ریال</span>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">مجموع سرمایه‌گذاری شده:</span>
-                                <span class="text-lg font-bold text-green-600 mr-2" id="totalInvested">{{ number_format($investment->car->investments->sum('amount')) }} ریال</span>
+                                <span class="text-lg font-bold text-green-600 mr-2" id="totalInvested">{{ fa_currency($investment->car->investments->sum('amount')) }} ریال</span>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">مبلغ باقی‌مانده:</span>
-                                <span class="text-lg font-bold text-orange-600 mr-2" id="remainingAmount">{{ number_format($investment->car->purchase_price - $investment->car->investments->sum('amount')) }} ریال</span>
+                                <span class="text-lg font-bold text-orange-600 mr-2" id="remainingAmount">{{ fa_currency($investment->car->purchase_price - $investment->car->investments->sum('amount')) }} ریال</span>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">درصد تأمین شده:</span>
-                                <span class="text-lg font-bold text-purple-600 mr-2" id="fundedPercentage">{{ number_format(($investment->car->investments->sum('amount') / $investment->car->purchase_price) * 100, 2) }}%</span>
+                                <span class="text-lg font-bold text-purple-600 mr-2" id="fundedPercentage">{{ fa_currency(($investment->car->investments->sum('amount') / $investment->car->purchase_price) * 100, 2) }}%</span>
                             </div>
                         </div>
                     </div>

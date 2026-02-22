@@ -42,11 +42,11 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="text-xs text-gray-600 font-medium">خودروها</div>
-                            <div class="text-2xl md:text-3xl font-bold text-gray-900 mt-1 truncate">{{ $totalCars ?? 0 }}</div>
-                            <div class="flex flex-wrap justify-between text-xs mt-1 gap-1">
-                                <span class="text-green-600 font-medium">{{ $availableCars ?? 0 }} موجود</span>
-                                <span class="text-red-600 font-medium">{{ $soldCars ?? 0 }} فروخته</span>
-                            </div>
+                            <div class="text-2xl md:text-3xl font-bold text-gray-900 mt-1 truncate">{{fa_number( $totalCars ?? 0) }}</div>
+                        <div class="flex flex-wrap justify-between text-xs mt-1 gap-1">
+    <span class="text-green-600 font-medium">{{ fa_number($availableCars ?? 0) }} موجود</span>
+    <span class="text-red-600 font-medium">{{ fa_number($soldCars ?? 0) }} فروخته</span>
+</div>
                         </div>
                     </div>
                 </div>
@@ -71,13 +71,13 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="text-xs text-gray-600 font-medium">سرمایه‌گذاران</div>
-                            <div class="text-2xl md:text-3xl font-bold text-gray-900 mt-1 truncate">{{ $totalInvestors ?? 0 }}</div>
-                            <div class="text-xs text-gray-600 mt-1 truncate">
-                                کل سرمایه: {{ number_format($totalInvested ?? 0) }} ریال
-                            </div>
-                        </div>
+                    <div class="flex-1 min-w-0">
+    <div class="text-xs text-gray-600 font-medium">سرمایه‌گذاران</div>
+    <div class="text-2xl md:text-3xl font-bold text-gray-900 mt-1 truncate">{{ fa_number($totalInvestors ?? 0) }}</div>
+    <div class="text-xs text-gray-600 mt-1 truncate">
+        کل سرمایه: {{ fa_currency($totalInvested ?? 0) }}
+    </div>
+</div>
                     </div>
                 </div>
                 <div class="bg-gray-50 px-5 py-2.5 text-xs text-gray-600 border-t">
@@ -103,9 +103,9 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="text-xs text-gray-600 font-medium">کل دارایی‌ها</div>
-                            <div class="text-2xl md:text-3xl font-bold text-gray-900 mt-1 truncate">
-                                {{ number_format($totalAssets ?? 0) }} ریال
-                            </div>
+                          <div class="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mt-1 break-words whitespace-normal max-w-full">
+    {{ fa_currency($totalAssets ?? 0) }} ریال
+</div>
                         </div>
                     </div>
                 </div>
@@ -132,11 +132,11 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="text-xs text-gray-600 font-medium">خالص دارایی</div>
-                            <div class="text-2xl md:text-3xl font-bold text-gray-900 mt-1 truncate">
-                                {{ number_format($netWorth ?? 0) }} ریال
-                            </div>
+                           <div class="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mt-1 break-words whitespace-normal max-w-full">
+    {{ fa_currency($netWorth ?? 0) }} ریال
+</div>
                             <div class="text-xs text-gray-600 mt-1 truncate">
-                                بدهی‌ها: {{ number_format($totalLiabilities ?? 0) }} ریال
+                                بدهی‌ها: {{ fa_currency($totalLiabilities ?? 0) }} ریال
                             </div>
                         </div>
                     </div>
@@ -193,7 +193,7 @@
                 </div>
                 <div class="mt-6 pt-4 border-t border-gray-200 text-sm font-medium flex justify-between">
                     <span>ارزش کل خودروها:</span>
-                    <span class="text-blue-700">{{ number_format($totalCarValue ?? 0) }} ریال</span>
+                    <span class="text-blue-700">{{ fa_currency($totalCarValue ?? 0) }} ریال</span>
                 </div>
             </div>
             @endcan
@@ -214,7 +214,7 @@
                     <div>
                         <div class="flex justify-between text-sm mb-1">
                             <span>حساب بانکی</span>
-                            <span class="font-medium truncate">{{ number_format($bankAssets ?? 0) }} ریال</span>
+                            <span class="font-medium truncate">{{ fa_currency($bankAssets ?? 0) }} ریال</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                             <div class="bg-blue-500 h-full" style="width: {{ (($bankAssets ?? 0) / $totalAssetsForCalc) * 100 }}%"></div>
@@ -223,7 +223,7 @@
                     <div>
                         <div class="flex justify-between text-sm mb-1">
                             <span>دلار</span>
-                            <span class="font-medium truncate">{{ number_format($dollarAssets ?? 0) }} ریال</span>
+                            <span class="font-medium truncate">{{ fa_currency($dollarAssets ?? 0) }} ریال</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                             <div class="bg-emerald-500 h-full" style="width: {{ (($dollarAssets ?? 0) / $totalAssetsForCalc) * 100 }}%"></div>
@@ -232,7 +232,7 @@
                     <div>
                         <div class="flex justify-between text-sm mb-1">
                             <span>طلا</span>
-                            <span class="font-medium truncate">{{ number_format($goldAssets ?? 0) }} ریال</span>
+                            <span class="font-medium truncate">{{ fa_currency($goldAssets ?? 0) }} ریال</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                             <div class="bg-yellow-500 h-full" style="width: {{ (($goldAssets ?? 0) / $totalAssetsForCalc) * 100 }}%"></div>
@@ -256,15 +256,15 @@
                 <div class="space-y-4 text-sm">
                     <div class="flex justify-between items-center py-2 border-b border-gray-100">
                         <span class="text-gray-700">بدهی‌ها:</span>
-                        <span class="font-bold text-red-700 truncate">{{ number_format($debtLiabilities ?? 0) }} ریال</span>
+                        <span class="font-bold text-red-700 truncate">{{ fa_currency($debtLiabilities ?? 0) }} ریال</span>
                     </div>
                     <div class="flex justify-between items-center py-2 border-b border-gray-100">
                         <span class="text-gray-700">چک‌ها:</span>
-                        <span class="font-bold text-blue-700 truncate">{{ number_format($checkLiabilities ?? 0) }} ریال</span>
+                        <span class="font-bold text-blue-700 truncate">{{ fa_currency($checkLiabilities ?? 0) }} ریال</span>
                     </div>
                     <div class="flex justify-between items-center py-2 border-b border-gray-100">
                         <span class="text-gray-700">اقساط:</span>
-                        <span class="font-bold text-green-700 truncate">{{ number_format($installmentLiabilities ?? 0) }} ریال</span>
+                        <span class="font-bold text-green-700 truncate">{{ fa_currency($installmentLiabilities ?? 0) }} ریال</span>
                     </div>
 
                     <div class="pt-4 mt-2 border-t-2 border-gray-200 flex justify-between font-bold text-base">
@@ -302,7 +302,7 @@
                                     </div>
                                 </div>
                                 <div class="text-right whitespace-nowrap">
-                                    <div class="font-medium text-blue-700">{{ number_format($car->purchase_price ?? 0) }} ریال</div>
+                                    <div class="font-medium text-blue-700">{{ fa_currency($car->purchase_price ?? 0) }} ریال</div>
                                     <div class="text-xs mt-1">
                                         @if($car->status == 'available')
                                             <span class="text-green-600 font-medium">موجود</span>
@@ -352,7 +352,7 @@
                                     <div class="text-sm text-gray-600 truncate">{{ $investor->phone ?? '—' }}</div>
                                 </div>
                                 <div class="text-right whitespace-nowrap">
-                                    <div class="font-medium text-green-700">{{ number_format($investor->total_invested ?? 0) }} ریال</div>
+                                    <div class="font-medium text-green-700">{{ fa_currency($investor->total_invested ?? 0) }} ریال</div>
                                     <div class="text-xs text-gray-600 mt-1">
                                         {{ $investor->investments_count ?? 0 }} سرمایه‌گذاری
                                     </div>
@@ -399,9 +399,9 @@
                                     <div class="text-sm text-gray-600 truncate">خریدار: {{ $sale->buyer_name ?? '—' }}</div>
                                 </div>
                                 <div class="text-right whitespace-nowrap">
-                                    <div class="font-medium text-purple-700">{{ number_format($sale->selling_price ?? 0) }} ریال</div>
+                                    <div class="font-medium text-purple-700">{{ fa_currency($sale->selling_price ?? 0) }} ریال</div>
                                     <div class="text-xs text-green-600 mt-1">
-                                        سود: {{ number_format($sale->total_profit ?? 0) }} ریال
+                                        سود: {{ fa_currency($sale->total_profit ?? 0) }} ریال
                                     </div>
                                 </div>
                             </div>
@@ -447,12 +447,12 @@
                                         @endswitch
                                     </div>
                                 </div>
-                                <div class="text-right whitespace-nowrap">
-                                    <div class="font-bold text-red-700">{{ number_format($liability->remaining_amount ?? 0) }} ریال</div>
-                                    <div class="text-xs text-gray-600 mt-1">
-                                        سررسید: {{ $liability->due_date ? \Carbon\Carbon::parse($liability->due_date)->format('Y/m/d') : '—' }}
-                                    </div>
-                                </div>
+                              <div class="text-right whitespace-nowrap">
+    <div class="font-bold text-red-700">{{ fa_currency($liability->remaining_amount ?? 0) }}</div>
+    <div class="text-xs text-gray-600 mt-1">
+        سررسید: {{ $liability->due_date ? fa_number(\Carbon\Carbon::parse($liability->due_date)->format('Y/m/d')) : '—' }}
+    </div>
+</div>
                             </div>
                         @empty
                             <p class="text-gray-500 text-center py-4">تعهد در انتظاری وجود ندارد.</p>

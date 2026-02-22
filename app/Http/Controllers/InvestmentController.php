@@ -72,7 +72,7 @@ class InvestmentController extends Controller
     // بررسی اینکه مجموع سرمایه‌گذاری‌ها از قیمت خودرو بیشتر نشه
     if (($totalInvested + $validated['amount']) > $car->purchase_price) {
         $remaining = $car->purchase_price - $totalInvested;
-        return back()->withErrors(['amount' => "مجموع سرمایه‌گذاری‌ها نمی‌تواند از قیمت خودرو بیشتر باشد. مبلغ باقی‌مانده: " . number_format($remaining) . " ریال"])->withInput();
+        return back()->withErrors(['amount' => "مجموع سرمایه‌گذاری‌ها نمی‌تواند از قیمت خودرو بیشتر باشد. مبلغ باقی‌مانده: " . fa_currency($remaining) . " ریال"])->withInput();
     }
 
     $investment = Investment::create($validated);

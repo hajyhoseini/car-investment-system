@@ -42,11 +42,11 @@
                     </div>
                     <div class="bg-blue-50 p-4 rounded-lg">
                         <div class="text-sm text-gray-600">قیمت خرید</div>
-                        <div class="text-lg font-bold text-blue-600">{{ number_format($car->purchase_price) }} ریال</div>
+                        <div class="text-lg font-bold text-blue-600">{{ fa_currency($car->purchase_price) }} ریال</div>
                     </div>
                     <div class="bg-blue-50 p-4 rounded-lg">
                         <div class="text-sm text-gray-600">کل سرمایه‌گذاری</div>
-                        <div class="text-lg font-bold text-green-600">{{ number_format($car->total_invested) }} ریال</div>
+                        <div class="text-lg font-bold text-green-600">{{ fa_currency($car->total_invested) }} ریال</div>
                     </div>
                     <div class="bg-blue-50 p-4 rounded-lg">
                         <div class="text-sm text-gray-600">تعداد سرمایه‌گذاران</div>
@@ -78,7 +78,7 @@
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">کارکرد:</span>
-                                <div class="text-base font-medium">{{ number_format($car->kilometers) }} کیلومتر</div>
+                                <div class="text-base font-medium">{{ fa_currency($car->kilometers) }} کیلومتر</div>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">نوع سوخت:</span>
@@ -123,7 +123,7 @@
                                             {{ $investment->investor->full_name }}
                                         </a>
                                     </td>
-                                    <td class="px-6 py-4">{{ number_format($investment->amount) }} ریال</td>
+                                    <td class="px-6 py-4">{{ fa_currency($investment->amount) }} ریال</td>
                                     <td class="px-6 py-4">{{ $investment->percentage }}%</td>
                                     <td class="px-6 py-4">{{ $investment->jalali_date ?? $investment->investment_date }}</td>
                                 </tr>
@@ -138,8 +138,8 @@
                             <tfoot class="bg-gray-50">
                                 <tr>
                                     <td colspan="1" class="px-6 py-3 text-left font-bold">جمع کل:</td>
-                                    <td class="px-6 py-3 font-bold text-green-600">{{ number_format($car->investments->sum('amount')) }} ریال</td>
-                                    <td class="px-6 py-3 font-bold text-blue-600">{{ number_format($car->investments->sum('percentage'), 2) }}%</td>
+                                    <td class="px-6 py-3 font-bold text-green-600">{{ fa_currency($car->investments->sum('amount')) }} ریال</td>
+                                    <td class="px-6 py-3 font-bold text-blue-600">{{ fa_currency($car->investments->sum('percentage'), 2) }}%</td>
                                     <td class="px-6 py-3"></td>
                                 </tr>
                             </tfoot>
@@ -155,11 +155,11 @@
                         @php $sale = $car->sales->first(); @endphp
                         <div class="bg-purple-50 p-4 rounded-lg">
                             <div class="text-sm text-gray-600">قیمت فروش</div>
-                            <div class="text-lg font-bold text-purple-600">{{ number_format($sale->selling_price) }} ریال</div>
+                            <div class="text-lg font-bold text-purple-600">{{ fa_currency($sale->selling_price) }} ریال</div>
                         </div>
                         <div class="bg-purple-50 p-4 rounded-lg">
                             <div class="text-sm text-gray-600">سود کل</div>
-                            <div class="text-lg font-bold text-green-600">{{ number_format($sale->total_profit) }} ریال</div>
+                            <div class="text-lg font-bold text-green-600">{{ fa_currency($sale->total_profit) }} ریال</div>
                         </div>
                         <div class="bg-purple-50 p-4 rounded-lg">
                             <div class="text-sm text-gray-600">تاریخ فروش</div>

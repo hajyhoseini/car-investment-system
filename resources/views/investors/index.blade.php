@@ -30,14 +30,14 @@
                     <div class="bg-green-50 border border-green-100 rounded-xl p-5 text-center">
                         <div class="text-sm text-green-700 font-medium mb-1">کل سرمایه‌گذاری</div>
                         <div class="text-3xl font-bold text-green-800">
-                            {{ number_format($investors->sum('total_invested')) }} <span class="text-xl">ریال</span>
+                            {{ fa_currency($investors->sum('total_invested')) }} <span class="text-xl">ریال</span>
                         </div>
                     </div>
 
                     <div class="bg-purple-50 border border-purple-100 rounded-xl p-5 text-center">
                         <div class="text-sm text-purple-700 font-medium mb-1">میانگین سرمایه هر نفر</div>
                         <div class="text-3xl font-bold text-purple-800">
-                            {{ number_format($investors->avg('total_invested') ?? 0) }} <span class="text-xl">ریال</span>
+                            {{ fa_currency($investors->avg('total_invested') ?? 0) }} <span class="text-xl">ریال</span>
                         </div>
                     </div>
                 </div>
@@ -64,7 +64,7 @@
                                     <td class="px-4 py-4 text-sm text-gray-600">{{ $investor->phone }}</td>
                                     <td class="px-4 py-4 text-sm text-gray-600 hidden md:table-cell">{{ $investor->email ?? '—' }}</td>
                                     <td class="px-4 py-4 text-sm font-bold text-green-700">
-                                        {{ number_format($investor->total_invested ?? 0) }} ریال
+                                        {{ fa_currency($investor->total_invested ?? 0) }} ریال
                                     </td>
                                     <td class="px-4 py-4">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">

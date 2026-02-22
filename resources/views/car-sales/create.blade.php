@@ -11,11 +11,11 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
                     <div>
                         <span class="text-sm text-gray-600">قیمت خرید:</span>
-                        <span class="text-lg font-bold text-blue-600 mr-2">{{ number_format($car->purchase_price) }} ریال</span>
+                        <span class="text-lg font-bold text-blue-600 mr-2">{{ fa_currency($car->purchase_price) }} ریال</span>
                     </div>
                     <div>
                         <span class="text-sm text-gray-600">کل سرمایه‌گذاری:</span>
-                        <span class="text-lg font-bold text-green-600 mr-2">{{ number_format($car->total_invested) }} ریال</span>
+                        <span class="text-lg font-bold text-green-600 mr-2">{{ fa_currency($car->total_invested) }} ریال</span>
                     </div>
                     <div>
                         <span class="text-sm text-gray-600">تعداد سرمایه‌گذاران:</span>
@@ -38,7 +38,7 @@
                             @foreach($car->investments as $investment)
                             <tr>
                                 <td class="px-4 py-2">{{ $investment->investor->full_name }}</td>
-                                <td class="px-4 py-2">{{ number_format($investment->amount) }} ریال</td>
+                                <td class="px-4 py-2">{{ fa_currency($investment->amount) }} ریال</td>
                                 <td class="px-4 py-2">{{ $investment->percentage }}%</td>
                             </tr>
                             @endforeach

@@ -40,11 +40,11 @@
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">مبلغ کل:</span>
-                                <div class="text-xl font-bold text-red-600">{{ number_format($liability->amount) }} ریال</div>
+                                <div class="text-xl font-bold text-red-600">{{ fa_currency($liability->amount) }} ریال</div>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">مبلغ باقی‌مانده:</span>
-                                <div class="text-xl font-bold text-orange-600">{{ number_format($liability->remaining_amount) }} ریال</div>
+                                <div class="text-xl font-bold text-orange-600">{{ fa_currency($liability->remaining_amount) }} ریال</div>
                             </div>
                         </div>
                     </div>

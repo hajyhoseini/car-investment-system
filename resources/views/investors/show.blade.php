@@ -51,7 +51,7 @@
                         <div class="space-y-4">
                             <div>
                                 <span class="text-sm text-gray-600">کل سرمایه‌گذاری:</span>
-                                <div class="text-2xl font-bold text-blue-600">{{ number_format($investor->total_invested) }} ریال</div>
+                                <div class="text-2xl font-bold text-blue-600">{{ fa_currency($investor->total_invested) }} ریال</div>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">تعداد سرمایه‌گذاری:</span>
@@ -60,7 +60,7 @@
                             <div>
                                 <span class="text-sm text-gray-600">میانگین هر سرمایه‌گذاری:</span>
                                 <div class="text-xl font-bold text-green-600">
-                                    {{ $investor->investments->count() > 0 ? number_format($investor->total_invested / $investor->investments->count()) : 0 }} ریال
+                                    {{ $investor->investments->count() > 0 ? fa_currency($investor->total_invested / $investor->investments->count()) : 0 }} ریال
                                 </div>
                             </div>
                         </div>
@@ -89,7 +89,7 @@
                                             {{ $investment->car->title }}
                                         </a>
                                     </td>
-                                    <td class="px-6 py-4">{{ number_format($investment->amount) }} ریال</td>
+                                    <td class="px-6 py-4">{{ fa_currency($investment->amount) }} ریال</td>
                                     <td class="px-6 py-4">{{ $investment->percentage }}%</td>
                                     <td class="px-6 py-4">{{ $investment->investment_date }}</td>
                                     <td class="px-6 py-4">

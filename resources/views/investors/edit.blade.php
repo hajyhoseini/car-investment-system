@@ -83,7 +83,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <span class="text-sm text-gray-600">کل سرمایه‌گذاری:</span>
-                                <span class="block text-xl font-bold text-green-600">{{ number_format($investor->total_invested) }} ریال</span>
+                                <span class="block text-xl font-bold text-green-600">{{ fa_currency($investor->total_invested) }} ریال</span>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">تعداد سرمایه‌گذاری:</span>
