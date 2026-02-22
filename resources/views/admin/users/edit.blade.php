@@ -90,7 +90,7 @@
                                         @if($role->name == 'admin') 
                                             <span class="font-bold text-red-600">ادمین</span>
                                         @elseif($role->name == 'manager') 
-                                            <span class="font-bold text-blue-600">مدیر</span>
+                                            <span class="font-bold text-blue-600">مدیر مالی</span>
                                         @elseif($role->name == 'investor') 
                                             <span class="font-bold text-green-600">سرمایه‌گذار</span>
                                         @else 

@@ -7,11 +7,16 @@ use Illuminate\Http\Request;
 
 class InvestorController extends Controller
 {
-    public function index()
-    {
-        $investors = Investor::with('investments')->latest()->paginate(10);
-        return view('investors.index', compact('investors'));
-    }
+public function index()
+{
+    $investors = Investor::with('user')
+        ->whereNotNull('user_id')
+        ->orWhereNull('user_id')
+        ->latest()
+        ->paginate(10);
+    
+    return view('investors.index', compact('investors'));
+}
 
     public function create()
     {

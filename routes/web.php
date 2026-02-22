@@ -36,7 +36,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // -----------------------------------------------------------------
     // منابع اصلی با سطح دسترسی (بدون حذف)
     // -----------------------------------------------------------------
-    Route::resource('cars', CarController::class)->except(['destroy']);
+    Route::resource('cars', CarController::class);
     Route::resource('investors', InvestorController::class)->except(['destroy']);
     Route::resource('investments', InvestmentController::class)->except(['destroy']);
     Route::resource('car-sales', CarSaleController::class);

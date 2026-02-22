@@ -45,4 +45,27 @@ class Car extends Model
     {
         return $this->purchase_price - $this->total_invested;
     }
+    
+public function isFullyFunded(): bool
+{
+    return $this->total_invested >= $this->purchase_price;
+}
+
+/**
+ * مقدار باقی‌مانده برای سرمایه‌گذاری
+ */
+public function getRemainingForInvestmentAttribute(): float
+{
+    $remaining = $this->purchase_price - $this->total_invested;
+    return max($remaining, 0);
+}
+
+/**
+ * درصد سرمایه‌گذاری شده
+ */
+public function getFundedPercentageAttribute(): float
+{
+    if ($this->purchase_price <= 0) return 0;
+    return ($this->total_invested / $this->purchase_price) * 100;
+}
 }

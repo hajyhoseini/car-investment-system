@@ -24,48 +24,71 @@ class InvestmentController extends Controller
         return view('investments.index', compact('investments'));
     }
 
-    public function create()
-    {
-        $cars = Car::where('status', 'available')->get();
-        $investors = Investor::all();
-        
-        // تاریخ پیش‌فرض شمسی برای امروز
-        $todayJalali = $this->nowJalali();
-        
-        return view('investments.create', compact('cars', 'investors', 'todayJalali'));
+   public function create()
+{
+    $cars = Car::where('status', 'available')
+        ->with('investments')
+        ->get()
+        ->filter(function($car) {
+            return $car->total_invested < $car->purchase_price;
+        });
+    
+    $investors = Investor::all();
+    
+    $todayJalali = $this->nowJalali();
+    
+    return view('investments.create', compact('cars', 'investors', 'todayJalali'));
+}
+
+   public function store(Request $request)
+{
+    // اعتبارسنجی با تاریخ شمسی
+    $validated = $request->validate([
+        'car_id' => 'required|exists:cars,id',
+        'investor_id' => 'required|exists:investors,id',
+        'amount' => 'required|numeric|min:1000',
+        'percentage' => 'required|numeric|min:0.01|max:100',
+        'investment_date' => 'required|string',
+    ]);
+
+    // تبدیل تاریخ شمسی به میلادی
+    $validated['investment_date'] = $this->convertToGregorian($request->investment_date);
+
+    $car = Car::find($validated['car_id']);
+    
+    // بررسی اینکه خودرو قابل سرمایه‌گذاری هست یا نه
+    if ($car->status != 'available') {
+        return back()->withErrors(['car_id' => 'این خودرو قابل سرمایه‌گذاری نیست.'])->withInput();
+    }
+    
+    // محاسبه مجموع سرمایه‌گذاری‌های قبلی
+    $totalInvested = $car->investments()->sum('amount');
+    
+    // بررسی اینکه خودرو کامل نشده
+    if ($totalInvested >= $car->purchase_price) {
+        return back()->withErrors(['car_id' => 'سرمایه‌ی این خودرو کامل شده و قابل سرمایه‌گذاری نیست.'])->withInput();
+    }
+    
+    // بررسی اینکه مجموع سرمایه‌گذاری‌ها از قیمت خودرو بیشتر نشه
+    if (($totalInvested + $validated['amount']) > $car->purchase_price) {
+        $remaining = $car->purchase_price - $totalInvested;
+        return back()->withErrors(['amount' => "مجموع سرمایه‌گذاری‌ها نمی‌تواند از قیمت خودرو بیشتر باشد. مبلغ باقی‌مانده: " . number_format($remaining) . " ریال"])->withInput();
     }
 
-    public function store(Request $request)
-    {
-        // اعتبارسنجی با تاریخ شمسی
-        $validated = $request->validate([
-            'car_id' => 'required|exists:cars,id',
-            'investor_id' => 'required|exists:investors,id',
-            'amount' => 'required|numeric|min:1000',
-            'percentage' => 'required|numeric|min:0.01|max:100',
-            'investment_date' => 'required|string', // تاریخ به صورت شمسی دریافت می‌شود
-        ]);
-
-        // تبدیل تاریخ شمسی به میلادی برای ذخیره در دیتابیس
-        $validated['investment_date'] = $this->convertToGregorian($request->investment_date);
-
-        $car = Car::find($validated['car_id']);
-        
-        // محاسبه مجموع سرمایه‌گذاری‌های قبلی
-        $totalInvested = $car->investments()->sum('amount');
-        
-        // بررسی اینکه مجموع سرمایه‌گذاری‌ها از قیمت خودرو بیشتر نشه
-        if (($totalInvested + $validated['amount']) > $car->purchase_price) {
-            return back()->withErrors(['amount' => 'مجموع سرمایه‌گذاری‌ها نمی‌تواند از قیمت خودرو بیشتر باشد.'])->withInput();
-        }
-
-        $investment = Investment::create($validated);
-        
-        // به‌روزرسانی کل سرمایه‌گذاری سرمایه‌گذار
-        $investment->investor->updateTotalInvested();
-
-        return redirect()->route('investments.index')->with('success', 'سرمایه‌گذاری با موفقیت ثبت شد.');
+    $investment = Investment::create($validated);
+    
+    // به‌روزرسانی کل سرمایه‌گذاری سرمایه‌گذار
+    $investment->investor->updateTotalInvested();
+    
+    // بررسی اینکه آیا بعد از این سرمایه‌گذاری، خودرو کامل شده؟
+    $newTotalInvested = $car->investments()->sum('amount');
+    if ($newTotalInvested >= $car->purchase_price) {
+        // می‌تونیم خودرو رو رزرو کنیم یا یه نوتیف بفرستیم
+        // $car->update(['status' => 'reserved']);
     }
+
+    return redirect()->route('investments.index')->with('success', 'سرمایه‌گذاری با موفقیت ثبت شد.');
+}
 
     public function show(Investment $investment)
     {

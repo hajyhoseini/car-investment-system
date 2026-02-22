@@ -58,6 +58,7 @@
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">سال</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاریخ خرید</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">قیمت خرید</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">وضعیت سرمایه</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">وضعیت</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">عملیات</th>
                             </tr>
@@ -72,6 +73,26 @@
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $car->year }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $car->jalali_purchase_date ?? $car->purchase_date }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap font-bold text-blue-600">{{ number_format($car->purchase_price) }} ریال</td>
+                               
+<td class="px-6 py-4 whitespace-nowrap">
+    @php
+        $fundedPercentage = ($car->total_invested / $car->purchase_price) * 100;
+    @endphp
+    <div class="flex flex-col">
+        <div class="flex justify-between text-xs mb-1">
+            <span>{{ number_format($fundedPercentage, 1) }}%</span>
+            <span>{{ number_format($car->total_invested) }} / {{ number_format($car->purchase_price) }}</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2">
+            <div class="bg-green-500 h-2 rounded-full" style="width: {{ min($fundedPercentage, 100) }}%"></div>
+        </div>
+        @if($fundedPercentage >= 100)
+            <span class="text-xs text-green-600 mt-1">تکمیل شده</span>
+        @else
+            <span class="text-xs text-blue-600 mt-1">{{ number_format($car->purchase_price - $car->total_invested) }} ریال باقی‌مانده</span>
+        @endif
+    </div>
+</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($car->status == 'available')
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">

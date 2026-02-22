@@ -11,30 +11,44 @@
                     @csrf
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- انتخاب خودرو -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">خودرو <span class="text-red-500">*</span></label>
-                            <select name="car_id" id="car_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required>
-                                <option value="">انتخاب کنید</option>
-                                @foreach($cars as $car)
-                                    <option value="{{ $car->id }}" data-price="{{ $car->purchase_price }}" {{ old('car_id') == $car->id ? 'selected' : '' }}>
-                                        {{ $car->title }} - {{ $car->brand }} {{ $car->model }} ({{ number_format($car->purchase_price) }} ریال)
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('car_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                        </div>
+                  <!-- انتخاب خودرو -->
+<div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">خودرو <span class="text-red-500">*</span></label>
+    <select name="car_id" id="car_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required>
+        <option value="">انتخاب کنید</option>
+        @foreach($cars as $car)
+            @php
+                $remaining = $car->purchase_price - $car->total_invested;
+                $fundedPercentage = ($car->total_invested / $car->purchase_price) * 100;
+            @endphp
+            <option value="{{ $car->id }}" 
+                data-price="{{ $car->purchase_price }}"
+                data-remaining="{{ $remaining }}"
+                {{ old('car_id') == $car->id ? 'selected' : '' }}>
+                {{ $car->title }} - {{ $car->brand }} {{ $car->model }} 
+                ({{ number_format($car->purchase_price) }} ریال) 
+                - تأمین شده: {{ number_format($fundedPercentage, 1) }}% 
+                - باقی‌مانده: {{ number_format($remaining) }} ریال
+            </option>
+        @endforeach
+    </select>
+    @error('car_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+</div>
 
                         <!-- انتخاب سرمایه‌گذار -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700">سرمایه‌گذار <span class="text-red-500">*</span></label>
                             <select name="investor_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required>
                                 <option value="">انتخاب کنید</option>
-                                @foreach($investors as $investor)
-                                    <option value="{{ $investor->id }}" {{ old('investor_id') == $investor->id ? 'selected' : '' }}>
-                                        {{ $investor->full_name }} ({{ $investor->national_code }})
-                                    </option>
-                                @endforeach
+                                  @foreach($investors as $investor)
+        <option value="{{ $investor->id }}" 
+            {{ auth()->user()->investor && auth()->user()->investor->id == $investor->id ? 'selected' : '' }}>
+            {{ $investor->full_name }}
+            @if($investor->user_id == auth()->id())
+                (شما)
+            @endif
+        </option>
+    @endforeach
                             </select>
                             @error('investor_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
@@ -103,7 +117,6 @@
                         </button>
                     </div>
                 </form>
-            </div>
         </div>
     </div>
 </div>
