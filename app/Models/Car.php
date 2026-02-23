@@ -1,4 +1,5 @@
 <?php
+// app/Models/Car.php
 
 namespace App\Models;
 
@@ -36,6 +37,46 @@ class Car extends Model
         return $this->hasMany(CarSale::class);
     }
 
+    public function images(): HasMany
+    {
+        return $this->hasMany(CarImage::class)->orderBy('sort_order');
+    }
+
+    public function primaryImage()
+    {
+        return $this->hasOne(CarImage::class)->where('is_primary', true);
+    }
+
+    public function getPrimaryImageUrlAttribute()
+    {
+        $primary = $this->primaryImage;
+        if ($primary) {
+            return $primary->url;
+        }
+        
+        $firstImage = $this->images()->first();
+        if ($firstImage) {
+            return $firstImage->url;
+        }
+        
+        return asset('images/no-image.jpg');
+    }
+
+    public function getThumbnailUrlAttribute()
+    {
+        $primary = $this->primaryImage;
+        if ($primary) {
+            return $primary->thumbnail_url;
+        }
+        
+        $firstImage = $this->images()->first();
+        if ($firstImage) {
+            return $firstImage->thumbnail_url;
+        }
+        
+        return asset('images/no-image-thumb.jpg');
+    }
+
     public function getTotalInvestedAttribute(): float
     {
         return $this->investments()->sum('amount');
@@ -46,26 +87,20 @@ class Car extends Model
         return $this->purchase_price - $this->total_invested;
     }
     
-public function isFullyFunded(): bool
-{
-    return $this->total_invested >= $this->purchase_price;
-}
+    public function isFullyFunded(): bool
+    {
+        return $this->total_invested >= $this->purchase_price;
+    }
 
-/**
- * مقدار باقی‌مانده برای سرمایه‌گذاری
- */
-public function getRemainingForInvestmentAttribute(): float
-{
-    $remaining = $this->purchase_price - $this->total_invested;
-    return max($remaining, 0);
-}
+    public function getRemainingForInvestmentAttribute(): float
+    {
+        $remaining = $this->purchase_price - $this->total_invested;
+        return max($remaining, 0);
+    }
 
-/**
- * درصد سرمایه‌گذاری شده
- */
-public function getFundedPercentageAttribute(): float
-{
-    if ($this->purchase_price <= 0) return 0;
-    return ($this->total_invested / $this->purchase_price) * 100;
-}
+    public function getFundedPercentageAttribute(): float
+    {
+        if ($this->purchase_price <= 0) return 0;
+        return ($this->total_invested / $this->purchase_price) * 100;
+    }
 }

@@ -52,6 +52,7 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تصویر</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">عنوان</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">برند</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">مدل</th>
@@ -67,7 +68,25 @@
                             @foreach($cars as $index => $car)
                             <tr class="hover:bg-gray-50 transition" data-status="{{ $car->status }}">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ fa_number($cars->firstItem() + $index) }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap font-medium">{{ $car->title }}</td>
+                                
+                                {{-- ستون تصویر --}}
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <a href="{{ route('cars.show', $car) }}">
+                                        @php
+                                            $imageUrl = $car->thumbnail_url ?? asset('images/no-image-thumb.jpg');
+                                        @endphp
+                                        <img src="{{ $imageUrl }}" 
+                                             alt="{{ $car->title }}" 
+                                             class="w-16 h-12 object-cover rounded-lg border border-gray-200 hover:border-blue-500 transition"
+                                             onerror="this.onerror=null; this.src='{{ asset('images/no-image-thumb.jpg') }}';">
+                                    </a>
+                                </td>
+                                
+                                <td class="px-6 py-4 whitespace-nowrap font-medium">
+                                    <a href="{{ route('cars.show', $car) }}" class="text-blue-600 hover:text-blue-900">
+                                        {{ $car->title }}
+                                    </a>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $car->brand }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $car->model }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ fa_number($car->year) }}</td>
@@ -203,16 +222,10 @@
         const rows = document.querySelectorAll('tbody tr');
 
         rows.forEach(row => {
-            // استفاده از data-status که به هر ردیف اضافه کردیم
             const status = row.dataset.status;
-            
-            // جستجو در متن ردیف
             const rowText = row.textContent.toLowerCase();
             const matchesSearch = searchText === '' || rowText.includes(searchText);
-            
-            // فیلتر بر اساس وضعیت
             const matchesStatus = statusFilter === 'all' || status === statusFilter;
-
             row.style.display = matchesSearch && matchesStatus ? '' : 'none';
         });
     }

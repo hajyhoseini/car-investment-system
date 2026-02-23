@@ -42,7 +42,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('car-sales', CarSaleController::class);
     Route::resource('assets', AssetController::class)->except(['destroy']);
     Route::resource('liabilities', LiabilityController::class)->except(['destroy']);
-    
+    // مسیرهای مدیریت تصاویر خودرو
+Route::get('/cars/{car}/images', [App\Http\Controllers\CarImageController::class, 'index'])->name('cars.images');
+Route::post('/cars/{car}/images', [App\Http\Controllers\CarImageController::class, 'store'])->name('cars.images.store');
+Route::post('/cars/{car}/images/{image}/primary', [App\Http\Controllers\CarImageController::class, 'setPrimary'])->name('cars.images.primary');
+Route::delete('/cars/{car}/images/{image}', [App\Http\Controllers\CarImageController::class, 'destroy'])->name('cars.images.destroy');
     // -----------------------------------------------------------------
     // مسیرهای اختصاصی برای نمایش جزئیات با بررسی مالکیت
     // -----------------------------------------------------------------

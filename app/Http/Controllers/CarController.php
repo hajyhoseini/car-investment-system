@@ -29,29 +29,50 @@ class CarController extends Controller
         return view('cars.create', compact('todayJalali'));
     }
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'brand' => 'required|string|max:255',
-            'model' => 'required|string|max:255',
-            'year' => 'required|integer|min:1300|max:1405',
-            'kilometers' => 'required|integer|min:0',
-            'fuel_type' => 'required|string',
-            'transmission' => 'required|string',
-            'color' => 'nullable|string|max:50',
-            'description' => 'nullable|string',
-            'purchase_price' => 'required|numeric|min:0',
-            'purchase_date' => 'required|string', // تاریخ به صورت شمسی دریافت می‌شود
-        ]);
+   // app/Http/Controllers/CarController.php
 
-        // تبدیل تاریخ شمسی به میلادی برای ذخیره در دیتابیس
-        $validated['purchase_date'] = $this->convertToGregorian($request->purchase_date);
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'title' => 'required|string|max:255',
+        'brand' => 'required|string|max:255',
+        'model' => 'required|string|max:255',
+        'year' => 'required|integer|min:1300|max:1405',
+        'kilometers' => 'required|integer|min:0',
+        'fuel_type' => 'required|string',
+        'transmission' => 'required|string',
+        'color' => 'nullable|string|max:50',
+        'description' => 'nullable|string',
+        'purchase_price' => 'required|numeric|min:0',
+        'purchase_date' => 'required|string',
+        'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+    ]);
 
-        Car::create($validated);
+    // تبدیل تاریخ شمسی به میلادی
+    $validated['purchase_date'] = $this->convertToGregorian($request->purchase_date);
 
-        return redirect()->route('cars.index')->with('success', 'خودرو با موفقیت اضافه شد.');
+    // ایجاد خودرو
+    $car = Car::create($validated);
+
+    // آپلود تصاویر اگر وجود داشته باشند
+    if ($request->hasFile('images')) {
+        foreach ($request->file('images') as $index => $image) {
+            $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            
+            // ذخیره تصویر اصلی
+            $path = $image->storeAs('cars/' . $car->id, $filename, 'public');
+            
+            // ذخیره در دیتابیس
+            $car->images()->create([
+                'image_path' => 'cars/' . $car->id . '/' . $filename,
+                'is_primary' => ($index === 0),
+                'sort_order' => $index
+            ]);
+        }
     }
+
+    return redirect()->route('cars.index')->with('success', 'خودرو با موفقیت اضافه شد.');
+}
 
     public function show(Car $car)
     {

@@ -26,6 +26,66 @@
                     </div>
                 </div>
 
+                {{-- ============================================= --}}
+                {{-- بخش گالری تصاویر --}}
+                {{-- ============================================= --}}
+                @if($car->images->count() > 0)
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        گالری تصاویر
+                    </h3>
+                    
+                    {{-- تصویر اصلی بزرگ --}}
+                    <div class="mb-4">
+                        <img id="mainImage" src="{{ $car->primaryImage?->url ?? $car->images->first()->url }}" 
+                             alt="{{ $car->title }}" 
+                             class="w-full h-96 object-cover rounded-xl shadow-lg">
+                    </div>
+
+                    {{-- تصاویر کوچک (thumbnails) --}}
+                    <div class="grid grid-cols-4 md:grid-cols-6 gap-2">
+                        @foreach($car->images as $image)
+                        <div class="cursor-pointer border-2 rounded-lg overflow-hidden {{ $loop->first ? 'border-blue-500' : 'border-gray-200' }} hover:border-blue-400 transition"
+                             onclick="document.getElementById('mainImage').src = '{{ $image->url }}'">
+                            <img src="{{ $image->thumbnail_url }}" alt="{{ $car->title }}" class="w-full h-20 object-cover">
+                        </div>
+                        @endforeach
+                    </div>
+
+                    {{-- لینک مدیریت تصاویر برای ادمین --}}
+                    @can('edit cars')
+                    <div class="mt-4">
+                        <a href="{{ route('cars.images', $car) }}" class="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                            </svg>
+                            مدیریت تصاویر
+                        </a>
+                    </div>
+                    @endcan
+                </div>
+                @else
+                    {{-- اگر تصویری وجود نداشت، تصویر پیش‌فرض نشون بده --}}
+                    <div class="mb-8">
+                        <div class="w-full h-64 bg-gray-100 rounded-xl flex items-center justify-center">
+                            <div class="text-center">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <p class="mt-2 text-sm text-gray-500">تصویری برای این خودرو وجود ندارد</p>
+                                @can('edit cars')
+                                <a href="{{ route('cars.images', $car) }}" class="mt-2 inline-block text-blue-600 hover:text-blue-800 text-sm">
+                                    افزودن تصویر
+                                </a>
+                                @endcan
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <!-- خلاصه وضعیت خودرو -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     <div class="bg-blue-50 p-4 rounded-lg">
@@ -42,11 +102,11 @@
                     </div>
                     <div class="bg-blue-50 p-4 rounded-lg">
                         <div class="text-sm text-gray-600">قیمت خرید</div>
-                        <div class="text-lg font-bold text-blue-600">{{ fa_currency($car->purchase_price) }} ریال</div>
+                        <div class="text-lg font-bold text-blue-600">{{ fa_currency($car->purchase_price) }}</div>
                     </div>
                     <div class="bg-blue-50 p-4 rounded-lg">
                         <div class="text-sm text-gray-600">کل سرمایه‌گذاری</div>
-                        <div class="text-lg font-bold text-green-600">{{ fa_currency($car->total_invested) }} ریال</div>
+                        <div class="text-lg font-bold text-green-600">{{ fa_currency($car->total_invested) }}</div>
                     </div>
                     <div class="bg-blue-50 p-4 rounded-lg">
                         <div class="text-sm text-gray-600">تعداد سرمایه‌گذاران</div>
@@ -70,7 +130,7 @@
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">سال ساخت:</span>
-                                <div class="text-base font-medium">{{ $car->year }}</div>
+                                <div class="text-base font-medium">{{ fa_number($car->year) }}</div>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">رنگ:</span>
@@ -78,7 +138,7 @@
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">کارکرد:</span>
-                                <div class="text-base font-medium">{{ fa_currency($car->kilometers) }} کیلومتر</div>
+                                <div class="text-base font-medium">{{ fa_number($car->kilometers) }} کیلومتر</div>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">نوع سوخت:</span>
@@ -123,7 +183,7 @@
                                             {{ $investment->investor->full_name }}
                                         </a>
                                     </td>
-                                    <td class="px-6 py-4">{{ fa_currency($investment->amount) }} ریال</td>
+                                    <td class="px-6 py-4">{{ fa_currency($investment->amount) }}</td>
                                     <td class="px-6 py-4">{{ $investment->percentage }}%</td>
                                     <td class="px-6 py-4">{{ $investment->jalali_date ?? $investment->investment_date }}</td>
                                 </tr>
@@ -138,8 +198,8 @@
                             <tfoot class="bg-gray-50">
                                 <tr>
                                     <td colspan="1" class="px-6 py-3 text-left font-bold">جمع کل:</td>
-                                    <td class="px-6 py-3 font-bold text-green-600">{{ fa_currency($car->investments->sum('amount')) }} ریال</td>
-                                    <td class="px-6 py-3 font-bold text-blue-600">{{ fa_currency($car->investments->sum('percentage'), 2) }}%</td>
+                                    <td class="px-6 py-3 font-bold text-green-600">{{ fa_currency($car->investments->sum('amount')) }}</td>
+                                    <td class="px-6 py-3 font-bold text-blue-600">{{ fa_number($car->investments->sum('percentage'), 2) }}%</td>
                                     <td class="px-6 py-3"></td>
                                 </tr>
                             </tfoot>
@@ -155,11 +215,11 @@
                         @php $sale = $car->sales->first(); @endphp
                         <div class="bg-purple-50 p-4 rounded-lg">
                             <div class="text-sm text-gray-600">قیمت فروش</div>
-                            <div class="text-lg font-bold text-purple-600">{{ fa_currency($sale->selling_price) }} ریال</div>
+                            <div class="text-lg font-bold text-purple-600">{{ fa_currency($sale->selling_price) }}</div>
                         </div>
                         <div class="bg-purple-50 p-4 rounded-lg">
                             <div class="text-sm text-gray-600">سود کل</div>
-                            <div class="text-lg font-bold text-green-600">{{ fa_currency($sale->total_profit) }} ریال</div>
+                            <div class="text-lg font-bold text-green-600">{{ fa_currency($sale->total_profit) }}</div>
                         </div>
                         <div class="bg-purple-50 p-4 rounded-lg">
                             <div class="text-sm text-gray-600">تاریخ فروش</div>

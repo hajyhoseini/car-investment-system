@@ -10,21 +10,36 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
+        // ساخت کاربر ادمین
         User::create([
             'name' => 'مدیر سیستم',
             'email' => 'admin@example.com',
             'password' => Hash::make('password'),
-            'email_verified_at' => now(),
+            'phone' => '09123456789',
+            'bio' => 'مدیر اصلی سیستم',
         ]);
 
-        User::create([
-            'name' => 'کاربر تست',
-            'email' => 'user@example.com',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-        ]);
+        // ساخت چند کاربر با فکتوری (اگه فکتوری داری)
+        User::factory(5)->create(); // این ۵ تا کاربر می‌سازه
 
-        // ایجاد 5 کاربر تصادفی
-        User::factory()->count(5)->create();
+        // یا ساخت کاربرای مشخص
+        $users = [
+            [
+                'name' => 'کاربر یک',
+                'email' => 'user1@example.com',
+                'password' => Hash::make('password'),
+                'phone' => '09123456788',
+            ],
+            [
+                'name' => 'کاربر دو',
+                'email' => 'user2@example.com',
+                'password' => Hash::make('password'),
+                'phone' => '09123456787',
+            ],
+        ];
+
+        foreach ($users as $user) {
+            User::create($user);
+        }
     }
 }
