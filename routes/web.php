@@ -10,7 +10,7 @@ use App\Http\Controllers\CarSaleController;
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\LiabilityController;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\PersonController; // اضافه کردن این خط
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -60,6 +60,10 @@ Route::delete('/cars/{car}/images/{image}', [App\Http\Controllers\CarImageContro
         Route::put('/investments/{investment}', [InvestmentController::class, 'update'])->name('investments.update');
     });
     
+Route::middleware(['auth'])->group(function () {
+    Route::resource('people', PersonController::class);
+    Route::get('/people/search', [PersonController::class, 'search'])->name('people.search');
+});
     // -----------------------------------------------------------------
     // مسیرهای ویژه فروش خودرو
     // -----------------------------------------------------------------

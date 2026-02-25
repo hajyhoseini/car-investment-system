@@ -24,7 +24,15 @@ class CarSale extends Model
     {
         return $this->belongsTo(Car::class);
     }
+/**
+ * شخص مرتبط با این فروش (خریدار)
+ */
+public function person(): BelongsTo
+{
+    return $this->belongsTo(Person::class);
+}
 
+// برای سازگاری با عقب، می‌تونیم buyer_name رو هم نگه داریم
     public function calculateInvestorProfits(): array
     {
         $investments = $this->car->investments;
