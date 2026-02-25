@@ -1,5 +1,4 @@
 @extends('layouts.app')
-
 @section('content')
 <div class="py-10 md:py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 md:space-y-10">
@@ -16,7 +15,6 @@
                         در ادامه خلاصه‌ای از وضعیت فعلی سیستم و فعالیت‌های اخیر را مشاهده می‌کنید.
                     </p>
                 </div>
-
                 @if(Auth::check())
                     <div class="bg-white/20 backdrop-blur-sm rounded-xl p-5 text-center min-w-[180px] border border-white/30">
                         <div class="text-sm opacity-90 mb-1">سطح دسترسی شما</div>
@@ -28,8 +26,9 @@
             </div>
         </div>
 
-        <!-- کارت‌های آمار سریع – اعداد کوچکتر + جلوگیری از بیرون زدگی -->
+        <!-- کارت‌های آمار سریع -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
+
             <!-- خودروها -->
             @can('view cars')
             <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
@@ -43,10 +42,10 @@
                         <div class="flex-1 min-w-0">
                             <div class="text-xs text-gray-600 font-medium">خودروها</div>
                             <div class="text-2xl md:text-3xl font-bold text-gray-900 mt-1 truncate">{{fa_number( $totalCars ?? 0) }}</div>
-                        <div class="flex flex-wrap justify-between text-xs mt-1 gap-1">
-    <span class="text-green-600 font-medium">{{ fa_number($availableCars ?? 0) }} موجود</span>
-    <span class="text-red-600 font-medium">{{ fa_number($soldCars ?? 0) }} فروخته</span>
-</div>
+                            <div class="flex flex-wrap justify-between text-xs mt-1 gap-1">
+                                <span class="text-green-600 font-medium">{{ fa_number($availableCars ?? 0) }} موجود</span>
+                                <span class="text-red-600 font-medium">{{ fa_number($soldCars ?? 0) }} فروخته</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -71,13 +70,13 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                         </div>
-                    <div class="flex-1 min-w-0">
-    <div class="text-xs text-gray-600 font-medium">سرمایه‌گذاران</div>
-    <div class="text-2xl md:text-3xl font-bold text-gray-900 mt-1 truncate">{{ fa_number($totalInvestors ?? 0) }}</div>
-    <div class="text-xs text-gray-600 mt-1 truncate">
-        کل سرمایه: {{ fa_currency($totalInvested ?? 0) }}
-    </div>
-</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-xs text-gray-600 font-medium">سرمایه‌گذاران</div>
+                            <div class="text-2xl md:text-3xl font-bold text-gray-900 mt-1 truncate">{{ fa_number($totalInvestors ?? 0) }}</div>
+                            <div class="text-xs text-gray-600 mt-1 truncate">
+                                کل سرمایه: {{ fa_currency($totalInvested ?? 0) }}
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="bg-gray-50 px-5 py-2.5 text-xs text-gray-600 border-t">
@@ -91,10 +90,10 @@
             </div>
             @endcan
 
-            <!-- دارایی‌ها -->
+            <!-- کل دارایی‌ها – اصلاح شده -->
             @can('view assets')
             <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
-                <div class="p-5">
+                <div class="p-5 md:p-6">
                     <div class="flex items-center gap-3">
                         <div class="flex-shrink-0 bg-amber-100 rounded-full p-3">
                             <svg class="h-7 w-7 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,9 +102,9 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="text-xs text-gray-600 font-medium">کل دارایی‌ها</div>
-                          <div class="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mt-1 break-words whitespace-normal max-w-full">
-    {{ fa_currency($totalAssets ?? 0) }} ریال
-</div>
+                            <div class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-gray-900 mt-1.5 leading-tight tracking-tight break-all hyphens-auto max-w-full">
+                                {{ fa_currency($totalAssets ?? 0) }} <span class="text-lg sm:text-xl">ریال</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -120,10 +119,10 @@
             </div>
             @endcan
 
-            <!-- خالص دارایی -->
+            <!-- خالص دارایی – اصلاح شده -->
             @can('view dashboard')
             <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
-                <div class="p-5">
+                <div class="p-5 md:p-6">
                     <div class="flex items-center gap-3">
                         <div class="flex-shrink-0 bg-purple-100 rounded-full p-3">
                             <svg class="h-7 w-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,10 +131,10 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="text-xs text-gray-600 font-medium">خالص دارایی</div>
-                           <div class="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mt-1 break-words whitespace-normal max-w-full">
-    {{ fa_currency($netWorth ?? 0) }} ریال
-</div>
-                            <div class="text-xs text-gray-600 mt-1 truncate">
+                            <div class="text-xl sm:text-2xl lg:text-2xl xl:text-3xl font-bold text-gray-900 mt-1.5 leading-tight tracking-tight break-all hyphens-auto max-w-full">
+                                {{ fa_currency($netWorth ?? 0) }} <span class="text-lg sm:text-xl">ریال</span>
+                            </div>
+                            <div class="text-xs text-gray-600 mt-1.5 truncate">
                                 بدهی‌ها: {{ fa_currency($totalLiabilities ?? 0) }} ریال
                             </div>
                         </div>
@@ -146,6 +145,7 @@
                 </div>
             </div>
             @endcan
+
         </div>
 
         <!-- بخش نمودارها و وضعیت‌ها -->
@@ -470,6 +470,7 @@
             </div>
             @endcan
         </div>
+
 
     </div>
 </div>

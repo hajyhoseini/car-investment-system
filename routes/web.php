@@ -9,6 +9,8 @@ use App\Http\Controllers\InvestmentController;
 use App\Http\Controllers\CarSaleController;
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\LiabilityController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\AccountController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PersonController; // اضافه کردن این خط
 /*
@@ -33,6 +35,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/my-dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
     
+Route::middleware(['auth'])->group(function () {
+    Route::resource('accounts', AccountController::class);
+});
     // -----------------------------------------------------------------
     // منابع اصلی با سطح دسترسی (بدون حذف)
     // -----------------------------------------------------------------
@@ -63,6 +68,19 @@ Route::delete('/cars/{car}/images/{image}', [App\Http\Controllers\CarImageContro
 Route::middleware(['auth'])->group(function () {
     Route::resource('people', PersonController::class);
     Route::get('/people/search', [PersonController::class, 'search'])->name('people.search');
+});
+// routes/web.php
+
+Route::middleware(['auth'])->group(function () {
+    // مسیرهای تراکنش
+    Route::resource('transactions', TransactionController::class);
+    Route::get('/transactions/daily/report', [TransactionController::class, 'dailyReport'])->name('transactions.daily');
+    
+    // مسیرهای حساب
+    Route::resource('accounts', AccountController::class);
+    
+    // مسیرهای روش پرداخت (برای ادمین)
+    Route::resource('payment-methods', PaymentMethodController::class)->except(['show']);
 });
     // -----------------------------------------------------------------
     // مسیرهای ویژه فروش خودرو

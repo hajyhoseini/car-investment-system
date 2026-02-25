@@ -5,65 +5,120 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="bg-white shadow-sm rounded-xl overflow-hidden border border-gray-200">
             <div class="p-6 md:p-8">
-                <!-- هدر + دکمه ایجاد -->
+                <!-- هدر + دکمه‌های ایجاد -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                     <h2 class="text-2xl md:text-3xl font-bold text-gray-800">مدیریت دارایی‌ها</h2>
 
-                    @can('create assets')
-                        <a href="{{ route('assets.create') }}"
-                           class="inline-flex items-center gap-x-2 bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-5 rounded-lg shadow-md transition focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                            افزودن دارایی جدید
-                        </a>
-                    @endcan
+                    <div class="flex flex-wrap gap-3">
+                        @can('create transactions')
+                            <a href="{{ route('transactions.create', ['type' => 'income']) }}"
+                               class="inline-flex items-center gap-x-2 bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-5 rounded-lg shadow-md transition focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                دریافت جدید
+                            </a>
+
+                            <a href="{{ route('transactions.create', ['type' => 'expense']) }}"
+                               class="inline-flex items-center gap-x-2 bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-5 rounded-lg shadow-md transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                                </svg>
+                                پرداخت جدید
+                            </a>
+                        @endcan
+
+                        @can('create assets')
+                            <a href="{{ route('assets.create') }}"
+                               class="inline-flex items-center gap-x-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-5 rounded-lg shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                افزودن دارایی جدید
+                            </a>
+                        @endcan
+                    </div>
                 </div>
 
-                <!-- کارت‌های آماری خلاصه -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
-                    <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 text-center">
-                        <div class="flex justify-center mb-3">
+                <!-- کارت‌های آماری خلاصه روزانه -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+                    <div class="bg-green-50 border border-green-100 rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-sm text-green-700 font-medium">دریافتی امروز</div>
+                                <div class="text-2xl font-bold text-green-800 mt-1">
+                                    {{ fa_currency($todayIncome ?? 0) }}
+                                </div>
+                            </div>
+                            <div class="bg-green-600 rounded-full p-3">
+                                <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-red-50 border border-red-100 rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-sm text-red-700 font-medium">پرداختی امروز</div>
+                                <div class="text-2xl font-bold text-red-800 mt-1">
+                                    {{ fa_currency($todayExpense ?? 0) }}
+                                </div>
+                            </div>
+                            <div class="bg-red-600 rounded-full p-3">
+                                <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50 border border-blue-100 rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-sm text-blue-700 font-medium">موجودی حساب‌ها</div>
+                                <div class="text-2xl font-bold text-blue-800 mt-1">
+                                    {{ fa_currency($assets->where('type', 'bank')->sum('amount')) }}
+                                </div>
+                            </div>
                             <div class="bg-blue-600 rounded-full p-3">
                                 <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6h18M3 12h18M3 18h18" />
                                 </svg>
                             </div>
                         </div>
-                        <div class="text-sm text-blue-700 font-medium">موجودی حساب‌های بانکی</div>
-                        <div class="text-3xl font-bold text-blue-800 mt-2">
-                            {{ fa_currency($assets->where('type', 'bank')->sum('amount')) }}
-                            <span class="text-xl">ریال</span>
-                        </div>
                     </div>
 
-                    <div class="bg-amber-50 border border-amber-100 rounded-xl p-6 text-center">
-                        <div class="flex justify-center mb-3">
+                    <div class="bg-amber-50 border border-amber-100 rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-sm text-amber-700 font-medium">ارزش کل دارایی‌ها</div>
+                                <div class="text-2xl font-bold text-amber-800 mt-1">
+                                    {{ fa_currency($totalValue ?? 0) }}
+                                </div>
+                            </div>
                             <div class="bg-amber-600 rounded-full p-3">
                                 <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
                         </div>
-                        <div class="text-sm text-amber-700 font-medium">ارزش کل دارایی‌ها</div>
-                        <div class="text-3xl font-bold text-amber-800 mt-2">
-                            {{ fa_currency($totalValue ?? 0) }}
-                            <span class="text-xl">ریال</span>
-                        </div>
-                    </div>
-
-                    <div class="bg-purple-50 border border-purple-100 rounded-xl p-6 text-center">
-                        <div class="flex justify-center mb-3">
-                            <div class="bg-purple-600 rounded-full p-3">
-                                <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="text-sm text-purple-700 font-medium">تعداد کل دارایی‌ها</div>
-                        <div class="text-3xl font-bold text-purple-800 mt-2">{{ $assets->count() }}</div>
                     </div>
                 </div>
+
+                <!-- لینک مشاهده همه تراکنش‌ها -->
+                @can('view transactions')
+                <div class="mb-8 flex justify-end">
+                    <a href="{{ route('transactions.index') }}" 
+                       class="text-blue-600 hover:text-blue-800 flex items-center gap-x-1 text-sm font-medium transition">
+                        <span>مشاهده همه تراکنش‌ها</span>
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </div>
+                @endcan
 
                 <!-- حساب‌های بانکی -->
                 <div class="mb-12">
@@ -91,7 +146,16 @@
                                         </div>
                                     </div>
 
-                                    <div class="flex justify-end">
+                                    <div class="flex justify-end gap-2">
+                                        @can('view transactions')
+                                            <a href="{{ route('transactions.index', ['account_id' => $asset->id]) }}"
+                                               class="text-purple-600 hover:text-purple-800 transition flex items-center gap-x-1.5 text-sm font-medium">
+                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                                تراکنش‌ها
+                                            </a>
+                                        @endcan
                                         @can('edit assets')
                                             <a href="{{ route('assets.edit', $asset) }}"
                                                class="text-blue-600 hover:text-blue-800 transition flex items-center gap-x-1.5 text-sm font-medium">
