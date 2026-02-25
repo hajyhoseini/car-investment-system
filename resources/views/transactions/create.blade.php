@@ -29,13 +29,15 @@
                     <input type="hidden" name="type" value="{{ $type }}">
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- مبلغ -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ (ریال) <span class="text-red-500">*</span></label>
-                            <input type="number" name="amount" value="{{ old('amount') }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
-                                   placeholder="مثال: 1000000" min="1000" required>
-                        </div>
+                        <!-- مبلغ - با کامپوننت جدید -->
+                        <x-price-input 
+                            name="amount"
+                            label="مبلغ (ریال)"
+                            :value="old('amount')"
+                            placeholder="مثال: ۱,۰۰۰,۰۰۰"
+                            :min="1000"
+                            :required="true"
+                        />
 
                         <!-- تاریخ تراکنش -->
                         <div>
@@ -48,26 +50,34 @@
                         @if($type === 'income')
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">حساب مقصد (دریافت به) <span class="text-red-500">*</span></label>
-                                <select name="to_account_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" required>
+                                <select name="to_account_id" id="account_select" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" required>
                                     <option value="">انتخاب کنید</option>
                                     @foreach($accounts as $account)
-                                        <option value="{{ $account->id }}" {{ old('to_account_id') == $account->id ? 'selected' : '' }}>
-                                            {{ $account->name }} ({{ number_format($account->balance) }} ریال)
+                                       <option value="{{ $account->id }}" {{ old('to_account_id') == $account->id ? 'selected' : '' }}
+                                            data-balance="{{ $account->current_balance }}">
+                                            {{ $account->name }} (موجودی: {{ number_format($account->current_balance) }} ریال)
                                         </option>
                                     @endforeach
                                 </select>
+                                <p class="text-xs text-gray-500 mt-1" id="balance_preview">
+                                    موجودی پس از دریافت: <span id="balance_after">0</span> ریال
+                                </p>
                             </div>
                         @else
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">حساب مبدأ (پرداخت از) <span class="text-red-500">*</span></label>
-                                <select name="from_account_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" required>
+                                <select name="from_account_id" id="account_select" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" required>
                                     <option value="">انتخاب کنید</option>
                                     @foreach($accounts as $account)
-                                        <option value="{{ $account->id }}" {{ old('from_account_id') == $account->id ? 'selected' : '' }}>
-                                            {{ $account->name }} ({{ number_format($account->balance) }} ریال)
+                                        <option value="{{ $account->id }}" {{ old('from_account_id') == $account->id ? 'selected' : '' }}
+                                                data-balance="{{ $account->current_balance }}">
+                                            {{ $account->name }} (موجودی: {{ number_format($account->current_balance) }} ریال)
                                         </option>
                                     @endforeach
                                 </select>
+                                <p class="text-xs text-gray-500 mt-1" id="balance_preview">
+                                    موجودی پس از پرداخت: <span id="balance_after">0</span> ریال
+                                </p>
                             </div>
                         @endif
 
@@ -168,7 +178,7 @@
 @push('scripts')
 <script>
     // نمایش فیلدهای چک در صورت انتخاب روش پرداخت "چک"
-    document.getElementById('payment_method_id').addEventListener('change', function() {
+    document.getElementById('payment_method_id')?.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
         const checkFields = document.getElementById('check_fields');
         
@@ -177,6 +187,49 @@
         } else {
             checkFields.classList.add('hidden');
         }
+    });
+
+    // محاسبه موجودی پس از تراکنش - آپدیت شده برای کامپوننت جدید
+    document.addEventListener('DOMContentLoaded', function() {
+        // پیدا کردن فیلد مبلغ (مهم: فیلد اصلی با کلاس price-input)
+        const amountInput = document.querySelector('.price-input');
+        const accountSelect = document.getElementById('account_select');
+        const balanceAfterSpan = document.getElementById('balance_after');
+        const transactionType = '{{ $type }}';
+        
+        function updateBalanceAfter() {
+            if (accountSelect && amountInput && balanceAfterSpan) {
+                const selectedOption = accountSelect.options[accountSelect.selectedIndex];
+                const currentBalance = parseFloat(selectedOption?.dataset.balance || 0);
+                
+                // گرفتن مقدار عددی خالص از فیلد قیمت
+                let rawAmount = amountInput.value.replace(/[^0-9]/g, '');
+                const amount = parseFloat(rawAmount || 0);
+                
+                let balanceAfter = currentBalance;
+                if (transactionType === 'income') {
+                    balanceAfter = currentBalance + amount;
+                } else {
+                    balanceAfter = currentBalance - amount;
+                }
+                
+                balanceAfterSpan.textContent = new Intl.NumberFormat('fa-IR').format(balanceAfter);
+            }
+        }
+        
+        // رویداد برای فیلد مبلغ (با تأخیر برای هماهنگی با کامپوننت)
+        if (amountInput) {
+            amountInput.addEventListener('input', function() {
+                setTimeout(updateBalanceAfter, 10);
+            });
+        }
+        
+        if (accountSelect) {
+            accountSelect.addEventListener('change', updateBalanceAfter);
+        }
+        
+        // اجرای اولیه با کمی تأخیر
+        setTimeout(updateBalanceAfter, 100);
     });
 </script>
 @endpush

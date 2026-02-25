@@ -52,6 +52,34 @@ class Asset extends Model
     }
 
     /**
+     * محاسبه موجودی واقعی حساب با احتساب تراکنش‌ها
+     */
+    public function getCurrentBalanceAttribute(): float
+    {
+        if ($this->type !== 'bank') {
+            return $this->amount;
+        }
+        
+        $totalIncome = $this->incomingTransactions()
+            ->where('status', 'completed')
+            ->sum('amount');
+            
+        $totalExpense = $this->outgoingTransactions()
+            ->where('status', 'completed')
+            ->sum('amount');
+        
+        return $this->amount + $totalIncome - $totalExpense;
+    }
+
+    /**
+     * بررسی کفایت موجودی برای پرداخت
+     */
+    public function hasSufficientBalance(float $amount): bool
+    {
+        return $this->current_balance >= $amount;
+    }
+
+    /**
      * دریافت نوع دارایی به فارسی
      */
     public function getTypeLabelAttribute(): string

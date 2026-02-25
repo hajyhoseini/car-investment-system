@@ -65,16 +65,21 @@ class TransactionController extends Controller implements HasMiddleware
         ));
     }
 
-    public function create(Request $request)
-    {
-        $type = $request->get('type', 'income');
-        $accounts = Asset::where('type', 'bank')->where('is_active', true)->get();
-        $people = Person::orderBy('full_name')->get();
-        $paymentMethods = PaymentMethod::where('is_active', true)->get();
-        $assets = Asset::whereIn('type', ['dollar', 'gold'])->get();
+public function create(Request $request)
+{
+    $type = $request->get('type', 'income');
+    
+    // دریافت حساب‌های بانکی فعال
+    $accounts = Asset::where('type', 'bank')
+        ->where('is_active', true)
+        ->get();
+    
+    $people = Person::orderBy('full_name')->get();
+    $paymentMethods = PaymentMethod::where('is_active', true)->get();
+    $assets = Asset::whereIn('type', ['dollar', 'gold'])->get();
 
-        return view('transactions.create', compact('type', 'accounts', 'people', 'paymentMethods', 'assets'));
-    }
+    return view('transactions.create', compact('type', 'accounts', 'people', 'paymentMethods', 'assets'));
+}
 
     public function store(Request $request)
     {
