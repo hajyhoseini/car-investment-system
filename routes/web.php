@@ -11,8 +11,9 @@ use App\Http\Controllers\AssetController;
 use App\Http\Controllers\LiabilityController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\PersonController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PersonController; // اضافه کردن این خط
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -35,23 +36,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/my-dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
     
-Route::middleware(['auth'])->group(function () {
-    Route::resource('accounts', AccountController::class);
-});
     // -----------------------------------------------------------------
-    // منابع اصلی با سطح دسترسی (بدون حذف)
+    // منابع اصلی با سطح دسترسی
     // -----------------------------------------------------------------
     Route::resource('cars', CarController::class);
-    Route::resource('investors', InvestorController::class)->except(['destroy']);
-    Route::resource('investments', InvestmentController::class)->except(['destroy']);
+    Route::resource('investors', InvestorController::class);
+    Route::resource('investments', InvestmentController::class);
     Route::resource('car-sales', CarSaleController::class);
-    Route::resource('assets', AssetController::class)->except(['destroy']);
-    Route::resource('liabilities', LiabilityController::class)->except(['destroy']);
+    Route::resource('assets', AssetController::class); // بدون except
+    Route::resource('liabilities', LiabilityController::class);
+    Route::resource('people', PersonController::class);
+    
+    // -----------------------------------------------------------------
     // مسیرهای مدیریت تصاویر خودرو
-Route::get('/cars/{car}/images', [App\Http\Controllers\CarImageController::class, 'index'])->name('cars.images');
-Route::post('/cars/{car}/images', [App\Http\Controllers\CarImageController::class, 'store'])->name('cars.images.store');
-Route::post('/cars/{car}/images/{image}/primary', [App\Http\Controllers\CarImageController::class, 'setPrimary'])->name('cars.images.primary');
-Route::delete('/cars/{car}/images/{image}', [App\Http\Controllers\CarImageController::class, 'destroy'])->name('cars.images.destroy');
+    // -----------------------------------------------------------------
+    Route::get('/cars/{car}/images', [App\Http\Controllers\CarImageController::class, 'index'])->name('cars.images');
+    Route::post('/cars/{car}/images', [App\Http\Controllers\CarImageController::class, 'store'])->name('cars.images.store');
+    Route::post('/cars/{car}/images/{image}/primary', [App\Http\Controllers\CarImageController::class, 'setPrimary'])->name('cars.images.primary');
+    Route::delete('/cars/{car}/images/{image}', [App\Http\Controllers\CarImageController::class, 'destroy'])->name('cars.images.destroy');
+    
     // -----------------------------------------------------------------
     // مسیرهای اختصاصی برای نمایش جزئیات با بررسی مالکیت
     // -----------------------------------------------------------------
@@ -65,23 +68,18 @@ Route::delete('/cars/{car}/images/{image}', [App\Http\Controllers\CarImageContro
         Route::put('/investments/{investment}', [InvestmentController::class, 'update'])->name('investments.update');
     });
     
-Route::middleware(['auth'])->group(function () {
-    Route::resource('people', PersonController::class);
-    Route::get('/people/search', [PersonController::class, 'search'])->name('people.search');
-});
-// routes/web.php
-
-Route::middleware(['auth'])->group(function () {
-    // مسیرهای تراکنش
+    // -----------------------------------------------------------------
+    // مسیرهای تراکنش و حساب
+    // -----------------------------------------------------------------
     Route::resource('transactions', TransactionController::class);
     Route::get('/transactions/daily/report', [TransactionController::class, 'dailyReport'])->name('transactions.daily');
-    
-    // مسیرهای حساب
     Route::resource('accounts', AccountController::class);
     
+    // -----------------------------------------------------------------
     // مسیرهای روش پرداخت (برای ادمین)
+    // -----------------------------------------------------------------
     Route::resource('payment-methods', PaymentMethodController::class)->except(['show']);
-});
+    
     // -----------------------------------------------------------------
     // مسیرهای ویژه فروش خودرو
     // -----------------------------------------------------------------
@@ -94,20 +92,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/car-sales/{carSale}/profits', [CarSaleController::class, 'investorProfits'])->name('car-sales.profits');
     
     // -----------------------------------------------------------------
-    // مسیرهای مخصوص ادمین (حذف و مدیریت)
+    // مسیرهای مخصوص ادمین (حذف و مدیریت) - این بخش رو می‌تونیم حذف کنیم
+    // چون routeهای resource خودشون متد destroy رو دارند
     // -----------------------------------------------------------------
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
-        
-        // مجوزهای حذف
-        Route::delete('/cars/{car}', [CarController::class, 'destroy'])->name('cars.destroy');
-        Route::delete('/investors/{investor}', [InvestorController::class, 'destroy'])->name('investors.destroy');
-        Route::delete('/investments/{investment}', [InvestmentController::class, 'destroy'])->name('investments.destroy');
-        Route::delete('/assets/{asset}', [AssetController::class, 'destroy'])->name('assets.destroy');
-        Route::delete('/liabilities/{liability}', [LiabilityController::class, 'destroy'])->name('liabilities.destroy');
-        
         // مدیریت کاربران
         Route::resource('users', App\Http\Controllers\Admin\UserController::class);
     });
+    
+    // -----------------------------------------------------------------
+    // مسیر جستجوی اشخاص
+    // -----------------------------------------------------------------
+    Route::get('/people/search', [PersonController::class, 'search'])->name('people.search');
 });
 
 // =============================================
@@ -117,7 +113,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    
 });
 
 // مسیرهای احراز هویت

@@ -101,14 +101,6 @@
                             </button>
 {{-- داخل منوی کشویی مدیریت مالی --}}
 <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-xl py-1.5 z-50 border border-gray-200 text-sm">
-    @can('view accounts')
-        <a href="{{ route('accounts.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 transition flex items-center gap-x-2">
-            <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-            </svg>
-            {{ __('حساب‌ها') }}
-        </a>
-    @endcan
     @can('view assets')
         <a href="{{ route('assets.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 transition flex items-center gap-x-2">
             <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -23,32 +23,65 @@ class AssetController extends Controller implements HasMiddleware
     /**
      * نمایش لیست دارایی‌ها
      */
-    public function index()
-    {
-        $assets = Asset::latest()->get();
-        $totalValue = $assets->sum(function($asset) {
-            return $asset->value ?? $asset->amount;
-        });
+public function index()
+{
+    $assets = Asset::latest()->get();
+    
+    // محاسبه ارزش کل دارایی‌ها
+    $totalValue = $assets->sum(function($asset) {
+        return $asset->value ?? $asset->amount;
+    });
+    
+    // محاسبه آمار امروز
+    $today = now()->toDateString();
+    $todayIncome = Transaction::whereDate('transaction_date', $today)
+        ->where('type', 'income')
+        ->where('status', 'completed')
+        ->sum('amount');
         
-        // محاسبه آمار امروز
-        $today = now()->toDateString();
-        $todayIncome = Transaction::whereDate('transaction_date', $today)
-            ->where('type', 'income')
-            ->where('status', 'completed')
-            ->sum('amount');
-            
-        $todayExpense = Transaction::whereDate('transaction_date', $today)
-            ->where('type', 'expense')
-            ->where('status', 'completed')
-            ->sum('amount');
+    $todayExpense = Transaction::whereDate('transaction_date', $today)
+        ->where('type', 'expense')
+        ->where('status', 'completed')
+        ->sum('amount');
+    
+    // تفکیک دارایی‌ها بر اساس نوع
+    $bankAccounts = $assets->where('type', 'bank');
+    $dollarAssets = $assets->where('type', 'dollar');
+    $goldAssets = $assets->where('type', 'gold');
+    
+    // محاسبه موجودی واقعی حساب‌های بانکی (با احتساب تراکنش‌ها)
+    $totalBankBalance = 0;
+    $bankAccountsWithBalance = $bankAccounts->map(function($account) use (&$totalBankBalance) {
+        // بارگذاری تراکنش‌ها برای جلوگیری از N+1
+        $account->load(['incomingTransactions' => function($query) {
+            $query->where('status', 'completed');
+        }, 'outgoingTransactions' => function($query) {
+            $query->where('status', 'completed');
+        }]);
         
-        return view('assets.index', compact(
-            'assets', 
-            'totalValue',
-            'todayIncome',
-            'todayExpense'
-        ));
-    }
+        // محاسبه مجموع دریافتی‌ها به این حساب
+        $totalIncome = $account->incomingTransactions->sum('amount');
+        
+        // محاسبه مجموع پرداخت‌ها از این حساب
+        $totalExpense = $account->outgoingTransactions->sum('amount');
+        
+        // موجودی نهایی = موجودی اولیه + کل دریافتی - کل پرداختی
+        $account->current_balance = $account->amount + $totalIncome - $totalExpense;
+        $totalBankBalance += $account->current_balance;
+        
+        return $account;
+    });
+    
+    return view('assets.index', compact(
+        'bankAccountsWithBalance',
+        'dollarAssets',
+        'goldAssets',
+        'totalValue',
+        'todayIncome',
+        'todayExpense',
+        'totalBankBalance'
+    ));
+}
 
     /**
      * فرم ایجاد دارایی جدید
