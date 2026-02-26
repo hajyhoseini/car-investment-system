@@ -200,16 +200,17 @@
                         </div>
 
                         <!-- موجودی -->
-                        <div class="text-right shrink-0 mr-4">
-                            <div class="text-2xl font-bold text-blue-700">
-                                {{ fa_currency($account->current_balance) }}
-                            </div>
-                            <div class="text-xs text-gray-500 mt-1 flex flex-col items-end">
-                                <span>موجودی اولیه: {{ fa_currency($account->amount) }}</span>
-                                <span class="text-green-600">+ دریافتی: {{ fa_currency($account->incomingTransactions->sum('amount')) }}</span>
-                                <span class="text-red-600">- پرداختی: {{ fa_currency($account->outgoingTransactions->sum('amount')) }}</span>
-                            </div>
-                        </div>
+<!-- موجودی -->
+<div class="text-right shrink-0 mr-4">
+    <div class="text-2xl font-bold text-blue-700">
+        {{ fa_currency($account->current_balance) }}
+    </div>
+    <div class="text-xs text-gray-500 mt-1 flex flex-col items-end">
+        <span>موجودی اولیه: {{ fa_currency($account->amount) }}</span>
+        <span class="text-green-600">+ دریافتی: {{ fa_currency($account->incomingTransactions->sum('amount')) }}</span>
+        <span class="text-red-600">- پرداختی: {{ fa_currency($account->outgoingTransactions->sum('amount')) }}</span>
+    </div>
+</div>
                     </div>
 
                     <!-- دکمه‌های عملیات -->
@@ -253,11 +254,11 @@
             @endforeach
         </div>
 
-        <!-- جمع کل موجودی حساب‌ها -->
-        <div class="mt-6 p-4 bg-blue-50 rounded-lg flex justify-between items-center">
-            <span class="text-blue-800 font-medium">جمع کل موجودی حساب‌های بانکی:</span>
-            <span class="text-2xl font-bold text-blue-800">{{ fa_currency($totalBankBalance) }}</span>
-        </div>
+<!-- جمع کل موجودی حساب‌ها -->
+<div class="mt-6 p-4 bg-blue-50 rounded-lg flex justify-between items-center">
+    <span class="text-blue-800 font-medium">جمع کل موجودی حساب‌های بانکی:</span>
+    <span class="text-2xl font-bold text-blue-800">{{ fa_currency($totalBankBalance) }}</span>
+</div>
     @else
         <div class="bg-gray-50 border border-gray-200 rounded-xl p-10 text-center text-gray-500">
             <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

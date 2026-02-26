@@ -53,12 +53,16 @@ class Asset extends Model
 
     /**
      * محاسبه موجودی واقعی حساب با احتساب تراکنش‌ها
+     * این متد فقط برای نمایش هست و amount رو تغییر نمی‌ده
      */
     public function getCurrentBalanceAttribute(): float
     {
         if ($this->type !== 'bank') {
             return $this->amount;
         }
+        
+        // 🚨 اینجا دیگه amount رو اضافه نکن!
+        // چون amount خودش توی store آپدیت شده
         
         $totalIncome = $this->incomingTransactions()
             ->where('status', 'completed')
@@ -68,7 +72,8 @@ class Asset extends Model
             ->where('status', 'completed')
             ->sum('amount');
         
-        return $this->amount + $totalIncome - $totalExpense;
+        // فقط تراکنش‌ها رو جمع بزن
+        return $this->amount;
     }
 
     /**
@@ -125,6 +130,33 @@ class Asset extends Model
         }
         
         return $this->value ? number_format($this->value) . ' ریال' : '—';
+    }
+
+    /**
+     * بازگردانی موجودی به حالت واقعی بر اساس تراکنش‌ها
+     * (برای مواقعی که نیاز به اصلاح دیتا داریم)
+     */
+    public function fixBalance(): void
+    {
+        $totalIncome = $this->incomingTransactions()
+            ->where('status', 'completed')
+            ->sum('amount');
+            
+        $totalExpense = $this->outgoingTransactions()
+            ->where('status', 'completed')
+            ->sum('amount');
+        
+        // موجودی اولیه رو از دیتابیس می‌گیریم نه از $this->amount
+        $originalAmount = $this->getOriginal('amount');
+        
+        // مقدار درست = موجودی اولیه + کل دریافتی - کل پرداختی
+        $correctAmount = $originalAmount + $totalIncome - $totalExpense;
+        
+        // اگه فرق داره، اصلاحش کن
+        if ($this->amount != $correctAmount) {
+            $this->amount = $correctAmount;
+            $this->saveQuietly();
+        }
     }
 
     /**

@@ -49,25 +49,19 @@ public function index()
     $dollarAssets = $assets->where('type', 'dollar');
     $goldAssets = $assets->where('type', 'gold');
     
-    // محاسبه موجودی واقعی حساب‌های بانکی (با احتساب تراکنش‌ها)
+    // محاسبه موجودی واقعی حساب‌های بانکی
     $totalBankBalance = 0;
     $bankAccountsWithBalance = $bankAccounts->map(function($account) use (&$totalBankBalance) {
-        // بارگذاری تراکنش‌ها برای جلوگیری از N+1
+        // بارگذاری تراکنش‌ها برای نمایش (اختیاری)
         $account->load(['incomingTransactions' => function($query) {
             $query->where('status', 'completed');
         }, 'outgoingTransactions' => function($query) {
             $query->where('status', 'completed');
         }]);
         
-        // محاسبه مجموع دریافتی‌ها به این حساب
-        $totalIncome = $account->incomingTransactions->sum('amount');
-        
-        // محاسبه مجموع پرداخت‌ها از این حساب
-        $totalExpense = $account->outgoingTransactions->sum('amount');
-        
-        // موجودی نهایی = موجودی اولیه + کل دریافتی - کل پرداختی
-        $account->current_balance = $account->amount + $totalIncome - $totalExpense;
-        $totalBankBalance += $account->current_balance;
+        // ✅ فقط از amount استفاده کن (که توی store آپدیت شده)
+        $account->current_balance = $account->amount;
+        $totalBankBalance += $account->amount;
         
         return $account;
     });
@@ -82,7 +76,6 @@ public function index()
         'totalBankBalance'
     ));
 }
-
     /**
      * فرم ایجاد دارایی جدید
      */
