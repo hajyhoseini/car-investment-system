@@ -12,6 +12,7 @@ use App\Http\Controllers\LiabilityController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\PersonController;
+use App\Http\Controllers\ExpenseController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -43,9 +44,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('investors', InvestorController::class);
     Route::resource('investments', InvestmentController::class);
     Route::resource('car-sales', CarSaleController::class);
-    Route::resource('assets', AssetController::class); // بدون except
+    Route::resource('assets', AssetController::class);
     Route::resource('liabilities', LiabilityController::class);
     Route::resource('people', PersonController::class);
+    Route::resource('expenses', ExpenseController::class);
     
     // -----------------------------------------------------------------
     // مسیرهای مدیریت تصاویر خودرو
@@ -65,7 +67,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['owner:investment'])->group(function () {
         Route::get('/investments/{investment}', [InvestmentController::class, 'show'])->name('investments.show');
         Route::get('/investments/{investment}/edit', [InvestmentController::class, 'edit'])->name('investments.edit');
-        Route::put('/investments/{investment}', [InvestmentController::class, 'update'])->name('investments.update');
+        // **این خط رو حذف کردیم چون Route::resource قبلاً ایجادش کرده**
+        // Route::put('/investments/{investment}', [InvestmentController::class, 'update'])->name('investments.update');
     });
     
     // -----------------------------------------------------------------
@@ -92,8 +95,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/car-sales/{carSale}/profits', [CarSaleController::class, 'investorProfits'])->name('car-sales.profits');
     
     // -----------------------------------------------------------------
-    // مسیرهای مخصوص ادمین (حذف و مدیریت) - این بخش رو می‌تونیم حذف کنیم
-    // چون routeهای resource خودشون متد destroy رو دارند
+    // مسیرهای مخصوص ادمین
     // -----------------------------------------------------------------
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
         // مدیریت کاربران

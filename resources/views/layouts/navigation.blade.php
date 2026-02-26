@@ -113,42 +113,53 @@
                     @endcan
 
                     <!-- منوی کشویی مدیریت مالی (تبلت به بالا) -->
-                    @if(auth()->user()->can('view assets') || auth()->user()->can('view liabilities'))
-                        <div class="relative" x-data="{ financialOpen: false }">
-                            <button @click="financialOpen = !financialOpen" @click.away="financialOpen = false" 
-                                class="flex items-center gap-1 px-2 lg:px-2.5 xl:px-3 py-1.5 lg:py-2 text-xs lg:text-sm xl:text-base rounded-lg hover:bg-blue-50 transition whitespace-nowrap text-gray-700 hover:text-gray-900">
-                                <svg class="h-3.5 w-3.5 lg:h-4 lg:w-4 xl:h-4.5 xl:w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                </svg>
-                                <span class="hidden lg:inline">مدیریت مالی</span>
-                                <span class="lg:hidden">مالی</span>
-                                <svg class="h-3 w-3 lg:h-3.5 lg:w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </button>
-                            
-                            <!-- منوی کشویی مالی -->
-                            <div x-show="financialOpen" @click.away="financialOpen = false" 
-                                class="absolute right-0 mt-2 w-44 lg:w-48 bg-white rounded-lg shadow-xl py-1.5 z-50 border border-gray-200 text-xs lg:text-sm">
-                                @can('view assets')
-                                    <a href="{{ route('assets.index') }}" class="block px-3 lg:px-4 py-2 text-gray-700 hover:bg-blue-50 transition flex items-center gap-2">
-                                        <svg class="h-4 w-4 lg:h-5 lg:w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        دارایی‌ها
-                                    </a>
-                                @endcan
-                                @can('view liabilities')
-                                    <a href="{{ route('liabilities.index') }}" class="block px-3 lg:px-4 py-2 text-gray-700 hover:bg-blue-50 transition flex items-center gap-2">
-                                        <svg class="h-4 w-4 lg:h-5 lg:w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        تعهدات
-                                    </a>
-                                @endcan
-                            </div>
-                        </div>
-                    @endif
+                   @if(auth()->user()->can('view assets') || auth()->user()->can('view liabilities') || auth()->user()->can('view expenses'))
+    <div class="relative" x-data="{ financialOpen: false }">
+        <button @click="financialOpen = !financialOpen" @click.away="financialOpen = false" 
+            class="flex items-center gap-1 px-2 lg:px-2.5 xl:px-3 py-1.5 lg:py-2 text-xs lg:text-sm xl:text-base rounded-lg hover:bg-blue-50 transition whitespace-nowrap text-gray-700 hover:text-gray-900">
+            <svg class="h-3.5 w-3.5 lg:h-4 lg:w-4 xl:h-4.5 xl:w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            <span class="hidden lg:inline">مدیریت مالی</span>
+            <span class="lg:hidden">مالی</span>
+            <svg class="h-3 w-3 lg:h-3.5 lg:w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+        </button>
+        
+        <!-- منوی کشویی مالی -->
+        <div x-show="financialOpen" @click.away="financialOpen = false" 
+            class="absolute right-0 mt-2 w-44 lg:w-48 bg-white rounded-lg shadow-xl py-1.5 z-50 border border-gray-200 text-xs lg:text-sm">
+            
+            @can('view assets')
+                <a href="{{ route('assets.index') }}" class="block px-3 lg:px-4 py-2 text-gray-700 hover:bg-blue-50 transition flex items-center gap-2">
+                    <svg class="h-4 w-4 lg:h-5 lg:w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    دارایی‌ها
+                </a>
+            @endcan
+            
+            @can('view liabilities')
+                <a href="{{ route('liabilities.index') }}" class="block px-3 lg:px-4 py-2 text-gray-700 hover:bg-blue-50 transition flex items-center gap-2">
+                    <svg class="h-4 w-4 lg:h-5 lg:w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    تعهدات
+                </a>
+            @endcan
+
+            @can('view expenses')
+                <a href="{{ route('expenses.index') }}" class="block px-3 lg:px-4 py-2 text-gray-700 hover:bg-orange-50 transition flex items-center gap-2">
+                    <svg class="h-4 w-4 lg:h-5 lg:w-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    هزینه‌ها
+                </a>
+            @endcan
+        </div>
+    </div>
+@endif
                 </div>
             </div>
 
