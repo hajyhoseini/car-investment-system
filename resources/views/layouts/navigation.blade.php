@@ -112,8 +112,8 @@
                         </x-nav-link>
                     @endcan
 
-                    <!-- منوی کشویی مدیریت مالی (تبلت به بالا) -->
-                   @if(auth()->user()->can('view assets') || auth()->user()->can('view liabilities') || auth()->user()->can('view expenses'))
+<!-- منوی کشویی مدیریت مالی (تبلت به بالا) -->
+@if(auth()->user()->can('view assets') || auth()->user()->can('view liabilities') || auth()->user()->can('view expenses') || auth()->user()->can('view receivables'))
     <div class="relative" x-data="{ financialOpen: false }">
         <button @click="financialOpen = !financialOpen" @click.away="financialOpen = false" 
             class="flex items-center gap-1 px-2 lg:px-2.5 xl:px-3 py-1.5 lg:py-2 text-xs lg:text-sm xl:text-base rounded-lg hover:bg-blue-50 transition whitespace-nowrap text-gray-700 hover:text-gray-900">
@@ -155,6 +155,15 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
                     هزینه‌ها
+                </a>
+            @endcan
+
+            @can('view receivables')
+                <a href="{{ route('receivables.index') }}" class="block px-3 lg:px-4 py-2 text-gray-700 hover:bg-purple-50 transition flex items-center gap-2">
+                    <svg class="h-4 w-4 lg:h-5 lg:w-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                    </svg>
+                    مطالبات
                 </a>
             @endcan
         </div>
