@@ -34,12 +34,12 @@
                                    placeholder="مثال: فروش خودرو" required>
                         </div>
 
-                        <!-- مبلغ -->
+                        <!-- مبلغ (با ویرگول فارسی) -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ <span class="text-red-500">*</span></label>
-                            <input type="number" name="amount" id="amount" value="{{ old('amount') }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" 
-                                   placeholder="مثال: 5000000" min="1000" required>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ (ریال) <span class="text-red-500">*</span></label>
+                            <input type="text" name="amount" id="amount" value="{{ old('amount') }}" 
+                                   class="price-format w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" 
+                                   placeholder="مثال: ۵,۰۰۰,۰۰۰" required>
                         </div>
 
                         <!-- نوع مطالبه -->
@@ -68,24 +68,29 @@
                             </select>
                         </div>
 
-                        <!-- تاریخ مطالبه -->
+                        <!-- تاریخ مطالبه (شمسی) -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ مطالبه <span class="text-red-500">*</span></label>
-                            <input type="date" name="receivable_date" value="{{ old('receivable_date', now()->format('Y-m-d')) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" required>
+                            <input type="text" name="receivable_date" id="receivable_date" 
+                                   value="{{ old('receivable_date', now_jalali('Y/m/d')) }}" 
+                                   class="jalali-datepicker w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" 
+                                   placeholder="مثال: ۱۴۰۲/۱۲/۲۵" autocomplete="off" required>
+                            <p class="text-xs text-gray-500 mt-1">تاریخ را به فرمت شمسی وارد کنید</p>
                         </div>
 
-                        <!-- تاریخ سررسید -->
+                        <!-- تاریخ سررسید (شمسی) -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ سررسید</label>
-                            <input type="date" name="due_date" value="{{ old('due_date') }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                            <input type="text" name="due_date" id="due_date" value="{{ old('due_date') }}" 
+                                   class="jalali-datepicker w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" 
+                                   placeholder="مثال: ۱۴۰۲/۱۲/۲۵" autocomplete="off">
+                            <p class="text-xs text-gray-500 mt-1">تاریخ را به فرمت شمسی وارد کنید</p>
                         </div>
 
                         <!-- وضعیت -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">وضعیت <span class="text-red-500">*</span></label>
-                            <select name="status" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" required>
+                            <select name="status" id="status" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" required>
                                 <option value="pending" {{ old('status') == 'pending' ? 'selected' : '' }}>در انتظار</option>
                                 <option value="partially_paid" {{ old('status') == 'partially_paid' ? 'selected' : '' }}>پرداخت جزئی</option>
                                 <option value="paid" {{ old('status') == 'paid' ? 'selected' : '' }}>تسویه شده</option>
@@ -94,10 +99,10 @@
 
                         <!-- مبلغ پرداخت شده (برای وضعیت پرداخت جزئی) -->
                         <div id="paid_amount_field" class="hidden">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ پرداخت شده</label>
-                            <input type="number" name="paid_amount" id="paid_amount" value="{{ old('paid_amount') }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" 
-                                   min="0">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ پرداخت شده (ریال)</label>
+                            <input type="text" name="paid_amount" id="paid_amount" value="{{ old('paid_amount') }}" 
+                                   class="price-format w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" 
+                                   placeholder="مثال: ۲,۰۰۰,۰۰۰">
                         </div>
 
                         <!-- فیلدهای اختصاصی بر اساس نوع -->
@@ -114,8 +119,9 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ چک</label>
-                                <input type="date" name="currency_details[check_date]" 
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500">
+                                <input type="text" name="currency_details[check_date]" id="check_date"
+                                       class="jalali-datepicker w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500" 
+                                       placeholder="مثال: ۱۴۰۲/۱۲/۲۵" autocomplete="off">
                             </div>
                         </div>
 
@@ -140,8 +146,9 @@
                         <div id="dollar_fields" class="hidden col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">نرخ ارز (ریال)</label>
-                                <input type="number" name="currency_details[exchange_rate]" 
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500">
+                                <input type="text" name="currency_details[exchange_rate]" 
+                                       class="price-format w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500" 
+                                       placeholder="مثال: ۶۰۰,۰۰۰">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">توضیحات</label>
@@ -184,9 +191,34 @@
         </div>
     </div>
 </div>
+@endsection
 
 @push('scripts')
+<script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
+<script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+
 <script>
+    $(document).ready(function() {
+        // تقویم شمسی برای همه فیلدهای تاریخ
+        $('.jalali-datepicker').persianDatepicker({
+            format: 'YYYY/MM/DD',
+            autoClose: true,
+            initialValue: true,
+            calendar: {
+                persian: true
+            }
+        });
+
+        // فرمت عدد با ویرگول
+        $('.price-format').on('input', function() {
+            let value = this.value.replace(/[^\d]/g, '');
+            if (value) {
+                this.value = Number(value).toLocaleString('en-US');
+            }
+        });
+    });
+
     // نمایش/مخفی کردن فیلدهای اختصاصی بر اساس نوع
     document.getElementById('currency_type').addEventListener('change', function() {
         const type = this.value;
@@ -207,24 +239,15 @@
     });
 
     // نمایش/مخفی کردن فیلد مبلغ پرداخت شده بر اساس وضعیت
-    document.querySelector('select[name="status"]').addEventListener('change', function() {
+    document.getElementById('status').addEventListener('change', function() {
         const status = this.value;
         const paidField = document.getElementById('paid_amount_field');
-        const amount = parseFloat(document.getElementById('amount').value) || 0;
         
         if (status === 'partially_paid') {
             paidField.classList.remove('hidden');
-            document.getElementById('paid_amount').max = amount;
         } else {
             paidField.classList.add('hidden');
         }
     });
-
-    // تنظیم max برای paid_amount بر اساس amount
-    document.getElementById('amount').addEventListener('input', function() {
-        const amount = parseFloat(this.value) || 0;
-        document.getElementById('paid_amount').max = amount;
-    });
 </script>
 @endpush
-@endsection

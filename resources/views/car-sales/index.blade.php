@@ -56,10 +56,12 @@
                                 <td class="px-6 py-4 whitespace-nowrap font-bold text-purple-600">{{ fa_currency($sale->total_profit) }} ریال</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-                                        {{ fa_currency(($sale->total_profit / $sale->car->purchase_price) * 100, 1) }}%
+                                        {{ fa_number(($sale->total_profit / $sale->car->purchase_price) * 100, 1) }}%
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $sale->sale_date }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {{ jalali_date($sale->sale_date) }}
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $sale->buyer_name }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <a href="{{ route('car-sales.profits', $sale) }}" class="text-indigo-600 hover:text-indigo-900 ml-2" title="گزارش سود سرمایه‌گذاران">

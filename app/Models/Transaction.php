@@ -5,8 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Transaction extends Model
+class Transaction extends BaseModel
 {
+    protected $jalaliDates = ['transaction_date', 'check_date'];
     protected $fillable = [
         'transaction_number',
         'type',

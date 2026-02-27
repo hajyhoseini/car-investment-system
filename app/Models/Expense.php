@@ -6,8 +6,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Expense extends Model
+class Expense extends BaseModel
 {
+    protected $jalaliDates = ['expense_date'];
     protected $fillable = [
         'title',
         'description',

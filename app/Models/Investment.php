@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Investment extends Model
+class Investment extends BaseModel
 {
+    protected $jalaliDates = ['investment_date'];
+
     protected $fillable = [
         'car_id',
         'investor_id',
@@ -16,7 +17,7 @@ class Investment extends Model
     ];
 
     protected $casts = [
-        'investment_date' => 'date'
+        'investment_date' => 'datetime',  // ✅ تغییر به datetime
     ];
 
     public function car(): BelongsTo

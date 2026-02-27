@@ -6,8 +6,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Receivable extends Model
+class Receivable extends BaseModel
 {
+    protected $jalaliDates = ['receivable_date', 'due_date'];
     protected $fillable = [
         'title',
         'description',

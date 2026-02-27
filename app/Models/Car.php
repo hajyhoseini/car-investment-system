@@ -6,8 +6,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Car extends Model
+class Car extends BaseModel
 {
+    protected $jalaliDates = ['purchase_date'];
     protected $fillable = [
         'title',
         'brand',
@@ -23,9 +24,12 @@ class Car extends Model
         'status'
     ];
 
-    protected $casts = [
-        'purchase_date' => 'date'
-    ];
+
+protected $casts = [
+    'purchase_date' => 'datetime',
+    'created_at' => 'datetime',
+    'updated_at' => 'datetime',
+];
 
     public function investments(): HasMany
     {
@@ -103,4 +107,16 @@ class Car extends Model
         if ($this->purchase_price <= 0) return 0;
         return ($this->total_invested / $this->purchase_price) * 100;
     }
+    // در مدل Car مثلاً
+
+
+public function getCreatedAtJalaliAttribute()
+{
+    return jalali_datetime($this->created_at);
+}
+
+public function getUpdatedAtJalaliAttribute()
+{
+    return jalali_datetime($this->updated_at);
+}
 }

@@ -31,7 +31,7 @@
 
                     <div class="bg-green-50 border border-green-100 rounded-xl p-5 text-center">
                         <div class="text-sm text-green-700 font-medium mb-1">تعداد سرمایه‌گذاری‌ها</div>
-                        <div class="text-3xl font-bold text-green-800">{{ $investments->count() }}</div>
+                        <div class="text-3xl font-bold text-green-800">{{ $investments->total() }}</div>
                     </div>
 
                     <div class="bg-purple-50 border border-purple-100 rounded-xl p-5 text-center">
@@ -51,7 +51,7 @@
                                 <th class="px-4 py-3.5 text-right text-sm font-semibold text-gray-700">سرمایه‌گذار</th>
                                 <th class="px-4 py-3.5 text-right text-sm font-semibold text-gray-700">مبلغ سرمایه‌گذاری</th>
                                 <th class="px-4 py-3.5 text-right text-sm font-semibold text-gray-700">درصد مشارکت</th>
-                                <th class="px-4 py-3.5 text-right text-sm font-semibold text-gray-700 hidden md:table-cell">تاریخ سرمایه‌گذاری</th>
+                                <th class="px-4 py-3.5 text-right text-sm font-semibold text-gray-700">تاریخ سرمایه‌گذاری</th>
                                 <th class="px-4 py-3.5 text-right text-sm font-semibold text-gray-700">عملیات</th>
                             </tr>
                         </thead>
@@ -78,10 +78,15 @@
                                             {{ fa_currency($investment->percentage ?? 0, 2) }}%
                                         </span>
                                     </td>
-                                    {{-- در بخش نمایش تاریخ --}}
-<td class="px-6 py-4 whitespace-nowrap">
-    {{ $investment->jalali_date ?? $investment->investment_date }}
+                               
+
+<td>
+    <div class="flex flex-col">
+        <span>{{ jalali_date($investment->investment_date) }}</span>
+        <span class="text-xs text-gray-500">{{ jalali_time($investment->investment_date) }}</span>
+    </div>
 </td>
+
                                     <td class="px-4 py-4 text-sm font-medium">
                                         <div class="flex items-center gap-x-3">
                                             @can('view investments')

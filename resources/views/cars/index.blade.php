@@ -58,6 +58,7 @@
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">مدل</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">سال</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاریخ خرید</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاریخ ثبت</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">قیمت خرید</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">وضعیت سرمایه</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">وضعیت</th>
@@ -90,7 +91,13 @@
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $car->brand }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $car->model }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ fa_number($car->year) }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ fa_number($car->jalali_purchase_date ?? $car->purchase_date) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ jalali_date($car->purchase_date) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex flex-col">
+                                        <span>{{ jalali_date($car->created_at) }}</span>
+                                        <span class="text-xs text-gray-500">{{ jalali_time($car->created_at) }}</span>
+                                    </div>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap font-bold text-blue-600">{{ fa_currency($car->purchase_price) }}</td>
                                
                                 <td class="px-6 py-4 whitespace-nowrap">
