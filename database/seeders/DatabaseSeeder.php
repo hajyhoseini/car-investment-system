@@ -10,13 +10,15 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             UserSeeder::class,
+            RolePermissionSeeder::class, // اگه قبلی داری
             CarSeeder::class,
-            RolePermissionSeeder::class, 
             InvestorSeeder::class,
             InvestmentSeeder::class,
             CarSaleSeeder::class,
             AssetSeeder::class,
             LiabilitySeeder::class,
+            PaymentMethodSeeder::class,
+            PermissionSeeder::class, // سیدر جدید
         ]);
     }
 }

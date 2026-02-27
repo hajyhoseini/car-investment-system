@@ -34,6 +34,14 @@
     </svg>
     هزینه جدید
 </a>
+<!-- در هدر صفحه دارایی‌ها، کنار دکمه‌های دیگر -->
+<a href="{{ route('receivables.create') }}"
+   class="inline-flex items-center gap-x-2 bg-purple-600 hover:bg-purple-700 text-white font-medium py-2.5 px-5 rounded-lg shadow-md transition focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+    </svg>
+    مطالبه جدید
+</a>
                         @endcan
 
                         @can('create assets')

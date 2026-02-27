@@ -13,6 +13,7 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\ReceivableController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -57,6 +58,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/cars/{car}/images/{image}/primary', [App\Http\Controllers\CarImageController::class, 'setPrimary'])->name('cars.images.primary');
     Route::delete('/cars/{car}/images/{image}', [App\Http\Controllers\CarImageController::class, 'destroy'])->name('cars.images.destroy');
     
+    // routes/web.php - داخل گروه middleware
+Route::resource('receivables', ReceivableController::class);
+Route::post('/receivables/{receivable}/payment', [ReceivableController::class, 'addPayment'])->name('receivables.payment');
     // -----------------------------------------------------------------
     // مسیرهای اختصاصی برای نمایش جزئیات با بررسی مالکیت
     // -----------------------------------------------------------------
