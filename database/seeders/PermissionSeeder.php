@@ -121,12 +121,13 @@ class PermissionSeeder extends Seeder
         ];
 
         // مجوزهای مطالبات
-$receivablePermissions = [
-    'view receivables',
-    'create receivables',
-    'edit receivables',
-    'delete receivables',
-];
+        $receivablePermissions = [
+            'view receivables',
+            'create receivables',
+            'edit receivables',
+            'delete receivables',
+        ];
+
         // ادغام همه مجوزها
         $allPermissions = array_merge(
             $carPermissions,
@@ -141,7 +142,8 @@ $receivablePermissions = [
             $transactionPermissions,
             $accountPermissions,
             $paymentMethodPermissions,
-            $expensePermissions
+            $expensePermissions,
+            $receivablePermissions // اضافه کردن مجوزهای مطالبات
         );
 
         // ایجاد مجوزها
@@ -188,6 +190,8 @@ $receivablePermissions = [
             'view accounts', 'create accounts', 'edit accounts',
             // هزینه
             'view expenses', 'create expenses', 'edit expenses',
+            // مطالبات
+            'view receivables', 'create receivables', 'edit receivables',
             // داشبورد
             'view dashboard',
         ]);
@@ -215,37 +219,38 @@ $receivablePermissions = [
             'view transactions', 'create transactions',
             'view accounts', 'create accounts', 'edit accounts',
             'view expenses', 'create expenses',
+            'view receivables', 'create receivables', 'edit receivables',
         ]);
 
         // =============================================
-        // 4. اختصاص نقش به کاربران پیش‌فرض
+        // 4. اختصاص نقش به کاربران پیش‌فرض (اصلاح شده با syncRoles)
         // =============================================
 
         // کاربر ادمین
         $adminUser = User::where('email', 'admin@example.com')->first();
         if ($adminUser) {
-            $adminUser->assignRole('admin');
+            $adminUser->syncRoles(['admin']); // تغییر از assignRole به syncRoles
             $this->command->info('✅ نقش admin به کاربر admin@example.com اختصاص یافت.');
         }
 
         // کاربر مدیر
         $managerUser = User::where('email', 'manager@example.com')->first();
         if ($managerUser) {
-            $managerUser->assignRole('manager');
+            $managerUser->syncRoles(['manager']); // تغییر از assignRole به syncRoles
             $this->command->info('✅ نقش manager به کاربر manager@example.com اختصاص یافت.');
         }
 
         // کاربر سرمایه‌گذار (سارا)
         $investorUser = User::where('email', 'sara@example.com')->first();
         if ($investorUser) {
-            $investorUser->assignRole('investor');
+            $investorUser->syncRoles(['investor']); // تغییر از assignRole به syncRoles
             $this->command->info('✅ نقش investor به کاربر sara@example.com اختصاص یافت.');
         }
 
         // کاربر عادی
         $normalUser = User::where('email', 'user@example.com')->first();
         if ($normalUser) {
-            $normalUser->assignRole('user');
+            $normalUser->syncRoles(['user']); // تغییر از assignRole به syncRoles
             $this->command->info('✅ نقش user به کاربر user@example.com اختصاص یافت.');
         }
 
