@@ -128,6 +128,12 @@ class PermissionSeeder extends Seeder
             'delete receivables',
         ];
 
+        // **🆕 مجوزهای قیمت لحظه‌ای**
+        $pricePermissions = [
+            'view prices',
+            'update prices',
+        ];
+
         // ادغام همه مجوزها
         $allPermissions = array_merge(
             $carPermissions,
@@ -143,7 +149,8 @@ class PermissionSeeder extends Seeder
             $accountPermissions,
             $paymentMethodPermissions,
             $expensePermissions,
-            $receivablePermissions // اضافه کردن مجوزهای مطالبات
+            $receivablePermissions,
+            $pricePermissions // اضافه کردن مجوزهای قیمت لحظه‌ای
         );
 
         // ایجاد مجوزها
@@ -168,7 +175,7 @@ class PermissionSeeder extends Seeder
         // ادمین: همه مجوزها
         $adminRole->syncPermissions($allPermissions);
 
-        // مدیر: مجوزهای مدیریتی (بدون حذف)
+        // مدیر: مجوزهای مدیریتی (بدون حذف) + قیمت‌ها
         $managerRole->syncPermissions([
             // خودرو
             'view cars', 'create cars', 'edit cars', 'sell cars',
@@ -192,6 +199,8 @@ class PermissionSeeder extends Seeder
             'view expenses', 'create expenses', 'edit expenses',
             // مطالبات
             'view receivables', 'create receivables', 'edit receivables',
+            // **🆕 قیمت‌ها**
+            'view prices',
             // داشبورد
             'view dashboard',
         ]);
@@ -211,7 +220,7 @@ class PermissionSeeder extends Seeder
             'view dashboard',
         ]);
 
-        // حسابدار: مدیریت مالی
+        // حسابدار: مدیریت مالی + قیمت‌ها
         $accountantRole->syncPermissions([
             'view dashboard',
             'view assets', 'create assets', 'edit assets',
@@ -220,37 +229,39 @@ class PermissionSeeder extends Seeder
             'view accounts', 'create accounts', 'edit accounts',
             'view expenses', 'create expenses',
             'view receivables', 'create receivables', 'edit receivables',
+            // **🆕 قیمت‌ها**
+            'view prices',
         ]);
 
         // =============================================
-        // 4. اختصاص نقش به کاربران پیش‌فرض (اصلاح شده با syncRoles)
+        // 4. اختصاص نقش به کاربران پیش‌فرض
         // =============================================
 
         // کاربر ادمین
         $adminUser = User::where('email', 'admin@example.com')->first();
         if ($adminUser) {
-            $adminUser->syncRoles(['admin']); // تغییر از assignRole به syncRoles
+            $adminUser->syncRoles(['admin']);
             $this->command->info('✅ نقش admin به کاربر admin@example.com اختصاص یافت.');
         }
 
         // کاربر مدیر
         $managerUser = User::where('email', 'manager@example.com')->first();
         if ($managerUser) {
-            $managerUser->syncRoles(['manager']); // تغییر از assignRole به syncRoles
+            $managerUser->syncRoles(['manager']);
             $this->command->info('✅ نقش manager به کاربر manager@example.com اختصاص یافت.');
         }
 
         // کاربر سرمایه‌گذار (سارا)
         $investorUser = User::where('email', 'sara@example.com')->first();
         if ($investorUser) {
-            $investorUser->syncRoles(['investor']); // تغییر از assignRole به syncRoles
+            $investorUser->syncRoles(['investor']);
             $this->command->info('✅ نقش investor به کاربر sara@example.com اختصاص یافت.');
         }
 
         // کاربر عادی
         $normalUser = User::where('email', 'user@example.com')->first();
         if ($normalUser) {
-            $normalUser->syncRoles(['user']); // تغییر از assignRole به syncRoles
+            $normalUser->syncRoles(['user']);
             $this->command->info('✅ نقش user به کاربر user@example.com اختصاص یافت.');
         }
 

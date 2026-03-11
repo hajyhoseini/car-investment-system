@@ -14,19 +14,36 @@
     <meta name="keywords" content="@yield('meta_keywords', 'سرمایه گذاری, خودرو, مدیریت مالی')">
 
     <!-- فونت مناسب فارسی (وزیر) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+     <style>
+            @font-face {
+                font-family: 'Vazir';
+                src: url('/fonts/Vazir.woff2') format('woff2');
+                font-weight: normal;
+                font-style: normal;
+                font-display: swap;
+            }
+            @font-face {
+                font-family: 'Vazir';
+                src: url('/fonts/Vazir.woff2') format('woff2');
+                font-weight: bold;
+                font-style: normal;
+                font-display: swap;
+            }
+            @font-face {
+                font-family: 'Vazir';
+                src: url('/fonts/Vazir.woff2') format('woff2');
+                font-weight: 300;
+                font-style: normal;
+                font-display: swap;
+            }
+        *{font-family: 'Vazir', sans-serif;}
 
+        </style>
     <!-- Vite – css و js اصلی پروژه -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <!-- استایل‌های اضافی یا override (اختیاری) -->
-    <style>
-        body {
-            font-family: 'Vazirmatn', system-ui, -apple-system, sans-serif;
-        }
-    </style>
+
 
     <!-- المان‌های دینامیک (مثلاً favicon، manifest و ...) -->
     <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">

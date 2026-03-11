@@ -15,13 +15,55 @@ use App\Http\Controllers\PersonController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ReceivableController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PriceController;
+use Illuminate\Support\Facades\Http;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
 */
-
+Route::get('/ping-simple', function() {
+    $results = [];
+    
+    $urls = [
+        'wallex' => 'https://api.wallex.ir/v1/markets',
+        'google' => 'https://www.google.com',
+        'tgju' => 'https://api.tgju.org/v1/data',
+    ];
+    
+    foreach ($urls as $name => $url) {
+        try {
+            $start = microtime(true);
+            
+            $response = Http::withoutVerifying()
+                ->timeout(3)
+                ->get($url);
+            
+            $end = microtime(true);
+            $time = round(($end - $start) * 1000);
+            
+            $results[$name] = [
+                'status' => $response->status(),
+                'time_ms' => $time,
+                'success' => true,
+            ];
+            
+        } catch (\Exception $e) {
+            $results[$name] = [
+                'status' => 'error',
+                'time_ms' => null,
+                'success' => false,
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+    
+    return response()->json([
+        'timestamp' => now()->toDateTimeString(),
+        'results' => $results
+    ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+});
 // صفحه اصلی
 Route::get('/', function () {
     return view('welcome');
@@ -80,13 +122,13 @@ Route::post('/receivables/{receivable}/payment', [ReceivableController::class, '
     // -----------------------------------------------------------------
     Route::resource('transactions', TransactionController::class);
     Route::get('/transactions/daily/report', [TransactionController::class, 'dailyReport'])->name('transactions.daily');
-    Route::resource('accounts', AccountController::class);
-    
+
     // -----------------------------------------------------------------
     // مسیرهای روش پرداخت (برای ادمین)
     // -----------------------------------------------------------------
-    Route::resource('payment-methods', PaymentMethodController::class)->except(['show']);
-    
+// routes/web.php
+
+  
     // -----------------------------------------------------------------
     // مسیرهای ویژه فروش خودرو
     // -----------------------------------------------------------------
@@ -119,6 +161,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+        Route::get('/prices', [PriceController::class, 'index'])->name('prices.index');
+    Route::post('/prices/update', [PriceController::class, 'update'])->name('prices.update');
+    Route::get('/prices/json', [PriceController::class, 'getPrices'])->name('prices.json');
 });
 
 // مسیرهای احراز هویت
