@@ -74,6 +74,21 @@
                                 @endforeach
                             </select>
                         </div>
+                        {{-- اضافه کردن فیلد شخص مرتبط بعد از فیلد خودرو --}}
+
+<!-- شخص مرتبط -->
+<div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">شخص مرتبط</label>
+    <select name="person_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition">
+        <option value="">بدون شخص</option>
+        @foreach($people as $person)
+            <option value="{{ $person->id }}" {{ old('person_id') == $person->id ? 'selected' : '' }}>
+                {{ $person->full_name }}
+                @if($person->company_name) ({{ $person->company_name }}) @endif
+            </option>
+        @endforeach
+    </select>
+</div>
 
                         <!-- حساب پرداخت -->
                         <div>

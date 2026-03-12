@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Models\Expense;
 use App\Models\Car;
 use App\Models\Asset;
+use App\Models\Person; // اضافه شد
 use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -26,12 +27,17 @@ class ExpenseController extends Controller implements HasMiddleware
      */
     public function index(Request $request)
     {
-        $query = Expense::with(['car', 'account', 'paymentMethod', 'creator'])
+        $query = Expense::with(['car', 'account', 'paymentMethod', 'creator', 'person']) // person اضافه شد
             ->latest('expense_date');
 
         // فیلتر بر اساس خودرو
         if ($request->filled('car_id')) {
             $query->where('car_id', $request->car_id);
+        }
+
+        // فیلتر بر اساس شخص
+        if ($request->filled('person_id')) {
+            $query->where('person_id', $request->person_id);
         }
 
         // فیلتر بر اساس دسته‌بندی
@@ -52,12 +58,14 @@ class ExpenseController extends Controller implements HasMiddleware
         // آمار هزینه‌ها
         $totalExpenses = $expenses->sum('amount');
         $carExpenses = $expenses->whereNotNull('car_id')->sum('amount');
-        $generalExpenses = $expenses->whereNull('car_id')->sum('amount');
+        $personExpenses = $expenses->whereNotNull('person_id')->sum('amount'); // اضافه شد
+        $generalExpenses = $expenses->whereNull('car_id')->whereNull('person_id')->sum('amount');
 
         return view('expenses.index', compact(
             'expenses',
             'totalExpenses',
             'carExpenses',
+            'personExpenses',
             'generalExpenses'
         ));
     }
@@ -68,6 +76,7 @@ class ExpenseController extends Controller implements HasMiddleware
     public function create()
     {
         $cars = Car::where('status', '!=', 'sold')->get();
+        $people = Person::orderBy('full_name')->get(); // اضافه شد
         $accounts = Asset::where('type', 'bank')->where('is_active', true)->get();
         $paymentMethods = PaymentMethod::where('is_active', true)->get();
 
@@ -85,7 +94,7 @@ class ExpenseController extends Controller implements HasMiddleware
             'other' => 'سایر',
         ];
 
-        return view('expenses.create', compact('cars', 'accounts', 'paymentMethods', 'categories'));
+        return view('expenses.create', compact('cars', 'people', 'accounts', 'paymentMethods', 'categories'));
     }
 
     /**
@@ -100,6 +109,7 @@ class ExpenseController extends Controller implements HasMiddleware
             'expense_date' => 'required|date',
             'category' => 'required|string',
             'car_id' => 'nullable|exists:cars,id',
+            'person_id' => 'nullable|exists:people,id', // اضافه شد
             'account_id' => 'nullable|exists:assets,id',
             'payment_method_id' => 'nullable|exists:payment_methods,id',
             'receipt_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -136,7 +146,7 @@ class ExpenseController extends Controller implements HasMiddleware
      */
     public function show(Expense $expense)
     {
-        $expense->load(['car', 'account', 'paymentMethod', 'creator']);
+        $expense->load(['car', 'person', 'account', 'paymentMethod', 'creator']); // person اضافه شد
         return view('expenses.show', compact('expense'));
     }
 
@@ -146,6 +156,7 @@ class ExpenseController extends Controller implements HasMiddleware
     public function edit(Expense $expense)
     {
         $cars = Car::where('status', '!=', 'sold')->get();
+        $people = Person::orderBy('full_name')->get(); // اضافه شد
         $accounts = Asset::where('type', 'bank')->where('is_active', true)->get();
         $paymentMethods = PaymentMethod::where('is_active', true)->get();
 
@@ -162,7 +173,7 @@ class ExpenseController extends Controller implements HasMiddleware
             'other' => 'سایر',
         ];
 
-        return view('expenses.edit', compact('expense', 'cars', 'accounts', 'paymentMethods', 'categories'));
+        return view('expenses.edit', compact('expense', 'cars', 'people', 'accounts', 'paymentMethods', 'categories'));
     }
 
     /**
@@ -177,6 +188,7 @@ class ExpenseController extends Controller implements HasMiddleware
             'expense_date' => 'required|date',
             'category' => 'required|string',
             'car_id' => 'nullable|exists:cars,id',
+            'person_id' => 'nullable|exists:people,id', // اضافه شد
             'account_id' => 'nullable|exists:assets,id',
             'payment_method_id' => 'nullable|exists:payment_methods,id',
             'receipt_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',

@@ -24,7 +24,7 @@
                 @endif
 
                 <!-- خلاصه آماری -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     <div class="bg-orange-50 p-4 rounded-lg">
                         <div class="text-sm text-gray-600">کل هزینه‌ها</div>
                         <div class="text-2xl font-bold text-orange-600">{{ number_format($totalExpenses) }} ریال</div>
@@ -32,6 +32,10 @@
                     <div class="bg-blue-50 p-4 rounded-lg">
                         <div class="text-sm text-gray-600">هزینه‌های خودرو</div>
                         <div class="text-2xl font-bold text-blue-600">{{ number_format($carExpenses) }} ریال</div>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <div class="text-sm text-gray-600">هزینه‌های اشخاص</div>
+                        <div class="text-2xl font-bold text-green-600">{{ number_format($personExpenses ?? 0) }} ریال</div>
                     </div>
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <div class="text-sm text-gray-600">هزینه‌های عمومی</div>
@@ -81,6 +85,7 @@
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">عنوان</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">دسته‌بندی</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">خودرو</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">شخص</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">مبلغ</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">حساب</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">عملیات</th>
@@ -97,6 +102,15 @@
                                     @if($expense->car)
                                         <a href="{{ route('cars.show', $expense->car) }}" class="text-blue-600 hover:underline">
                                             {{ $expense->car->title }}
+                                        </a>
+                                    @else
+                                        <span class="text-gray-500">—</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($expense->person)
+                                        <a href="{{ route('people.show', $expense->person) }}" class="text-blue-600 hover:underline">
+                                            {{ $expense->person->full_name }}
                                         </a>
                                     @else
                                         <span class="text-gray-500">—</span>
@@ -131,7 +145,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+                                <td colspan="9" class="px-6 py-4 text-center text-gray-500">
                                     هیچ هزینه‌ای ثبت نشده است.
                                 </td>
                             </tr>

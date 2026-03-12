@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Expense extends BaseModel
 {
     protected $jalaliDates = ['expense_date'];
+    
     protected $fillable = [
         'title',
         'description',
@@ -16,6 +17,7 @@ class Expense extends BaseModel
         'expense_date',
         'category',
         'car_id',
+        'person_id', // اضافه شد
         'account_id',
         'payment_method_id',
         'receipt_image',
@@ -34,6 +36,14 @@ class Expense extends BaseModel
     public function car(): BelongsTo
     {
         return $this->belongsTo(Car::class);
+    }
+
+    /**
+     * شخص مرتبط با هزینه
+     */
+    public function person(): BelongsTo
+    {
+        return $this->belongsTo(Person::class);
     }
 
     /**

@@ -54,6 +54,17 @@
                                     </a>
                                 </div>
                             </div>
+                            {{-- اضافه کردن به بخش اطلاعات مرتبط --}}
+@if($expense->person)
+<div>
+    <span class="text-sm text-gray-600">شخص مرتبط:</span>
+    <div class="font-medium">
+        <a href="{{ route('people.show', $expense->person) }}" class="text-blue-600 hover:underline">
+            {{ $expense->person->full_name }}
+        </a>
+    </div>
+</div>
+@endif
                             @endif
                             
                             @if($expense->account)
