@@ -74,6 +74,15 @@ class ReceivableController extends Controller implements HasMiddleware
     {
         $people = Person::orderBy('full_name')->get();
         
+        // تبدیل people به فرمت مناسب کامپوننت
+        $formattedPeople = $people->map(function($person) {
+            return [
+                'id' => $person->id,
+                'text' => $person->full_name,
+                'subtext' => $person->mobile ?? $person->national_code ?? ''
+            ];
+        })->toArray();
+        
         $currencyTypes = [
             'cash' => 'نقد',
             'check' => 'چک',
@@ -82,7 +91,7 @@ class ReceivableController extends Controller implements HasMiddleware
             'other' => 'سایر',
         ];
 
-        return view('receivables.create', compact('people', 'currencyTypes'));
+        return view('receivables.create', compact('formattedPeople', 'currencyTypes'));
     }
 
     /**
@@ -139,6 +148,15 @@ class ReceivableController extends Controller implements HasMiddleware
     {
         $people = Person::orderBy('full_name')->get();
         
+        // تبدیل people به فرمت مناسب کامپوننت
+        $formattedPeople = $people->map(function($person) {
+            return [
+                'id' => $person->id,
+                'text' => $person->full_name,
+                'subtext' => $person->mobile ?? $person->national_code ?? ''
+            ];
+        })->toArray();
+        
         $currencyTypes = [
             'cash' => 'نقد',
             'check' => 'چک',
@@ -147,7 +165,7 @@ class ReceivableController extends Controller implements HasMiddleware
             'other' => 'سایر',
         ];
 
-        return view('receivables.edit', compact('receivable', 'people', 'currencyTypes'));
+        return view('receivables.edit', compact('receivable', 'formattedPeople', 'currencyTypes'));
     }
 
     /**

@@ -37,16 +37,18 @@
                         <!-- مبلغ -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ (ریال) <span class="text-red-500">*</span></label>
-                            <input type="number" name="amount" value="{{ old('amount') }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition" 
-                                   placeholder="مثال: 500000" min="1000" required>
+                            <input type="text" name="amount" id="amount" value="{{ old('amount') }}" 
+                                   class="price-format w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition" 
+                                   placeholder="مثال: ۵۰۰,۰۰۰" min="1000" required>
                         </div>
 
                         <!-- تاریخ هزینه -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ هزینه <span class="text-red-500">*</span></label>
-                            <input type="date" name="expense_date" value="{{ old('expense_date', now()->format('Y-m-d')) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition" required>
+                            <input type="text" name="expense_date" id="expense_date" 
+                                   value="{{ old('expense_date', now()->format('Y/m/d')) }}" 
+                                   class="jalali-datepicker w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition" 
+                                   placeholder="مثال: ۱۴۰۲/۱۲/۲۵" autocomplete="off" required>
                         </div>
 
                         <!-- دسته‌بندی -->
@@ -74,21 +76,15 @@
                                 @endforeach
                             </select>
                         </div>
-                        {{-- اضافه کردن فیلد شخص مرتبط بعد از فیلد خودرو --}}
 
-<!-- شخص مرتبط -->
-<div>
-    <label class="block text-sm font-medium text-gray-700 mb-2">شخص مرتبط</label>
-    <select name="person_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition">
-        <option value="">بدون شخص</option>
-        @foreach($people as $person)
-            <option value="{{ $person->id }}" {{ old('person_id') == $person->id ? 'selected' : '' }}>
-                {{ $person->full_name }}
-                @if($person->company_name) ({{ $person->company_name }}) @endif
-            </option>
-        @endforeach
-    </select>
-</div>
+                        <!-- شخص مرتبط با قابلیت جستجو -->
+                        <x-searchable-select 
+                            name="person_id"
+                            label="شخص مرتبط"
+                            :options="$formattedPeople"
+                            :selected="old('person_id')"
+                            placeholder="جستجوی شخص..."
+                        />
 
                         <!-- حساب پرداخت -->
                         <div>
@@ -137,7 +133,7 @@
                         </div>
                     </div>
 
-                    <div class="flex justify-end mt-6 space-x-2">
+                    <div class="flex justify-end mt-6 space-x-2 rtl:space-x-reverse">
                         <a href="{{ route('expenses.index') }}" class="px-6 py-3 bg-gray-500 hover:bg-gray-700 text-white font-bold rounded-xl transition">
                             انصراف
                         </a>
@@ -151,3 +147,33 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
+<script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+
+<script>
+    $(document).ready(function() {
+        // تقویم شمسی
+        $('.jalali-datepicker').persianDatepicker({
+            format: 'YYYY/MM/DD',
+            autoClose: true,
+            initialValue: true,
+            calendar: {
+                persian: true
+            }
+        });
+
+        // فرمت عدد با ویرگول
+        $('.price-format').on('input', function() {
+            let value = this.value.replace(/[^\d]/g, '');
+            if (value) {
+                this.value = Number(value).toLocaleString('en-US');
+            } else {
+                this.value = '';
+            }
+        });
+    });
+</script>
+@endpush

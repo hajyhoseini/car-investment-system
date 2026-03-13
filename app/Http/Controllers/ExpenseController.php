@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 use App\Models\Expense;
 use App\Models\Car;
 use App\Models\Asset;
-use App\Models\Person; // اضافه شد
+use App\Models\Person;
 use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -27,7 +27,7 @@ class ExpenseController extends Controller implements HasMiddleware
      */
     public function index(Request $request)
     {
-        $query = Expense::with(['car', 'account', 'paymentMethod', 'creator', 'person']) // person اضافه شد
+        $query = Expense::with(['car', 'account', 'paymentMethod', 'creator', 'person'])
             ->latest('expense_date');
 
         // فیلتر بر اساس خودرو
@@ -58,7 +58,7 @@ class ExpenseController extends Controller implements HasMiddleware
         // آمار هزینه‌ها
         $totalExpenses = $expenses->sum('amount');
         $carExpenses = $expenses->whereNotNull('car_id')->sum('amount');
-        $personExpenses = $expenses->whereNotNull('person_id')->sum('amount'); // اضافه شد
+        $personExpenses = $expenses->whereNotNull('person_id')->sum('amount');
         $generalExpenses = $expenses->whereNull('car_id')->whereNull('person_id')->sum('amount');
 
         return view('expenses.index', compact(
@@ -76,7 +76,19 @@ class ExpenseController extends Controller implements HasMiddleware
     public function create()
     {
         $cars = Car::where('status', '!=', 'sold')->get();
-        $people = Person::orderBy('full_name')->get(); // اضافه شد
+        $people = Person::orderBy('full_name')->get();
+        
+        // تبدیل people به فرمت مناسب کامپوننت
+        $formattedPeople = $people->map(function($person) {
+            $text = $person->full_name;
+            $subtext = $person->company_name ?? $person->mobile ?? '';
+            return [
+                'id' => $person->id,
+                'text' => $text,
+                'subtext' => $subtext
+            ];
+        })->toArray();
+        
         $accounts = Asset::where('type', 'bank')->where('is_active', true)->get();
         $paymentMethods = PaymentMethod::where('is_active', true)->get();
 
@@ -94,7 +106,7 @@ class ExpenseController extends Controller implements HasMiddleware
             'other' => 'سایر',
         ];
 
-        return view('expenses.create', compact('cars', 'people', 'accounts', 'paymentMethods', 'categories'));
+        return view('expenses.create', compact('cars', 'formattedPeople', 'accounts', 'paymentMethods', 'categories'));
     }
 
     /**
@@ -109,7 +121,7 @@ class ExpenseController extends Controller implements HasMiddleware
             'expense_date' => 'required|date',
             'category' => 'required|string',
             'car_id' => 'nullable|exists:cars,id',
-            'person_id' => 'nullable|exists:people,id', // اضافه شد
+            'person_id' => 'nullable|exists:people,id',
             'account_id' => 'nullable|exists:assets,id',
             'payment_method_id' => 'nullable|exists:payment_methods,id',
             'receipt_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -146,7 +158,7 @@ class ExpenseController extends Controller implements HasMiddleware
      */
     public function show(Expense $expense)
     {
-        $expense->load(['car', 'person', 'account', 'paymentMethod', 'creator']); // person اضافه شد
+        $expense->load(['car', 'person', 'account', 'paymentMethod', 'creator']);
         return view('expenses.show', compact('expense'));
     }
 
@@ -156,7 +168,19 @@ class ExpenseController extends Controller implements HasMiddleware
     public function edit(Expense $expense)
     {
         $cars = Car::where('status', '!=', 'sold')->get();
-        $people = Person::orderBy('full_name')->get(); // اضافه شد
+        $people = Person::orderBy('full_name')->get();
+        
+        // تبدیل people به فرمت مناسب کامپوننت
+        $formattedPeople = $people->map(function($person) {
+            $text = $person->full_name;
+            $subtext = $person->company_name ?? $person->mobile ?? '';
+            return [
+                'id' => $person->id,
+                'text' => $text,
+                'subtext' => $subtext
+            ];
+        })->toArray();
+        
         $accounts = Asset::where('type', 'bank')->where('is_active', true)->get();
         $paymentMethods = PaymentMethod::where('is_active', true)->get();
 
@@ -173,7 +197,7 @@ class ExpenseController extends Controller implements HasMiddleware
             'other' => 'سایر',
         ];
 
-        return view('expenses.edit', compact('expense', 'cars', 'people', 'accounts', 'paymentMethods', 'categories'));
+        return view('expenses.edit', compact('expense', 'cars', 'formattedPeople', 'accounts', 'paymentMethods', 'categories'));
     }
 
     /**
@@ -188,7 +212,7 @@ class ExpenseController extends Controller implements HasMiddleware
             'expense_date' => 'required|date',
             'category' => 'required|string',
             'car_id' => 'nullable|exists:cars,id',
-            'person_id' => 'nullable|exists:people,id', // اضافه شد
+            'person_id' => 'nullable|exists:people,id',
             'account_id' => 'nullable|exists:assets,id',
             'payment_method_id' => 'nullable|exists:payment_methods,id',
             'receipt_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',

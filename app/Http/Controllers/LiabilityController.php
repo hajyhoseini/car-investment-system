@@ -25,9 +25,21 @@ class LiabilityController extends Controller
     public function create()
     {
         $people = Person::orderBy('full_name')->get();
+        
+        // تبدیل people به فرمت مناسب کامپوننت
+        $formattedPeople = $people->map(function($person) {
+            $text = $person->full_name;
+            $subtext = $person->type_label . ($person->mobile ? ' - ' . $person->mobile : '');
+            return [
+                'id' => $person->id,
+                'text' => $text,
+                'subtext' => $subtext
+            ];
+        })->toArray();
+        
         $todayJalali = now_jalali('Y/m/d');
         
-        return view('liabilities.create', compact('people', 'todayJalali'));
+        return view('liabilities.create', compact('formattedPeople', 'todayJalali'));
     }
 
     /**
@@ -75,37 +87,49 @@ class LiabilityController extends Controller
     public function edit(Liability $liability)
     {
         $people = Person::orderBy('full_name')->get();
-        return view('liabilities.edit', compact('liability', 'people'));
+        
+        // تبدیل people به فرمت مناسب کامپوننت
+        $formattedPeople = $people->map(function($person) {
+            $text = $person->full_name;
+            $subtext = $person->type_label . ($person->mobile ? ' - ' . $person->mobile : '');
+            return [
+                'id' => $person->id,
+                'text' => $text,
+                'subtext' => $subtext
+            ];
+        })->toArray();
+        
+        return view('liabilities.edit', compact('liability', 'formattedPeople'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-public function update(Request $request, Liability $liability)
-{
-    $validated = $request->validate([
-        'type' => 'required|in:debt,check,installment',
-        'person_id' => 'nullable|exists:people,id',
-        'creditor_name' => 'nullable|string|max:255',
-        'amount' => 'required|numeric|min:0',
-        'remaining_amount' => 'required|numeric|min:0',
-        'due_date' => 'required|string',
-        'status' => 'required|in:pending,paid,overdue',
-        'description' => 'nullable|string',
-    ]);
+    public function update(Request $request, Liability $liability)
+    {
+        $validated = $request->validate([
+            'type' => 'required|in:debt,check,installment',
+            'person_id' => 'nullable|exists:people,id',
+            'creditor_name' => 'nullable|string|max:255',
+            'amount' => 'required|numeric|min:0',
+            'remaining_amount' => 'required|numeric|min:0',
+            'due_date' => 'required|string',
+            'status' => 'required|in:pending,paid,overdue',
+            'description' => 'nullable|string',
+        ]);
 
-    $validated['due_date'] = jalali_to_gregorian($request->due_date);
+        $validated['due_date'] = jalali_to_gregorian($request->due_date);
 
-    // اگه person_id انتخاب شده، creditor_name رو null کن
-    if (!empty($validated['person_id'])) {
-        $validated['creditor_name'] = null;
+        // اگه person_id انتخاب شده، creditor_name رو null کن
+        if (!empty($validated['person_id'])) {
+            $validated['creditor_name'] = null;
+        }
+
+        $liability->update($validated);
+
+        return redirect()->route('liabilities.index')
+            ->with('success', 'تعهد با موفقیت ویرایش شد.');
     }
-
-    $liability->update($validated);
-
-    return redirect()->route('liabilities.index')
-        ->with('success', 'تعهد با موفقیت ویرایش شد.');
-}
 
     /**
      * Remove the specified resource from storage.

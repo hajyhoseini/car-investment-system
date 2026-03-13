@@ -40,34 +40,36 @@
                             @error('type') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- نام طلبکار -->
-<div class="md:col-span-2">
-    <label class="block text-sm font-medium text-gray-700 mb-2">شخص مرتبط (طلبکار/بدهکار)</label>
-    <select name="person_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition">
-        <option value="">انتخاب کنید</option>
-        @foreach($people as $person)
-            <option value="{{ $person->id }}" {{ old('person_id') == $person->id ? 'selected' : '' }}>
-                {{ $person->full_name }} ({{ $person->type_label }})
-            </option>
-        @endforeach
-    </select>
-</div>
+                        <!-- فیلد خالی برای حفظ گرید -->
+                        <div></div>
+
+                        <!-- شخص مرتبط با قابلیت جستجو -->
+                        <div class="md:col-span-2">
+                            <x-searchable-select 
+                                name="person_id"
+                                label="شخص مرتبط (طلبکار/بدهکار)"
+                                :options="$formattedPeople"
+                                :selected="old('person_id')"
+                                placeholder="جستجوی شخص..."
+                            />
+                            <p class="text-xs text-gray-500 mt-1">با انتخاب شخص، نیازی به وارد کردن نام طلبکار نیست</p>
+                        </div>
 
                         <!-- مبلغ کل -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ کل (ریال) <span class="text-red-500">*</span></label>
-                            <input type="number" name="amount" id="amount" value="{{ old('amount') }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition @error('amount') border-red-500 @enderror" 
-                                   placeholder="مثال: 150000000" min="0" required>
+                            <input type="text" name="amount" id="amount" value="{{ old('amount') }}" 
+                                   class="price-format w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition @error('amount') border-red-500 @enderror" 
+                                   placeholder="مثال: ۱۵۰,۰۰۰,۰۰۰" min="0" required>
                             @error('amount') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- مبلغ باقی‌مانده -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ باقی‌مانده (ریال) <span class="text-red-500">*</span></label>
-                            <input type="number" name="remaining_amount" id="remaining_amount" value="{{ old('remaining_amount') }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition @error('remaining_amount') border-red-500 @enderror" 
-                                   placeholder="مثال: 150000000" min="0" required>
+                            <input type="text" name="remaining_amount" id="remaining_amount" value="{{ old('remaining_amount') }}" 
+                                   class="price-format w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition @error('remaining_amount') border-red-500 @enderror" 
+                                   placeholder="مثال: ۱۵۰,۰۰۰,۰۰۰" min="0" required>
                             @error('remaining_amount') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
@@ -75,10 +77,10 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ سررسید <span class="text-red-500">*</span></label>
                             <input type="text" name="due_date" id="due_date" value="{{ old('due_date', $todayJalali ?? '') }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition @error('due_date') border-red-500 @enderror" 
-                                   placeholder="مثال: 1402/12/25" autocomplete="off" required>
+                                   class="jalali-datepicker w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition @error('due_date') border-red-500 @enderror" 
+                                   placeholder="مثال: ۱۴۰۲/۱۲/۲۵" autocomplete="off" required>
                             @error('due_date') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                            <p class="text-xs text-gray-500 mt-1">تاریخ را به فرمت شمسی وارد کنید (مثال: 1402/12/25)</p>
+                            <p class="text-xs text-gray-500 mt-1">تاریخ را به فرمت شمسی وارد کنید</p>
                         </div>
 
                         <!-- وضعیت -->
@@ -133,25 +135,44 @@ $(document).ready(function() {
         }
     });
 
+    // فرمت عدد با ویرگول برای فیلدهای مبلغ
+    $('.price-format').on('input', function() {
+        let value = this.value.replace(/[^\d]/g, '');
+        if (value) {
+            this.value = Number(value).toLocaleString('en-US');
+        } else {
+            this.value = '';
+        }
+    });
+
     // مدیریت خودکار مبلغ باقی‌مانده
     $('#amount').on('input', function() {
-        const amount = parseFloat($(this).val()) || 0;
-        const remaining = $('#remaining_amount');
+        const amount = parseFloat($(this).val().replace(/[^\d]/g, '')) || 0;
+        const remainingField = $('#remaining_amount');
+        const remainingValue = parseFloat(remainingField.val().replace(/[^\d]/g, '')) || 0;
         
         // اگر remaining_amount خالی بود یا از مقدار کل بیشتر بود
-        if (!remaining.val() || parseFloat(remaining.val()) > amount) {
-            remaining.val(amount);
+        if (!remainingField.val() || remainingValue > amount) {
+            remainingField.val(amount.toLocaleString('en-US'));
         }
     });
 
     // اطمینان از اینکه remaining_amount بیشتر از amount نباشه
     $('#remaining_amount').on('input', function() {
-        const amount = parseFloat($('#amount').val()) || 0;
-        const remaining = parseFloat($(this).val()) || 0;
+        const amount = parseFloat($('#amount').val().replace(/[^\d]/g, '')) || 0;
+        const remaining = parseFloat($(this).val().replace(/[^\d]/g, '')) || 0;
         
         if (remaining > amount) {
-            $(this).val(amount);
+            $(this).val(amount.toLocaleString('en-US'));
             alert('مبلغ باقی‌مانده نمی‌تواند از مبلغ کل بیشتر باشد.');
+        }
+    });
+
+    // فعال‌سازی مجدد price-format بعد از تغییر خودکار
+    $('#amount, #remaining_amount').on('change', function() {
+        let value = this.value.replace(/[^\d]/g, '');
+        if (value) {
+            this.value = Number(value).toLocaleString('en-US');
         }
     });
 });
