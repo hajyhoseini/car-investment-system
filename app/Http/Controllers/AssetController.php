@@ -4,23 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Asset;
 use App\Models\Transaction;
-use App\Services\PriceService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 
 class AssetController extends Controller implements HasMiddleware
 {
-    protected $priceService;
-
-    public function __construct(PriceService $priceService)
-    {
-        $this->priceService = $priceService;
-    }
-
-    /**
-     * تعریف middlewareها
-     */
     public static function middleware(): array
     {
         return [
@@ -33,26 +23,12 @@ class AssetController extends Controller implements HasMiddleware
      */
     public function index()
     {
+        // دریافت همه دارایی‌ها
         $assets = Asset::latest()->get();
         
-        // دریافت قیمت‌های لحظه‌ای
-        $livePrices = $this->priceService->getPrices();
-        
-        // محاسبه ارزش کل دارایی‌ها با قیمت‌های لحظه‌ای
-        $totalValue = 0;
-        foreach ($assets as $asset) {
-            if ($asset->type === 'dollar') {
-                $asset->live_value = $asset->amount * ($livePrices['currency']['usd'] ?? 600000);
-            } elseif ($asset->type === 'gold') {
-                $asset->live_value = $this->calculateGoldValue($asset, $livePrices);
-            } else {
-                $asset->live_value = $asset->value ?? $asset->amount;
-            }
-            $totalValue += $asset->live_value;
-        }
-        
-        // محاسبه آمار امروز
+        // دریافت آمار امروز
         $today = now()->toDateString();
+        
         $todayIncome = Transaction::whereDate('transaction_date', $today)
             ->where('type', 'income')
             ->where('status', 'completed')
@@ -63,36 +39,77 @@ class AssetController extends Controller implements HasMiddleware
             ->where('status', 'completed')
             ->sum('amount');
         
-        // تفکیک دارایی‌ها بر اساس نوع
-        $bankAccounts = $assets->where('type', 'bank');
-        $dollarAssets = $assets->where('type', 'dollar');
-        $goldAssets = $assets->where('type', 'gold');
+        // دریافت همه تراکنش‌های مرتبط با حساب‌های بانکی در یک کوئری
+        $bankAccountIds = $assets->where('type', 'bank')->pluck('id');
         
-        // محاسبه موجودی واقعی حساب‌های بانکی
-        $totalBankBalance = 0;
-        $bankAccountsWithBalance = $bankAccounts->map(function($account) use (&$totalBankBalance) {
-            // بارگذاری تراکنش‌ها برای نمایش
-            $account->load(['incomingTransactions' => function($query) {
-                $query->where('status', 'completed');
-            }, 'outgoingTransactions' => function($query) {
-                $query->where('status', 'completed');
-            }]);
+        $transactions = collect();
+        if ($bankAccountIds->isNotEmpty()) {
+            $transactions = Transaction::where('status', 'completed')
+                ->where(function($query) use ($bankAccountIds) {
+                    $query->whereIn('from_asset_id', $bankAccountIds)
+                          ->orWhereIn('to_asset_id', $bankAccountIds);
+                })
+                ->select('from_asset_id', 'to_asset_id', 'amount')
+                ->get()
+                ->groupBy(function($item) {
+                    return $item->from_asset_id ?? $item->to_asset_id;
+                });
+        }
+        
+        // پردازش دارایی‌ها
+        $totalValue = 0;
+        $bankAccountsWithBalance = collect();
+        $dollarAssets = collect();
+        $goldAssets = collect();
+        $otherAssets = collect();
+        
+        foreach ($assets as $asset) {
+            // ارزش دارایی (بدون قیمت لحظه‌ای)
+            $assetValue = $asset->value ?? $asset->amount;
+            $totalValue += $assetValue;
             
-            $account->current_balance = $account->amount;
-            $totalBankBalance += $account->amount;
-            
-            return $account;
-        });
+            switch ($asset->type) {
+                case 'bank':
+                    // محاسبه موجودی جاری حساب بانکی
+                    $accountTransactions = $transactions->get($asset->id, collect());
+                    
+                    $incoming = $accountTransactions
+                        ->where('to_asset_id', $asset->id)
+                        ->sum('amount');
+                        
+                    $outgoing = $accountTransactions
+                        ->where('from_asset_id', $asset->id)
+                        ->sum('amount');
+                    
+                    $asset->current_balance = $asset->amount + $incoming - $outgoing;
+                    $bankAccountsWithBalance->push($asset);
+                    break;
+                    
+                case 'dollar':
+                    $dollarAssets->push($asset);
+                    break;
+                    
+                case 'gold':
+                    $goldAssets->push($asset);
+                    break;
+                    
+                default:
+                    $otherAssets->push($asset);
+            }
+        }
+        
+        // جمع کل موجودی حساب‌های بانکی
+        $totalBankBalance = $bankAccountsWithBalance->sum('current_balance');
         
         return view('assets.index', compact(
             'bankAccountsWithBalance',
             'dollarAssets',
             'goldAssets',
+            'otherAssets',
             'totalValue',
-            'todayIncome',
-            'todayExpense',
             'totalBankBalance',
-            'livePrices'
+            'todayIncome',
+            'todayExpense'
         ));
     }
 
@@ -110,31 +127,29 @@ class AssetController extends Controller implements HasMiddleware
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'type' => 'required|in:bank,dollar,gold',
+            'type' => 'required|in:bank,dollar,gold,other',
             'name' => 'required|string|max:255',
             'amount' => 'required|numeric|min:0',
             'value' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
+            'bank_name' => 'nullable|string|max:255',
+            'account_number' => 'nullable|string|max:50',
+            'card_number' => 'nullable|string|max:20',
+            'sheba_number' => 'nullable|string|max:30',
+            'is_active' => 'boolean',
         ]);
 
+        // تنظیم مقادیر پیش‌فرض
+        $validated['is_active'] = $request->has('is_active');
+        
         // برای حساب بانکی، value رو برابر amount قرار می‌دیم
         if ($validated['type'] === 'bank') {
             $validated['value'] = $validated['amount'];
         }
         
-        // برای دلار و طلا، value رو با قیمت لحظه‌ای محاسبه کن
-        if ($validated['type'] === 'dollar') {
-            $livePrices = $this->priceService->getPrices();
-            $validated['value'] = $validated['amount'] * ($livePrices['currency']['usd'] ?? 600000);
-        }
-        
-        if ($validated['type'] === 'gold') {
-            $livePrices = $this->priceService->getPrices();
-            $validated['value'] = $this->calculateGoldValueFromName(
-                $validated['name'], 
-                $validated['amount'], 
-                $livePrices
-            );
+        // برای دلار و طلا، اگر value وارد نشده باشه، می‌تونی مقدار پیش‌فرض بدی یا null بذاری
+        if (in_array($validated['type'], ['dollar', 'gold']) && empty($validated['value'])) {
+            $validated['value'] = null; // یا یه مقدار پیش‌فرض
         }
 
         Asset::create($validated);
@@ -147,18 +162,23 @@ class AssetController extends Controller implements HasMiddleware
      */
     public function show(Asset $asset)
     {
-        // دریافت قیمت لحظه‌ای برای نمایش
-        $livePrices = $this->priceService->getPrices();
+        // بارگذاری تراکنش‌های مرتبط
+        $asset->load(['incomingTransactions', 'outgoingTransactions']);
         
-        if ($asset->type === 'dollar') {
-            $asset->live_value = $asset->amount * ($livePrices['currency']['usd'] ?? 600000);
-            $asset->live_price = $livePrices['currency']['usd'] ?? 600000;
-        } elseif ($asset->type === 'gold') {
-            $asset->live_value = $this->calculateGoldValue($asset, $livePrices);
-            $asset->live_price = $livePrices['gold']['geram18'] ?? 3500000;
+        // محاسبه موجودی برای حساب بانکی
+        if ($asset->type === 'bank') {
+            $incoming = $asset->incomingTransactions()
+                ->where('status', 'completed')
+                ->sum('amount');
+                
+            $outgoing = $asset->outgoingTransactions()
+                ->where('status', 'completed')
+                ->sum('amount');
+            
+            $asset->current_balance = $asset->amount + $incoming - $outgoing;
         }
         
-        return view('assets.show', compact('asset', 'livePrices'));
+        return view('assets.show', compact('asset'));
     }
 
     /**
@@ -175,30 +195,22 @@ class AssetController extends Controller implements HasMiddleware
     public function update(Request $request, Asset $asset)
     {
         $validated = $request->validate([
-            'type' => 'required|in:bank,dollar,gold',
+            'type' => 'required|in:bank,dollar,gold,other',
             'name' => 'required|string|max:255',
             'amount' => 'required|numeric|min:0',
             'value' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
+            'bank_name' => 'nullable|string|max:255',
+            'account_number' => 'nullable|string|max:50',
+            'card_number' => 'nullable|string|max:20',
+            'sheba_number' => 'nullable|string|max:30',
+            'is_active' => 'boolean',
         ]);
+
+        $validated['is_active'] = $request->has('is_active');
 
         if ($validated['type'] === 'bank') {
             $validated['value'] = $validated['amount'];
-        }
-        
-        // برای دلار و طلا، value رو با قیمت لحظه‌ای آپدیت کن
-        if ($validated['type'] === 'dollar') {
-            $livePrices = $this->priceService->getPrices();
-            $validated['value'] = $validated['amount'] * ($livePrices['currency']['usd'] ?? 600000);
-        }
-        
-        if ($validated['type'] === 'gold') {
-            $livePrices = $this->priceService->getPrices();
-            $validated['value'] = $this->calculateGoldValueFromName(
-                $validated['name'], 
-                $validated['amount'], 
-                $livePrices
-            );
         }
 
         $asset->update($validated);
@@ -211,54 +223,13 @@ class AssetController extends Controller implements HasMiddleware
      */
     public function destroy(Asset $asset)
     {
-        $asset->delete();
-        return redirect()->route('assets.index')->with('success', 'دارایی با موفقیت حذف شد.');
-    }
-
-    /**
-     * آپدیت دستی همه دارایی‌ها
-     */
-    public function updatePrices()
-    {
-        $this->priceService->updateAllAssets();
-        return redirect()->route('assets.index')->with('success', 'قیمت‌ها با موفقیت به‌روزرسانی شدند.');
-    }
-
-    /**
-     * دریافت قیمت‌ها به صورت JSON
-     */
-    public function getPrices()
-    {
-        return response()->json($this->priceService->getPrices());
-    }
-
-    /**
-     * محاسبه ارزش طلا بر اساس نام
-     */
-    private function calculateGoldValue(Asset $asset, array $livePrices): float
-    {
-        return $this->calculateGoldValueFromName($asset->name, $asset->amount, $livePrices);
-    }
-
-    /**
-     * محاسبه ارزش طلا از روی نام و مقدار
-     */
-    private function calculateGoldValueFromName(string $name, float $amount, array $livePrices): float
-    {
-        if (str_contains($name, 'سکه تمام')) {
-            return $amount * ($livePrices['coin']['sekeb'] ?? 280000000);
-        }
-        if (str_contains($name, 'نیم سکه')) {
-            return $amount * ($livePrices['coin']['nim'] ?? 140000000);
-        }
-        if (str_contains($name, 'ربع سکه')) {
-            return $amount * ($livePrices['coin']['rob'] ?? 75000000);
-        }
-        if (str_contains($name, 'طلای آب شده') || str_contains($name, 'طلای')) {
-            return $amount * ($livePrices['gold']['geram18'] ?? 3500000);
+        // بررسی وجود تراکنش‌های مرتبط
+        if ($asset->transactions()->exists()) {
+            return back()->with('error', 'این دارایی دارای تراکنش است و قابل حذف نمی‌باشد.');
         }
         
-        // پیش‌فرض: هر گرم طلا
-        return $amount * ($livePrices['gold']['geram18'] ?? 3500000);
+        $asset->delete();
+        
+        return redirect()->route('assets.index')->with('success', 'دارایی با موفقیت حذف شد.');
     }
 }
