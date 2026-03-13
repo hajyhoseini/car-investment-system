@@ -35,8 +35,19 @@
                                 </div>
                             </div>
                             <div>
-                                <span class="text-sm text-gray-600">نام طلبکار:</span>
-                                <div class="text-lg font-medium">{{ $liability->creditor_name }}</div>
+                                <span class="text-sm text-gray-600">طلبکار/بدهکار:</span>
+                                <div class="text-lg font-medium">
+                                    @if($liability->person)
+                                        <a href="{{ route('people.show', $liability->person) }}" class="text-blue-600 hover:underline">
+                                            {{ $liability->person->full_name }}
+                                        </a>
+                                        @if($liability->person->company_name)
+                                            <span class="text-sm text-gray-500 block">({{ $liability->person->company_name }})</span>
+                                        @endif
+                                    @else
+                                        {{ $liability->creditor_name ?? '—' }}
+                                    @endif
+                                </div>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">مبلغ کل:</span>
@@ -67,7 +78,7 @@
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">تاریخ سررسید:</span>
-                                <div class="text-lg font-medium">{{ $liability->due_date->format('Y/m/d') }}</div>
+                                <div class="text-lg font-medium">{{ jalali_date($liability->due_date) }}</div>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">وضعیت سررسید:</span>
@@ -78,6 +89,10 @@
                                         <span class="text-green-600">✅ در محدوده زمانی</span>
                                     @endif
                                 </div>
+                            </div>
+                            <div>
+                                <span class="text-sm text-gray-600">تاریخ ثبت:</span>
+                                <div class="text-lg font-medium">{{ jalali_datetime($liability->created_at) }}</div>
                             </div>
                         </div>
                     </div>

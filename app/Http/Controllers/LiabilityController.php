@@ -1,26 +1,20 @@
 <?php
+// app/Http/Controllers/LiabilityController.php
 
 namespace App\Http\Controllers;
 
 use App\Models\Liability;
+use App\Models\Person;
 use Illuminate\Http\Request;
-use App\Traits\JalaliDateTrait;
 
 class LiabilityController extends Controller
 {
-    use JalaliDateTrait;
-
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $liabilities = Liability::latest()->get();
-        
-        // تبدیل تاریخ‌ها به شمسی برای نمایش
-        foreach ($liabilities as $liability) {
-            $liability->jalali_due_date = $this->toJalali($liability->due_date);
-        }
+        $liabilities = Liability::with('person')->latest()->get();
         
         return view('liabilities.index', compact('liabilities'));
     }
@@ -30,8 +24,10 @@ class LiabilityController extends Controller
      */
     public function create()
     {
-        $todayJalali = $this->nowJalali();
-        return view('liabilities.create', compact('todayJalali'));
+        $people = Person::orderBy('full_name')->get();
+        $todayJalali = now_jalali('Y/m/d');
+        
+        return view('liabilities.create', compact('people', 'todayJalali'));
     }
 
     /**
@@ -41,16 +37,22 @@ class LiabilityController extends Controller
     {
         $validated = $request->validate([
             'type' => 'required|in:debt,check,installment',
-            'creditor_name' => 'required|string|max:255',
+            'person_id' => 'nullable|exists:people,id',
+            'creditor_name' => 'nullable|string|max:255',
             'amount' => 'required|numeric|min:0',
             'remaining_amount' => 'required|numeric|min:0',
-            'due_date' => 'required|string', // تاریخ به صورت شمسی دریافت می‌شود
+            'due_date' => 'required|string',
             'status' => 'required|in:pending,paid,overdue',
             'description' => 'nullable|string',
         ]);
 
-        // تبدیل تاریخ شمسی به میلادی برای ذخیره در دیتابیس
-        $validated['due_date'] = $this->toGregorian($request->due_date);
+        // تبدیل تاریخ شمسی به میلادی
+        $validated['due_date'] = jalali_to_gregorian($request->due_date);
+
+        // اگه person_id انتخاب شده، creditor_name رو خالی کن
+        if (!empty($validated['person_id'])) {
+            $validated['creditor_name'] = null;
+        }
 
         Liability::create($validated);
 
@@ -63,7 +65,7 @@ class LiabilityController extends Controller
      */
     public function show(Liability $liability)
     {
-        $liability->jalali_due_date = $this->toJalali($liability->due_date);
+        $liability->load('person');
         return view('liabilities.show', compact('liability'));
     }
 
@@ -72,33 +74,38 @@ class LiabilityController extends Controller
      */
     public function edit(Liability $liability)
     {
-        $liability->jalali_due_date = $this->toJalali($liability->due_date);
-        return view('liabilities.edit', compact('liability'));
+        $people = Person::orderBy('full_name')->get();
+        return view('liabilities.edit', compact('liability', 'people'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Liability $liability)
-    {
-        $validated = $request->validate([
-            'type' => 'required|in:debt,check,installment',
-            'creditor_name' => 'required|string|max:255',
-            'amount' => 'required|numeric|min:0',
-            'remaining_amount' => 'required|numeric|min:0',
-            'due_date' => 'required|string', // تاریخ به صورت شمسی دریافت می‌شود
-            'status' => 'required|in:pending,paid,overdue',
-            'description' => 'nullable|string',
-        ]);
+public function update(Request $request, Liability $liability)
+{
+    $validated = $request->validate([
+        'type' => 'required|in:debt,check,installment',
+        'person_id' => 'nullable|exists:people,id',
+        'creditor_name' => 'nullable|string|max:255',
+        'amount' => 'required|numeric|min:0',
+        'remaining_amount' => 'required|numeric|min:0',
+        'due_date' => 'required|string',
+        'status' => 'required|in:pending,paid,overdue',
+        'description' => 'nullable|string',
+    ]);
 
-        // تبدیل تاریخ شمسی به میلادی برای ذخیره در دیتابیس
-        $validated['due_date'] = $this->toGregorian($request->due_date);
+    $validated['due_date'] = jalali_to_gregorian($request->due_date);
 
-        $liability->update($validated);
-
-        return redirect()->route('liabilities.index')
-            ->with('success', 'تعهد با موفقیت ویرایش شد.');
+    // اگه person_id انتخاب شده، creditor_name رو null کن
+    if (!empty($validated['person_id'])) {
+        $validated['creditor_name'] = null;
     }
+
+    $liability->update($validated);
+
+    return redirect()->route('liabilities.index')
+        ->with('success', 'تعهد با موفقیت ویرایش شد.');
+}
 
     /**
      * Remove the specified resource from storage.
@@ -116,13 +123,10 @@ class LiabilityController extends Controller
      */
     public function getByStatus($status)
     {
-        $liabilities = Liability::where('status', $status)
+        $liabilities = Liability::with('person')
+            ->where('status', $status)
             ->latest()
             ->get();
-
-        foreach ($liabilities as $liability) {
-            $liability->jalali_due_date = $this->toJalali($liability->due_date);
-        }
 
         return view('liabilities.index', compact('liabilities'));
     }
@@ -132,14 +136,11 @@ class LiabilityController extends Controller
      */
     public function overdue()
     {
-        $liabilities = Liability::where('status', '!=', 'paid')
+        $liabilities = Liability::with('person')
+            ->where('status', '!=', 'paid')
             ->where('due_date', '<', now())
             ->latest()
             ->get();
-
-        foreach ($liabilities as $liability) {
-            $liability->jalali_due_date = $this->toJalali($liability->due_date);
-        }
 
         return view('liabilities.overdue', compact('liabilities'));
     }
@@ -149,13 +150,10 @@ class LiabilityController extends Controller
      */
     public function today()
     {
-        $liabilities = Liability::whereDate('due_date', now()->toDateString())
+        $liabilities = Liability::with('person')
+            ->whereDate('due_date', now()->toDateString())
             ->latest()
             ->get();
-
-        foreach ($liabilities as $liability) {
-            $liability->jalali_due_date = $this->toJalali($liability->due_date);
-        }
 
         return view('liabilities.today', compact('liabilities'));
     }

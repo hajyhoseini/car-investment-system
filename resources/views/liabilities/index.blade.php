@@ -72,7 +72,15 @@
                                     <div class="bg-white border border-red-200 rounded-xl p-6 hover:shadow-md transition-all">
                                         <div class="flex justify-between items-start mb-4">
                                             <div>
-                                                <h4 class="font-bold text-lg text-red-900">{{ $liability->creditor_name }}</h4>
+                                                <h4 class="font-bold text-lg text-red-900">
+                                                    @if($liability->person)
+                                                        <a href="{{ route('people.show', $liability->person) }}" class="text-red-900 hover:text-red-700 hover:underline">
+                                                            {{ $liability->person->full_name }}
+                                                        </a>
+                                                    @else
+                                                        {{ $liability->creditor_name ?? '—' }}
+                                                    @endif
+                                                </h4>
                                                 <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{ $liability->description ?? 'بدون توضیح' }}</p>
                                             </div>
                                             <div class="text-right shrink-0">
@@ -88,7 +96,7 @@
 
                                         <div class="flex items-center justify-between mt-3">
                                             <div class="text-xs text-gray-600">
-                                                سررسید: {{ $liability->due_date ? $liability->due_date->format('Y/m/d') : '—' }}
+                                                سررسید: {{ jalali_date($liability->due_date) }}
                                             </div>
 
                                             <div class="flex items-center gap-x-3">
@@ -136,7 +144,15 @@
                                     <div class="bg-white border border-blue-200 rounded-xl p-6 hover:shadow-md transition-all">
                                         <div class="flex justify-between items-start mb-4">
                                             <div>
-                                                <h4 class="font-bold text-lg text-blue-900">{{ $liability->creditor_name }}</h4>
+                                                <h4 class="font-bold text-lg text-blue-900">
+                                                    @if($liability->person)
+                                                        <a href="{{ route('people.show', $liability->person) }}" class="text-blue-900 hover:text-blue-700 hover:underline">
+                                                            {{ $liability->person->full_name }}
+                                                        </a>
+                                                    @else
+                                                        {{ $liability->creditor_name ?? '—' }}
+                                                    @endif
+                                                </h4>
                                                 <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{ $liability->description ?? 'بدون توضیح' }}</p>
                                             </div>
                                             <div class="text-right shrink-0">
@@ -152,7 +168,7 @@
 
                                         <div class="flex items-center justify-between mt-3">
                                             <div class="text-xs text-gray-600">
-                                                سررسید: {{ $liability->due_date ? $liability->due_date->format('Y/m/d') : '—' }}
+                                                سررسید: {{ jalali_date($liability->due_date) }}
                                             </div>
 
                                             <div class="flex items-center gap-x-3">
@@ -200,7 +216,15 @@
                                     <div class="bg-white border border-green-200 rounded-xl p-6 hover:shadow-md transition-all">
                                         <div class="flex justify-between items-start mb-4">
                                             <div>
-                                                <h4 class="font-bold text-lg text-green-900">{{ $liability->creditor_name }}</h4>
+                                                <h4 class="font-bold text-lg text-green-900">
+                                                    @if($liability->person)
+                                                        <a href="{{ route('people.show', $liability->person) }}" class="text-green-900 hover:text-green-700 hover:underline">
+                                                            {{ $liability->person->full_name }}
+                                                        </a>
+                                                    @else
+                                                        {{ $liability->creditor_name ?? '—' }}
+                                                    @endif
+                                                </h4>
                                                 <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{ $liability->description ?? 'بدون توضیح' }}</p>
                                             </div>
                                             <div class="text-right shrink-0">
@@ -216,7 +240,7 @@
 
                                         <div class="flex items-center justify-between mt-3">
                                             <div class="text-xs text-gray-600">
-                                                سررسید: {{ $liability->due_date ? $liability->due_date->format('Y/m/d') : '—' }}
+                                                سررسید: {{ jalali_date($liability->due_date) }}
                                             </div>
 
                                             <div class="flex items-center gap-x-3">

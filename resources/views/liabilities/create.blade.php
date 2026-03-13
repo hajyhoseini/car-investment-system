@@ -41,13 +41,17 @@
                         </div>
 
                         <!-- نام طلبکار -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">نام طلبکار <span class="text-red-500">*</span></label>
-                            <input type="text" name="creditor_name" value="{{ old('creditor_name') }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition @error('creditor_name') border-red-500 @enderror" 
-                                   placeholder="مثال: بانک ملی" required>
-                            @error('creditor_name') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                        </div>
+<div class="md:col-span-2">
+    <label class="block text-sm font-medium text-gray-700 mb-2">شخص مرتبط (طلبکار/بدهکار)</label>
+    <select name="person_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition">
+        <option value="">انتخاب کنید</option>
+        @foreach($people as $person)
+            <option value="{{ $person->id }}" {{ old('person_id') == $person->id ? 'selected' : '' }}>
+                {{ $person->full_name }} ({{ $person->type_label }})
+            </option>
+        @endforeach
+    </select>
+</div>
 
                         <!-- مبلغ کل -->
                         <div>

@@ -45,13 +45,18 @@
                             @error('type') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- نام طلبکار -->
+                        <!-- شخص مرتبط (جایگزین نام طلبکار) -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">نام طلبکار <span class="text-red-500">*</span></label>
-                            <input type="text" name="creditor_name" value="{{ old('creditor_name', $liability->creditor_name) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition @error('creditor_name') border-red-500 @enderror" 
-                                   required>
-                            @error('creditor_name') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                            <label class="block text-sm font-medium text-gray-700 mb-2">شخص مرتبط</label>
+                            <select name="person_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition @error('person_id') border-red-500 @enderror">
+                                <option value="">بدون شخص</option>
+                                @foreach($people as $person)
+                                    <option value="{{ $person->id }}" {{ old('person_id', $liability->person_id) == $person->id ? 'selected' : '' }}>
+                                        {{ $person->full_name }} ({{ $person->type_label }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('person_id') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- مبلغ کل -->
@@ -72,13 +77,14 @@
                             @error('remaining_amount') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                   <!-- تاریخ سررسید (شمسی) -->
-<div>
-    <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ سررسید <span class="text-red-500">*</span></label>
-    <input type="text" name="due_date" id="due_date" value="{{ old('due_date', $liability->jalali_due_date) }}" 
-           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition" 
-           placeholder="مثال: 1402/12/25" autocomplete="off" required>
-</div>
+                        <!-- تاریخ سررسید (شمسی) -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ سررسید <span class="text-red-500">*</span></label>
+                            <input type="text" name="due_date" id="due_date" value="{{ old('due_date', $liability->jalali_due_date) }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition" 
+                                   placeholder="مثال: 1402/12/25" autocomplete="off" required>
+                            @error('due_date') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                        </div>
 
                         <!-- وضعیت -->
                         <div>
@@ -105,19 +111,19 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <span class="text-sm text-gray-600">تاریخ ایجاد:</span>
-                                <span class="block font-medium">{{ $liability->created_at->format('Y/m/d H:i') }}</span>
+                                <span class="block font-medium">{{ jalali_datetime($liability->created_at) }}</span>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">آخرین به‌روزرسانی:</span>
-                                <span class="block font-medium">{{ $liability->updated_at->format('Y/m/d H:i') }}</span>
+                                <span class="block font-medium">{{ jalali_datetime($liability->updated_at) }}</span>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">وضعیت سررسید:</span>
                                 <span class="block font-medium">
                                     @if($liability->isOverdue())
-                                        <span class="text-red-600">سررسید گذشته</span>
+                                        <span class="text-red-600">⚠️ سررسید گذشته</span>
                                     @else
-                                        <span class="text-green-600">در محدوده زمانی</span>
+                                        <span class="text-green-600">✅ در محدوده زمانی</span>
                                     @endif
                                 </span>
                             </div>
@@ -137,29 +143,45 @@
         </div>
     </div>
 </div>
+@endsection
 
 @push('scripts')
-<script>
-document.getElementById('amount').addEventListener('input', function() {
-    const amount = parseFloat(this.value) || 0;
-    const remaining = document.getElementById('remaining_amount');
-    
-    // اگه remaining_amount خالی بود یا از amount بیشتر بود، مقدار پیش‌فرض رو برابر amount قرار بده
-    if (!remaining.value || parseFloat(remaining.value) > amount) {
-        remaining.value = amount;
-    }
-});
+<script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
+<script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
 
-// اطمینان از اینکه remaining_amount بیشتر از amount نباشه
-document.getElementById('remaining_amount').addEventListener('input', function() {
-    const amount = parseFloat(document.getElementById('amount').value) || 0;
-    const remaining = parseFloat(this.value) || 0;
-    
-    if (remaining > amount) {
-        this.value = amount;
-        alert('مبلغ باقی‌مانده نمی‌تواند از مبلغ کل بیشتر باشد.');
-    }
-});
+<script>
+    $(document).ready(function() {
+        // تقویم شمسی
+        $('#due_date').persianDatepicker({
+            format: 'YYYY/MM/DD',
+            autoClose: true,
+            initialValue: true,
+            calendar: {
+                persian: true
+            }
+        });
+    });
+
+    document.getElementById('amount').addEventListener('input', function() {
+        const amount = parseFloat(this.value) || 0;
+        const remaining = document.getElementById('remaining_amount');
+        
+        // اگه remaining_amount خالی بود یا از amount بیشتر بود، مقدار پیش‌فرض رو برابر amount قرار بده
+        if (!remaining.value || parseFloat(remaining.value) > amount) {
+            remaining.value = amount;
+        }
+    });
+
+    // اطمینان از اینکه remaining_amount بیشتر از amount نباشه
+    document.getElementById('remaining_amount').addEventListener('input', function() {
+        const amount = parseFloat(document.getElementById('amount').value) || 0;
+        const remaining = parseFloat(this.value) || 0;
+        
+        if (remaining > amount) {
+            this.value = amount;
+            alert('مبلغ باقی‌مانده نمی‌تواند از مبلغ کل بیشتر باشد.');
+        }
+    });
 </script>
 @endpush
-@endsection
