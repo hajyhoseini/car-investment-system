@@ -1,14 +1,14 @@
-<nav x-data="{ open: false, financialOpen: false }" class="bg-white border-b border-gray-100 shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 sticky top-0 z-50" x-cloak>
+<nav x-data="{ open: false, financialOpen: false }" class="bg-white border-b border-gray-100 shadow-lg bg-gradient-to-l from-blue-50 to-indigo-50 sticky top-0 z-50" x-cloak dir="rtl">
     <!-- کانتینر اصلی با پدینگ هوشمند -->
     <div class="w-full px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 2xl:px-12 mx-auto">
         <div class="flex justify-between items-center min-h-[60px] sm:min-h-[64px] md:min-h-[68px] lg:min-h-[72px]">
             
-            <!-- بخش سمت چپ: لوگو و منو -->
+            <!-- بخش سمت راست: لوگو و منو (تغییر به راست برای RTL) -->
             <div class="flex items-center gap-1 sm:gap-2 md:gap-3 lg:gap-4 xl:gap-5 flex-1 md:flex-none">
                 <!-- لوگو -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}" class="flex items-center gap-1.5 sm:gap-2 rtl:gap-x-2 sm:rtl:gap-x-3">
-                        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-1.5 sm:p-2 md:p-2.5 rounded-lg shadow-md">
+                    <a href="{{ route('dashboard') }}" class="flex items-center gap-1.5 sm:gap-2">
+                        <div class="bg-gradient-to-l from-blue-600 to-indigo-600 p-1.5 sm:p-2 md:p-2.5 rounded-lg shadow-md">
                             <svg class="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
@@ -112,72 +112,72 @@
                         </x-nav-link>
                     @endcan
 
-<!-- منوی کشویی مدیریت مالی (تبلت به بالا) -->
-@if(auth()->user()->can('view assets') || auth()->user()->can('view liabilities') || auth()->user()->can('view expenses') || auth()->user()->can('view receivables'))
-    <div class="relative" x-data="{ financialOpen: false }">
-        <button @click="financialOpen = !financialOpen" @click.away="financialOpen = false" 
-            class="flex items-center gap-1 px-2 lg:px-2.5 xl:px-3 py-1.5 lg:py-2 text-xs lg:text-sm xl:text-base rounded-lg hover:bg-blue-50 transition whitespace-nowrap text-gray-700 hover:text-gray-900">
-            <svg class="h-3.5 w-3.5 lg:h-4 lg:w-4 xl:h-4.5 xl:w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-            </svg>
-            <span class="hidden lg:inline">مدیریت مالی</span>
-            <span class="lg:hidden">مالی</span>
-            <svg class="h-3 w-3 lg:h-3.5 lg:w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-        </button>
-        
-        <!-- منوی کشویی مالی -->
-        <div x-show="financialOpen" @click.away="financialOpen = false" 
-            class="absolute right-0 mt-2 w-44 lg:w-48 bg-white rounded-lg shadow-xl py-1.5 z-50 border border-gray-200 text-xs lg:text-sm">
-            
-            @can('view assets')
-                <a href="{{ route('assets.index') }}" class="block px-3 lg:px-4 py-2 text-gray-700 hover:bg-blue-50 transition flex items-center gap-2">
-                    <svg class="h-4 w-4 lg:h-5 lg:w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    دارایی‌ها
-                </a>
-            @endcan
-            
-            @can('view liabilities')
-                <a href="{{ route('liabilities.index') }}" class="block px-3 lg:px-4 py-2 text-gray-700 hover:bg-blue-50 transition flex items-center gap-2">
-                    <svg class="h-4 w-4 lg:h-5 lg:w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    تعهدات
-                </a>
-            @endcan
+                    <!-- منوی کشویی مدیریت مالی (تبلت به بالا) -->
+                    @if(auth()->user()->can('view assets') || auth()->user()->can('view liabilities') || auth()->user()->can('view expenses') || auth()->user()->can('view receivables'))
+                        <div class="relative" x-data="{ financialOpen: false }">
+                            <button @click="financialOpen = !financialOpen" @click.away="financialOpen = false" 
+                                class="flex items-center gap-1 px-2 lg:px-2.5 xl:px-3 py-1.5 lg:py-2 text-xs lg:text-sm xl:text-base rounded-lg hover:bg-blue-50 transition whitespace-nowrap text-gray-700 hover:text-gray-900">
+                                <svg class="h-3.5 w-3.5 lg:h-4 lg:w-4 xl:h-4.5 xl:w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                                <span class="hidden lg:inline">مدیریت مالی</span>
+                                <span class="lg:hidden">مالی</span>
+                                <svg class="h-3 w-3 lg:h-3.5 lg:w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            
+                            <!-- منوی کشویی مالی -->
+                            <div x-show="financialOpen" @click.away="financialOpen = false" 
+                                class="absolute right-0 mt-2 w-44 lg:w-48 bg-white rounded-lg shadow-xl py-1.5 z-50 border border-gray-200 text-xs lg:text-sm">
+                                
+                                @can('view assets')
+                                    <a href="{{ route('assets.index') }}" class="block px-3 lg:px-4 py-2 text-gray-700 hover:bg-blue-50 transition flex items-center gap-2">
+                                        <svg class="h-4 w-4 lg:h-5 lg:w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        دارایی‌ها
+                                    </a>
+                                @endcan
+                                
+                                @can('view liabilities')
+                                    <a href="{{ route('liabilities.index') }}" class="block px-3 lg:px-4 py-2 text-gray-700 hover:bg-blue-50 transition flex items-center gap-2">
+                                        <svg class="h-4 w-4 lg:h-5 lg:w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        تعهدات
+                                    </a>
+                                @endcan
 
-            @can('view expenses')
-                <a href="{{ route('expenses.index') }}" class="block px-3 lg:px-4 py-2 text-gray-700 hover:bg-orange-50 transition flex items-center gap-2">
-                    <svg class="h-4 w-4 lg:h-5 lg:w-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    هزینه‌ها
-                </a>
-            @endcan
+                                @can('view expenses')
+                                    <a href="{{ route('expenses.index') }}" class="block px-3 lg:px-4 py-2 text-gray-700 hover:bg-orange-50 transition flex items-center gap-2">
+                                        <svg class="h-4 w-4 lg:h-5 lg:w-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                        </svg>
+                                        هزینه‌ها
+                                    </a>
+                                @endcan
 
-            @can('view receivables')
-                <a href="{{ route('receivables.index') }}" class="block px-3 lg:px-4 py-2 text-gray-700 hover:bg-purple-50 transition flex items-center gap-2">
-                    <svg class="h-4 w-4 lg:h-5 lg:w-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
-                    </svg>
-                    مطالبات
-                </a>
-            @endcan
-        </div>
-    </div>
-@endif
+                                @can('view receivables')
+                                    <a href="{{ route('receivables.index') }}" class="block px-3 lg:px-4 py-2 text-gray-700 hover:bg-purple-50 transition flex items-center gap-2">
+                                        <svg class="h-4 w-4 lg:h-5 lg:w-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                                        </svg>
+                                        مطالبات
+                                    </a>
+                                @endcan
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
 
-            <!-- بخش سمت راست: پروفایل (تبلت به بالا) -->
+            <!-- بخش سمت چپ: پروفایل (تبلت به بالا) - تغییر به چپ برای RTL -->
             <div class="hidden md:flex items-center gap-2 lg:gap-3 xl:gap-4">
                 <div class="relative" x-data="{ profileOpen: false }">
                     <button @click="profileOpen = !profileOpen" 
                         class="flex items-center gap-1.5 lg:gap-2.5 bg-white px-2 lg:px-3.5 py-1 lg:py-2 rounded-lg shadow-sm hover:shadow transition border border-gray-200 text-xs lg:text-sm">
-                        <div class="h-6 w-6 lg:h-8 lg:w-8 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xs lg:text-base">
+                        <div class="h-6 w-6 lg:h-8 lg:w-8 rounded-full bg-gradient-to-l from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xs lg:text-base">
                             {{ mb_substr(Auth::user()->name ?? 'کاربر', 0, 1) }}
                         </div>
                         <div class="text-right hidden lg:block">
@@ -211,7 +211,7 @@
                 </div>
             </div>
 
-            <!-- دکمه همبرگری (موبایل) -->
+            <!-- دکمه همبرگری (موبایل) - در RTL سمت چپ قرار می‌گیرد -->
             <div class="flex md:hidden items-center">
                 <button @click="open = !open" class="inline-flex items-center justify-center p-1.5 sm:p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none transition">
                     <svg class="h-6 w-6 sm:h-7 sm:w-7" stroke="currentColor" fill="none" viewBox="0 0 24 24">
@@ -223,8 +223,8 @@
         </div>
     </div>
 
-    <!-- منوی موبایل (کاملاً بهینه شده) -->
-    <div :class="{'block': open, 'hidden': !open}" class="md:hidden border-t border-gray-200 bg-white/95 backdrop-blur-sm">
+    <!-- منوی موبایل (کاملاً بهینه شده با قابلیت اسکرول) -->
+    <div :class="{'block': open, 'hidden': !open}" class="md:hidden border-t border-gray-200 bg-white/95 backdrop-blur-sm max-h-[calc(100vh-4rem)] overflow-y-auto" x-cloak>
         <div class="pt-2 pb-4 space-y-1 px-3 sm:px-4">
             <!-- دسته‌بندی اصلی در موبایل -->
             <div class="text-xs font-semibold text-gray-500 mb-2 pr-2">منوی اصلی</div>
@@ -291,26 +291,47 @@
                 </x-responsive-nav-link>
             @endcan
 
-            <div class="border-t border-gray-100 my-2"></div>
-            <div class="text-xs font-semibold text-gray-500 mb-2 pr-2">مدیریت مالی</div>
+            <!-- مدیریت مالی در موبایل -->
+            @canany(['view assets', 'view liabilities', 'view expenses', 'view receivables'])
+                <div class="border-t border-gray-100 my-2"></div>
+                <div class="text-xs font-semibold text-gray-500 mb-2 pr-2">مدیریت مالی</div>
 
-            @can('view assets')
-                <x-responsive-nav-link :href="route('assets.index')" :active="request()->routeIs('assets.*')" class="py-2.5">
-                    <svg class="h-5 w-5 inline ml-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    دارایی‌ها
-                </x-responsive-nav-link>
-            @endcan
+                @can('view assets')
+                    <x-responsive-nav-link :href="route('assets.index')" :active="request()->routeIs('assets.*')" class="py-2.5">
+                        <svg class="h-5 w-5 inline ml-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        دارایی‌ها
+                    </x-responsive-nav-link>
+                @endcan
 
-            @can('view liabilities')
-                <x-responsive-nav-link :href="route('liabilities.index')" :active="request()->routeIs('liabilities.*')" class="py-2.5">
-                    <svg class="h-5 w-5 inline ml-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    تعهدات
-                </x-responsive-nav-link>
-            @endcan
+                @can('view liabilities')
+                    <x-responsive-nav-link :href="route('liabilities.index')" :active="request()->routeIs('liabilities.*')" class="py-2.5">
+                        <svg class="h-5 w-5 inline ml-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        تعهدات
+                    </x-responsive-nav-link>
+                @endcan
+
+                @can('view expenses')
+                    <x-responsive-nav-link :href="route('expenses.index')" :active="request()->routeIs('expenses.*')" class="py-2.5">
+                        <svg class="h-5 w-5 inline ml-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        هزینه‌ها
+                    </x-responsive-nav-link>
+                @endcan
+
+                @can('view receivables')
+                    <x-responsive-nav-link :href="route('receivables.index')" :active="request()->routeIs('receivables.*')" class="py-2.5">
+                        <svg class="h-5 w-5 inline ml-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                        </svg>
+                        مطالبات
+                    </x-responsive-nav-link>
+                @endcan
+            @endcanany
 
             @can('view users')
                 <div class="border-t border-gray-100 my-2"></div>
@@ -327,7 +348,7 @@
         <!-- پروفایل در موبایل -->
         <div class="pt-3 pb-4 border-t border-gray-200 bg-gray-50/80 px-3 sm:px-4">
             <div class="flex items-center gap-3 px-2 py-2">
-                <div class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-base">
+                <div class="h-10 w-10 rounded-full bg-gradient-to-l from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-base">
                     {{ mb_substr(Auth::user()->name ?? 'کاربر', 0, 1) }}
                 </div>
                 <div class="flex-1">
@@ -366,4 +387,45 @@
         .xs\:block { display: block; }
         .xs\:hidden { display: none; }
     }
+
+    /* اسکرول سفارشی برای منوی موبایل */
+    .overflow-y-auto {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e0 #f1f5f9;
+    }
+
+    .overflow-y-auto::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .overflow-y-auto::-webkit-scrollbar-track {
+        background: #f1f5f9;
+    }
+
+    .overflow-y-auto::-webkit-scrollbar-thumb {
+        background-color: #cbd5e0;
+        border-radius: 20px;
+    }
+
+    /* اطمینان از راست‌چین بودن کامل */
+    [dir="rtl"] {
+        text-align: right;
+    }
+
+    [dir="rtl"] .ml-1 {
+        margin-left: 0;
+        margin-right: 0.25rem;
+    }
+
+    [dir="rtl"] .ml-2 {
+        margin-left: 0;
+        margin-right: 0.5rem;
+    }
+
+    [dir="rtl"] .space-x-reverse > :not([hidden]) ~ :not([hidden]) {
+        --tw-space-x-reverse: 1;
+    }
 </style>
+
+<!-- اضافه کردن متا تگ برای viewport اگر در head نیست -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
