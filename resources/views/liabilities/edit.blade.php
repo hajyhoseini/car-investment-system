@@ -46,18 +46,23 @@
                         </div>
 
                         <!-- شخص مرتبط (جایگزین نام طلبکار) -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">شخص مرتبط</label>
-                            <select name="person_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition @error('person_id') border-red-500 @enderror">
-                                <option value="">بدون شخص</option>
-                                @foreach($people as $person)
-                                    <option value="{{ $person->id }}" {{ old('person_id', $liability->person_id) == $person->id ? 'selected' : '' }}>
-                                        {{ $person->full_name }} ({{ $person->type_label }})
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('person_id') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                        </div>
+<!-- شخص مرتبط (جایگزین نام طلبکار) -->
+<div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">شخص مرتبط</label>
+    <select name="person_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition @error('person_id') border-red-500 @enderror">
+        <option value="">بدون شخص</option>
+        @foreach($formattedPeople as $person)
+            <option value="{{ $person['id'] }}" 
+                {{ old('person_id', $liability->person_id) == $person['id'] ? 'selected' : '' }}>
+                {{ $person['text'] }} 
+                @if(!empty($person['subtext']))
+                    <span class="text-gray-500 text-xs">({{ $person['subtext'] }})</span>
+                @endif
+            </option>
+        @endforeach
+    </select>
+    @error('person_id') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+</div>
 
                         <!-- مبلغ کل -->
                         <div>
@@ -78,13 +83,15 @@
                         </div>
 
                         <!-- تاریخ سررسید (شمسی) -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ سررسید <span class="text-red-500">*</span></label>
-                            <input type="text" name="due_date" id="due_date" value="{{ old('due_date', $liability->jalali_due_date) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition" 
-                                   placeholder="مثال: 1402/12/25" autocomplete="off" required>
-                            @error('due_date') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                        </div>
+<!-- تاریخ سررسید (شمسی) -->
+<div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ سررسید <span class="text-red-500">*</span></label>
+    <input type="text" name="due_date" id="due_date" 
+           value="{{ old('due_date', $liability->due_date_jalali) }}" 
+           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition" 
+           placeholder="مثال: 1402/12/25" autocomplete="off" required>
+    @error('due_date') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+</div>
 
                         <!-- وضعیت -->
                         <div>

@@ -30,31 +30,34 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">عنوان <span class="text-red-500">*</span></label>
                             <input type="text" name="title" value="{{ old('title') }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('title') border-red-500 @enderror" 
                                    placeholder="مثال: صافکاری خودرو" required>
+                            @error('title') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- مبلغ -->
+                        <!-- مبلغ با فرمت ویرگول -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ (ریال) <span class="text-red-500">*</span></label>
                             <input type="text" name="amount" id="amount" value="{{ old('amount') }}" 
-                                   class="price-format w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition" 
-                                   placeholder="مثال: ۵۰۰,۰۰۰" min="1000" required>
+                                   class="price-format w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('amount') border-red-500 @enderror" 
+                                   placeholder="مثال: ۵۰۰,۰۰۰" required>
+                            @error('amount') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- تاریخ هزینه -->
+                        <!-- تاریخ هزینه (شمسی با تقویم) -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ هزینه <span class="text-red-500">*</span></label>
                             <input type="text" name="expense_date" id="expense_date" 
-                                   value="{{ old('expense_date', now()->format('Y/m/d')) }}" 
-                                   class="jalali-datepicker w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition" 
+                                   value="{{ old('expense_date', now_jalali('Y/m/d')) }}" 
+                                   class="jalali-datepicker w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('expense_date') border-red-500 @enderror" 
                                    placeholder="مثال: ۱۴۰۲/۱۲/۲۵" autocomplete="off" required>
+                            @error('expense_date') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- دسته‌بندی -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">دسته‌بندی <span class="text-red-500">*</span></label>
-                            <select name="category" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition" required>
+                            <select name="category" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('category') border-red-500 @enderror" required>
                                 <option value="">انتخاب کنید</option>
                                 @foreach($categories as $key => $label)
                                     <option value="{{ $key }}" {{ old('category') == $key ? 'selected' : '' }}>
@@ -62,12 +65,13 @@
                                     </option>
                                 @endforeach
                             </select>
+                            @error('category') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- خودرو مرتبط (اختیاری) -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">خودرو مرتبط</label>
-                            <select name="car_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition">
+                            <select name="car_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('car_id') border-red-500 @enderror">
                                 <option value="">بدون خودرو (هزینه عمومی)</option>
                                 @foreach($cars as $car)
                                     <option value="{{ $car->id }}" {{ old('car_id') == $car->id ? 'selected' : '' }}>
@@ -75,21 +79,28 @@
                                     </option>
                                 @endforeach
                             </select>
+                            @error('car_id') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- شخص مرتبط با قابلیت جستجو -->
-                        <x-searchable-select 
-                            name="person_id"
-                            label="شخص مرتبط"
-                            :options="$formattedPeople"
-                            :selected="old('person_id')"
-                            placeholder="جستجوی شخص..."
-                        />
+                        <!-- شخص مرتبط -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">شخص مرتبط</label>
+                            <select name="person_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('person_id') border-red-500 @enderror">
+                                <option value="">بدون شخص</option>
+                                @foreach($people as $person)
+                                    <option value="{{ $person->id }}" {{ old('person_id') == $person->id ? 'selected' : '' }}>
+                                        {{ $person->full_name }}
+                                        @if($person->company_name) ({{ $person->company_name }}) @endif
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('person_id') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                        </div>
 
                         <!-- حساب پرداخت -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">حساب پرداخت</label>
-                            <select name="account_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition">
+                            <select name="account_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('account_id') border-red-500 @enderror">
                                 <option value="">بدون کسر از حساب</option>
                                 @foreach($accounts as $account)
                                     <option value="{{ $account->id }}" {{ old('account_id') == $account->id ? 'selected' : '' }}>
@@ -97,12 +108,13 @@
                                     </option>
                                 @endforeach
                             </select>
+                            @error('account_id') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- روش پرداخت -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">روش پرداخت</label>
-                            <select name="payment_method_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition">
+                            <select name="payment_method_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('payment_method_id') border-red-500 @enderror">
                                 <option value="">انتخاب کنید</option>
                                 @foreach($paymentMethods as $method)
                                     <option value="{{ $method->id }}" {{ old('payment_method_id') == $method->id ? 'selected' : '' }}>
@@ -110,26 +122,30 @@
                                     </option>
                                 @endforeach
                             </select>
+                            @error('payment_method_id') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- تصویر رسید -->
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">تصویر رسید</label>
                             <input type="file" name="receipt_image" accept="image/*"
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition">
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('receipt_image') border-red-500 @enderror">
                             <p class="text-xs text-gray-500 mt-1">فرمت‌های مجاز: jpeg, png, jpg (حداکثر ۲ مگابایت)</p>
+                            @error('receipt_image') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- توضیحات -->
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">توضیحات</label>
-                            <textarea name="description" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition">{{ old('description') }}</textarea>
+                            <textarea name="description" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('description') border-red-500 @enderror">{{ old('description') }}</textarea>
+                            @error('description') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- یادداشت‌ها -->
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">یادداشت‌ها</label>
-                            <textarea name="notes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition">{{ old('notes') }}</textarea>
+                            <textarea name="notes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('notes') border-red-500 @enderror">{{ old('notes') }}</textarea>
+                            @error('notes') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
                     </div>
 
@@ -173,6 +189,16 @@
             } else {
                 this.value = '';
             }
+        });
+
+        // جلوگیری از ارسال فرم با ویرگول
+        $('form').on('submit', function() {
+            $('.price-format').each(function() {
+                let value = this.value.replace(/[^\d]/g, '');
+                if (value) {
+                    this.value = value;
+                }
+            });
         });
     });
 </script>

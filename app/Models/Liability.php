@@ -22,7 +22,7 @@ class Liability extends BaseModel
     ];
 
     protected $casts = [
-        'due_date' => 'datetime', // تغییر از 'date' به 'datetime'
+        'due_date' => 'datetime',
         'amount' => 'decimal:2',
         'remaining_amount' => 'decimal:2'
     ];
@@ -62,9 +62,17 @@ class Liability extends BaseModel
     }
 
     /**
-     * دریافت تاریخ سررسید به صورت شمسی
+     * دریافت تاریخ سررسید به صورت شمسی (برای استفاده در فرم‌ها)
      */
     public function getDueDateJalaliAttribute(): string
+    {
+        return $this->due_date ? jalali_date($this->due_date) : '';
+    }
+
+    /**
+     * دریافت تاریخ سررسید به صورت شمسی با فرمت کامل
+     */
+    public function getDueDateJalaliFormattedAttribute(): string
     {
         return $this->due_date ? jalali_date($this->due_date) : '—';
     }

@@ -38,22 +38,25 @@
                                    min="1000" required>
                         </div>
 
-                        <!-- تاریخ تراکنش -->
+                        <!-- تاریخ تراکنش (شمسی) -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ تراکنش <span class="text-red-500">*</span></label>
-                            <input type="date" name="transaction_date" value="{{ old('transaction_date', $transaction->transaction_date) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" required>
+                            <input type="text" name="transaction_date" id="transaction_date" 
+                                   value="{{ old('transaction_date', jalali_date($transaction->transaction_date)) }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition jalali-datepicker"
+                                   placeholder="مثال: ۱۴۰۲/۱۲/۲۵" autocomplete="off" required>
                         </div>
 
                         <!-- حساب (شرطی بر اساس نوع) -->
                         @if($transaction->type === 'income')
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">حساب مقصد (دریافت به) <span class="text-red-500">*</span></label>
-                                <select name="to_account_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" required>
+                                <select name="to_asset_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" required>
                                     <option value="">انتخاب کنید</option>
                                     @foreach($accounts as $account)
-                                        <option value="{{ $account->id }}" {{ old('to_account_id', $transaction->to_account_id) == $account->id ? 'selected' : '' }}>
-                                            {{ $account->name }} ({{ number_format($account->balance) }} ریال)
+                                        <option value="{{ $account->id }}" 
+                                            {{ old('to_asset_id', $transaction->to_asset_id) == $account->id ? 'selected' : '' }}>
+                                            {{ $account->name }} (موجودی: {{ number_format($account->amount) }} ریال)
                                         </option>
                                     @endforeach
                                 </select>
@@ -61,11 +64,12 @@
                         @else
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">حساب مبدأ (پرداخت از) <span class="text-red-500">*</span></label>
-                                <select name="from_account_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" required>
+                                <select name="from_asset_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" required>
                                     <option value="">انتخاب کنید</option>
                                     @foreach($accounts as $account)
-                                        <option value="{{ $account->id }}" {{ old('from_account_id', $transaction->from_account_id) == $account->id ? 'selected' : '' }}>
-                                            {{ $account->name }} ({{ number_format($account->balance) }} ریال)
+                                        <option value="{{ $account->id }}" 
+                                            {{ old('from_asset_id', $transaction->from_asset_id) == $account->id ? 'selected' : '' }}>
+                                            {{ $account->name }} (موجودی: {{ number_format($account->amount) }} ریال)
                                         </option>
                                     @endforeach
                                 </select>
@@ -107,8 +111,10 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ چک</label>
-                                <input type="date" name="check_date" value="{{ old('check_date', $transaction->check_date) }}" 
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                                <input type="text" name="check_date" id="check_date" 
+                                       value="{{ old('check_date', $transaction->check_date ? jalali_date($transaction->check_date) : '') }}" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition jalali-datepicker"
+                                       placeholder="مثال: ۱۴۰۲/۱۲/۲۵" autocomplete="off">
                             </div>
                         </div>
 
@@ -165,7 +171,23 @@
 @endsection
 
 @push('scripts')
+<script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
+<script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+
 <script>
+    $(document).ready(function() {
+        // تقویم شمسی
+        $('.jalali-datepicker').persianDatepicker({
+            format: 'YYYY/MM/DD',
+            autoClose: true,
+            initialValue: true,
+            calendar: {
+                persian: true
+            }
+        });
+    });
+
     // نمایش فیلدهای چک در صورت انتخاب روش پرداخت "چک"
     document.getElementById('payment_method_id').addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];

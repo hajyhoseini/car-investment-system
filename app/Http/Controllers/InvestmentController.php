@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/InvestmentController.php
 
 namespace App\Http\Controllers;
 
@@ -104,17 +105,47 @@ class InvestmentController extends Controller
         return view('investments.show', compact('investment'));
     }
 
+    /**
+     * نمایش فرم ویرایش با اطلاعات کامل
+     */
     public function edit(Investment $investment)
     {
-        $cars = Car::where('status', 'available')->get();
+        // دریافت لیست خودروهای موجود
+        $cars = Car::where('status', 'available')
+            ->with('investments')
+            ->get()
+            ->map(function($car) use ($investment) {
+                // محاسبه مجموع سرمایه‌گذاری‌ها به جز این سرمایه‌گذاری
+                $totalInvested = $car->investments()
+                    ->where('id', '!=', $investment->id)
+                    ->sum('amount');
+                $car->available_for_investment = $car->purchase_price - $totalInvested;
+                return $car;
+            });
+        
         $investors = Investor::all();
         
-        // فقط تاریخ برای نمایش در فرم ویرایش
+        // تبدیل تاریخ به شمسی برای نمایش در فرم
         $investment->jalali_date = jalali_date($investment->investment_date);
+        
+        // محاسبه باقی‌مانده برای این خودرو
+        $car = $investment->car;
+        $totalInvestedInCar = $car->investments()
+            ->where('id', '!=', $investment->id)
+            ->sum('amount');
+        $remainingForCar = $car->purchase_price - $totalInvestedInCar;
 
-        return view('investments.edit', compact('investment', 'cars', 'investors'));
+        return view('investments.edit', compact(
+            'investment', 
+            'cars', 
+            'investors',
+            'remainingForCar'
+        ));
     }
 
+    /**
+     * بروزرسانی سرمایه‌گذاری
+     */
     public function update(Request $request, Investment $investment)
     {
         $validated = $request->validate([
@@ -134,23 +165,43 @@ class InvestmentController extends Controller
         // ترکیب تاریخ و ساعت
         $validated['investment_date'] = $gregorianDate . ' ' . $tehranTime;
         
+        // دریافت خودروی جدید
+        $newCar = Car::find($validated['car_id']);
+        
         // اگر خودرو تغییر کرده
         if ($investment->car_id != $validated['car_id']) {
-            // بررسی خودروی جدید
-            $newCar = Car::find($validated['car_id']);
+            // محاسبه مجموع سرمایه‌گذاری‌ها در خودروی جدید (بدون احتساب این سرمایه‌گذاری)
             $totalInvestedInNewCar = $newCar->investments()->sum('amount');
             
+            // بررسی محدودیت
             if (($totalInvestedInNewCar + $validated['amount']) > $newCar->purchase_price) {
-                return back()->withErrors(['amount' => 'مجموع سرمایه‌گذاری‌ها در خودروی جدید نمی‌تواند از قیمت آن بیشتر باشد.'])->withInput();
+                $remaining = $newCar->purchase_price - $totalInvestedInNewCar;
+                return back()->withErrors([
+                    'amount' => 'مجموع سرمایه‌گذاری‌ها در خودروی جدید نمی‌تواند از قیمت آن بیشتر باشد. '
+                        . 'مبلغ باقی‌مانده: ' . fa_currency($remaining)
+                ])->withInput();
             }
         } else {
             // خودرو ثابت است، فقط مبلغ تغییر کرده
-            $car = $investment->car;
-            $totalInvested = $car->investments()->where('id', '!=', $investment->id)->sum('amount');
+            $totalInvested = $newCar->investments()
+                ->where('id', '!=', $investment->id)
+                ->sum('amount');
             
-            if (($totalInvested + $validated['amount']) > $car->purchase_price) {
-                return back()->withErrors(['amount' => 'مجموع سرمایه‌گذاری‌ها نمی‌تواند از قیمت خودرو بیشتر باشد.'])->withInput();
+            if (($totalInvested + $validated['amount']) > $newCar->purchase_price) {
+                $remaining = $newCar->purchase_price - $totalInvested;
+                return back()->withErrors([
+                    'amount' => 'مجموع سرمایه‌گذاری‌ها نمی‌تواند از قیمت خودرو بیشتر باشد. '
+                        . 'مبلغ باقی‌مانده: ' . fa_currency($remaining)
+                ])->withInput();
             }
+        }
+
+        // بررسی درصد (اختیاری - می‌تونی خودکار محاسبه کنی)
+        $calculatedPercentage = ($validated['amount'] / $newCar->purchase_price) * 100;
+        if (abs($calculatedPercentage - $validated['percentage']) > 0.01) {
+            // اگر درصد با مبلغ همخوانی نداشت، می‌تونی خطا بدی یا خودکار اصلاح کنی
+            // اینجا خودکار اصلاح می‌کنیم
+            $validated['percentage'] = $calculatedPercentage;
         }
 
         // به‌روزرسانی سرمایه‌گذاری
@@ -162,7 +213,8 @@ class InvestmentController extends Controller
             Investor::find($validated['investor_id'])->updateTotalInvested();
         }
 
-        return redirect()->route('investments.index')->with('success', 'سرمایه‌گذاری با موفقیت ویرایش شد.');
+        return redirect()->route('investments.index')
+            ->with('success', 'سرمایه‌گذاری با موفقیت ویرایش شد.');
     }
 
     public function destroy(Investment $investment)
@@ -171,6 +223,7 @@ class InvestmentController extends Controller
         $investment->delete();
         $investor->updateTotalInvested();
         
-        return redirect()->route('investments.index')->with('success', 'سرمایه‌گذاری با موفقیت حذف شد.');
+        return redirect()->route('investments.index')
+            ->with('success', 'سرمایه‌گذاری با موفقیت حذف شد.');
     }
 }

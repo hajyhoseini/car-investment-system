@@ -48,6 +48,8 @@ class PermissionSeeder extends Seeder
             'view sales',
             'create sales',
             'view profits',
+            'delete sales',
+            'edit sales',
         ];
 
         // مجوزهای دارایی
@@ -176,34 +178,35 @@ class PermissionSeeder extends Seeder
         $adminRole->syncPermissions($allPermissions);
 
         // مدیر: مجوزهای مدیریتی (بدون حذف) + قیمت‌ها
-        $managerRole->syncPermissions([
-            // خودرو
-            'view cars', 'create cars', 'edit cars', 'sell cars',
-            // سرمایه‌گذار
-            'view investors', 'create investors', 'edit investors',
-            // سرمایه‌گذاری
-            'view investments', 'create investments', 'edit investments',
-            // فروش
-            'view sales', 'create sales', 'view profits',
-            // دارایی
-            'view assets', 'create assets', 'edit assets',
-            // تعهدات
-            'view liabilities', 'create liabilities', 'edit liabilities',
-            // اشخاص
-            'view people', 'create people', 'edit people',
-            // تراکنش
-            'view transactions', 'create transactions', 'edit transactions',
-            // حساب
-            'view accounts', 'create accounts', 'edit accounts',
-            // هزینه
-            'view expenses', 'create expenses', 'edit expenses',
-            // مطالبات
-            'view receivables', 'create receivables', 'edit receivables',
-            // **🆕 قیمت‌ها**
-            'view prices',
-            // داشبورد
-            'view dashboard',
-        ]);
+// مدیر: مجوزهای مدیریتی (بدون حذف) + قیمت‌ها
+$managerRole->syncPermissions([
+    // خودرو
+    'view cars', 'create cars', 'edit cars', 'sell cars',
+    // سرمایه‌گذار
+    'view investors', 'create investors', 'edit investors',
+    // سرمایه‌گذاری
+    'view investments', 'create investments', 'edit investments',
+    // فروش
+    'view sales', 'create sales', 'edit sales', 'view profits',  // edit sales اضافه شد
+    // دارایی
+    'view assets', 'create assets', 'edit assets',
+    // تعهدات
+    'view liabilities', 'create liabilities', 'edit liabilities',
+    // اشخاص
+    'view people', 'create people', 'edit people',
+    // تراکنش
+    'view transactions', 'create transactions', 'edit transactions',
+    // حساب
+    'view accounts', 'create accounts', 'edit accounts',
+    // هزینه
+    'view expenses', 'create expenses', 'edit expenses',
+    // مطالبات
+    'view receivables', 'create receivables', 'edit receivables',
+    // **🆕 قیمت‌ها**
+    'view prices',
+    // داشبورد
+    'view dashboard',
+]);
 
         // سرمایه‌گذار: فقط مشاهده
         $investorRole->syncPermissions([

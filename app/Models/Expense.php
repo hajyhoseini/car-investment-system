@@ -17,7 +17,7 @@ class Expense extends BaseModel
         'expense_date',
         'category',
         'car_id',
-        'person_id', // اضافه شد
+        'person_id',
         'account_id',
         'payment_method_id',
         'receipt_image',
@@ -26,7 +26,7 @@ class Expense extends BaseModel
     ];
 
     protected $casts = [
-        'expense_date' => 'date',
+        'expense_date' => 'datetime', // تغییر از 'date' به 'datetime'
         'amount' => 'decimal:2'
     ];
 
@@ -88,5 +88,37 @@ class Expense extends BaseModel
             'other' => 'سایر',
             default => $this->category,
         };
+    }
+
+    /**
+     * دریافت تاریخ هزینه به صورت شمسی
+     */
+    public function getExpenseDateJalaliAttribute(): string
+    {
+        return $this->expense_date ? jalali_date($this->expense_date) : '';
+    }
+
+    /**
+     * دریافت تاریخ هزینه به صورت شمسی با زمان
+     */
+    public function getExpenseDateJalaliFullAttribute(): string
+    {
+        return $this->expense_date ? jalali_datetime($this->expense_date) : '';
+    }
+
+    /**
+     * دریافت تاریخ ثبت به صورت شمسی
+     */
+    public function getCreatedAtJalaliAttribute(): string
+    {
+        return $this->created_at ? jalali_datetime($this->created_at) : '';
+    }
+
+    /**
+     * دریافت تاریخ آخرین بروزرسانی به صورت شمسی
+     */
+    public function getUpdatedAtJalaliAttribute(): string
+    {
+        return $this->updated_at ? jalali_datetime($this->updated_at) : '';
     }
 }

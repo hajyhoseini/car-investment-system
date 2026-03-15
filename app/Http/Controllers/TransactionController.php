@@ -192,57 +192,53 @@ public function store(Request $request)
         return view('transactions.edit', compact('transaction', 'accounts', 'people', 'paymentMethods', 'assets'));
     }
 
-    public function update(Request $request, Transaction $transaction)
-    {
-        $rules = [
-            'type' => 'required|in:income,expense',
-            'amount' => 'required|numeric|min:1000',
-            'transaction_date' => 'required|date',
-            'description' => 'nullable|string|max:255',
-            'notes' => 'nullable|string',
-            'status' => 'required|in:pending,completed,cancelled',
-        ];
+  public function update(Request $request, Transaction $transaction)
+{
+    $rules = [
+        'type' => 'required|in:income,expense',
+        'amount' => 'required|numeric|min:1000',
+        'transaction_date' => 'required|string',
+        'description' => 'nullable|string|max:255',
+        'notes' => 'nullable|string',
+        'status' => 'required|in:pending,completed,cancelled',
+    ];
 
-        if ($request->type === 'income') {
-            $rules['to_account_id'] = 'required|exists:assets,id';
-        } else {
-            $rules['from_account_id'] = 'required|exists:assets,id';
-        }
-
-        $rules['person_id'] = 'nullable|exists:people,id';
-        $rules['payment_method_id'] = 'nullable|exists:payment_methods,id';
-        $rules['check_number'] = 'nullable|string|max:50';
-        $rules['check_date'] = 'nullable|date';
-        $rules['asset_id'] = 'nullable|exists:assets,id';
-
-        $validated = $request->validate($rules);
-
-        // تبدیل account_id به asset_id
-        if (isset($validated['to_account_id'])) {
-            $validated['to_asset_id'] = $validated['to_account_id'];
-            unset($validated['to_account_id']);
-        }
-        
-        if (isset($validated['from_account_id'])) {
-            $validated['from_asset_id'] = $validated['from_account_id'];
-            unset($validated['from_account_id']);
-        }
-
-        DB::transaction(function () use ($transaction, $validated) {
-            if ($transaction->status === 'completed') {
-                $transaction->revertBalances();
-            }
-
-            $transaction->update($validated);
-
-            if ($transaction->status === 'completed') {
-                $transaction->updateBalances();
-            }
-        });
-
-        return redirect()->route('transactions.index')
-            ->with('success', 'تراکنش با موفقیت بروزرسانی شد.');
+    if ($request->type === 'income') {
+        $rules['to_asset_id'] = 'required|exists:assets,id'; // تغییر به to_asset_id
+    } else {
+        $rules['from_asset_id'] = 'required|exists:assets,id'; // تغییر به from_asset_id
     }
+
+    $rules['person_id'] = 'nullable|exists:people,id';
+    $rules['payment_method_id'] = 'nullable|exists:payment_methods,id';
+    $rules['check_number'] = 'nullable|string|max:50';
+    $rules['check_date'] = 'nullable|string';
+    $rules['asset_id'] = 'nullable|exists:assets,id';
+
+    $validated = $request->validate($rules);
+
+    // تبدیل تاریخ شمسی به میلادی
+    $validated['transaction_date'] = jalali_to_gregorian($request->transaction_date);
+    
+    if ($request->filled('check_date')) {
+        $validated['check_date'] = jalali_to_gregorian($request->check_date);
+    }
+
+    DB::transaction(function () use ($transaction, $validated) {
+        if ($transaction->status === 'completed') {
+            $transaction->revertBalances();
+        }
+
+        $transaction->update($validated);
+
+        if ($transaction->status === 'completed') {
+            $transaction->updateBalances();
+        }
+    });
+
+    return redirect()->route('transactions.index')
+        ->with('success', 'تراکنش با موفقیت بروزرسانی شد.');
+}
 
     public function destroy(Transaction $transaction)
     {

@@ -73,42 +73,29 @@ class ExpenseController extends Controller implements HasMiddleware
     /**
      * فرم ایجاد هزینه جدید
      */
-    public function create()
-    {
-        $cars = Car::where('status', '!=', 'sold')->get();
-        $people = Person::orderBy('full_name')->get();
-        
-        // تبدیل people به فرمت مناسب کامپوننت
-        $formattedPeople = $people->map(function($person) {
-            $text = $person->full_name;
-            $subtext = $person->company_name ?? $person->mobile ?? '';
-            return [
-                'id' => $person->id,
-                'text' => $text,
-                'subtext' => $subtext
-            ];
-        })->toArray();
-        
-        $accounts = Asset::where('type', 'bank')->where('is_active', true)->get();
-        $paymentMethods = PaymentMethod::where('is_active', true)->get();
+ public function create()
+{
+    $cars = Car::where('status', '!=', 'sold')->get();
+    $people = Person::orderBy('full_name')->get(); // بدون فرمت‌دهی
+    
+    $accounts = Asset::where('type', 'bank')->where('is_active', true)->get();
+    $paymentMethods = PaymentMethod::where('is_active', true)->get();
 
-        // دسته‌بندی‌های هزینه
-        $categories = [
-            'car_service' => 'خدمات خودرو',
-            'car_repair' => 'تعمیرات خودرو',
-            'car_wash' => 'کارواش',
-            'fuel' => 'سوخت',
-            'rent' => 'اجاره',
-            'snapp' => 'اسنپ/تاکسی',
-            'food' => 'غذا',
-            'office' => 'لوازم اداری',
-            'utility' => 'قبوض',
-            'other' => 'سایر',
-        ];
+    $categories = [
+        'car_service' => 'خدمات خودرو',
+        'car_repair' => 'تعمیرات خودرو',
+        'car_wash' => 'کارواش',
+        'fuel' => 'سوخت',
+        'rent' => 'اجاره',
+        'snapp' => 'اسنپ/تاکسی',
+        'food' => 'غذا',
+        'office' => 'لوازم اداری',
+        'utility' => 'قبوض',
+        'other' => 'سایر',
+    ];
 
-        return view('expenses.create', compact('cars', 'formattedPeople', 'accounts', 'paymentMethods', 'categories'));
-    }
-
+    return view('expenses.create', compact('cars', 'people', 'accounts', 'paymentMethods', 'categories'));
+}
     /**
      * ذخیره هزینه جدید
      */
@@ -169,18 +156,6 @@ class ExpenseController extends Controller implements HasMiddleware
     {
         $cars = Car::where('status', '!=', 'sold')->get();
         $people = Person::orderBy('full_name')->get();
-        
-        // تبدیل people به فرمت مناسب کامپوننت
-        $formattedPeople = $people->map(function($person) {
-            $text = $person->full_name;
-            $subtext = $person->company_name ?? $person->mobile ?? '';
-            return [
-                'id' => $person->id,
-                'text' => $text,
-                'subtext' => $subtext
-            ];
-        })->toArray();
-        
         $accounts = Asset::where('type', 'bank')->where('is_active', true)->get();
         $paymentMethods = PaymentMethod::where('is_active', true)->get();
 
@@ -197,7 +172,10 @@ class ExpenseController extends Controller implements HasMiddleware
             'other' => 'سایر',
         ];
 
-        return view('expenses.edit', compact('expense', 'cars', 'formattedPeople', 'accounts', 'paymentMethods', 'categories'));
+        // اضافه کردن تاریخ شمسی به expense
+        $expense->jalali_expense_date = $expense->expense_date_jalali;
+
+        return view('expenses.edit', compact('expense', 'cars', 'people', 'accounts', 'paymentMethods', 'categories'));
     }
 
     /**
@@ -209,7 +187,7 @@ class ExpenseController extends Controller implements HasMiddleware
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'amount' => 'required|numeric|min:1000',
-            'expense_date' => 'required|date',
+            'expense_date' => 'required|string',
             'category' => 'required|string',
             'car_id' => 'nullable|exists:cars,id',
             'person_id' => 'nullable|exists:people,id',
@@ -218,6 +196,9 @@ class ExpenseController extends Controller implements HasMiddleware
             'receipt_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'notes' => 'nullable|string',
         ]);
+
+        // تبدیل تاریخ شمسی به میلادی
+        $validated['expense_date'] = jalali_to_gregorian($request->expense_date);
 
         // مدیریت موجودی حساب در صورت تغییر
         if ($expense->account_id != $validated['account_id'] || $expense->amount != $validated['amount']) {

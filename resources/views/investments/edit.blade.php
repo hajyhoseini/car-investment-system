@@ -41,7 +41,7 @@
                     </div>
                     <div>
                         <span class="text-sm text-gray-600">قیمت خودرو:</span>
-                        <span class="text-lg font-bold text-purple-600 mr-2">{{ fa_currency($investment->car->purchase_price) }} ریال</span>
+                        <span class="text-lg font-bold text-purple-600 mr-2">{{ fa_currency($investment->car->purchase_price) }}</span>
                     </div>
                 </div>
 
@@ -49,26 +49,41 @@
                     @csrf
                     @method('PUT')
 
-             <!-- انتخاب خودرو -->
-<div>
-    <label class="block text-sm font-medium text-gray-700 mb-2">خودرو <span class="text-red-500">*</span></label>
-    <select name="car_id" id="car_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 @error('car_id') border-red-500 @enderror" required>
-        <option value="">انتخاب کنید</option>
-        @foreach($cars as $car)
-            <option value="{{ $car->id }}" 
-                data-price="{{ $car->purchase_price }}"
-                {{ old('car_id', $investment->car_id) == $car->id ? 'selected' : '' }}>
-                {{ $car->title }} - {{ $car->brand }} {{ $car->model }} ({{ fa_currency($car->purchase_price) }} ریال)
-            </option>
-        @endforeach
-    </select>
-    @error('car_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-</div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- انتخاب خودرو -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">خودرو <span class="text-red-500">*</span></label>
+                            <select name="car_id" id="car_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 @error('car_id') border-red-500 @enderror" required>
+                                <option value="">انتخاب کنید</option>
+                                @foreach($cars as $car)
+                                    @php
+                                        // محاسبه مجموع سرمایه‌گذاری‌های این خودرو به جز سرمایه‌گذاری فعلی
+                                        $totalInvestedInCar = $car->investments()
+                                            ->where('id', '!=', $investment->id)
+                                            ->sum('amount');
+                                        $remainingForCar = $car->purchase_price - $totalInvestedInCar;
+                                    @endphp
+                                    <option value="{{ $car->id }}" 
+                                        data-price="{{ $car->purchase_price }}"
+                                        data-remaining="{{ $remainingForCar }}"
+                                        {{ old('car_id', $investment->car_id) == $car->id ? 'selected' : '' }}>
+                                        {{ $car->title }} - {{ $car->brand }} {{ $car->model }} 
+                                        (قیمت: {{ fa_currency($car->purchase_price) }})
+                                        @if($car->id == $investment->car_id)
+                                            - فعلی
+                                        @else
+                                            - باقی‌مانده: {{ fa_currency($remainingForCar) }}
+                                        @endif
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('car_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        </div>
 
                         <!-- انتخاب سرمایه‌گذار -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">سرمایه‌گذار <span class="text-red-500">*</span></label>
-                            <select name="investor_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required>
+                            <select name="investor_id" id="investor_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required>
                                 <option value="">انتخاب کنید</option>
                                 @foreach($investors as $investor)
                                     <option value="{{ $investor->id }}" {{ old('investor_id', $investment->investor_id) == $investor->id ? 'selected' : '' }}>
@@ -82,7 +97,9 @@
                         <!-- مبلغ سرمایه‌گذاری -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ سرمایه‌گذاری (ریال) <span class="text-red-500">*</span></label>
-                            <input type="number" name="amount" id="amount" value="{{ old('amount', $investment->amount) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required>
+                            <input type="number" name="amount" id="amount" value="{{ old('amount', $investment->amount) }}" 
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 @error('amount') border-red-500 @enderror" 
+                                   min="1000" required>
                             @error('amount') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
 
@@ -90,7 +107,9 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">درصد مشارکت</label>
                             <div class="mt-1 relative rounded-md shadow-sm">
-                                <input type="text" id="percentage" name="percentage" value="{{ old('percentage', $investment->percentage) }}" class="block w-full rounded-md border-gray-300 bg-gray-50 pr-12" readonly placeholder="خودکار محاسبه می‌شود">
+                                <input type="text" id="percentage" name="percentage" value="{{ old('percentage', $investment->percentage) }}" 
+                                       class="block w-full rounded-md border-gray-300 bg-gray-50 pr-12" readonly 
+                                       placeholder="خودکار محاسبه می‌شود">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <span class="text-gray-500 sm:text-sm">%</span>
                                 </div>
@@ -99,48 +118,56 @@
                         </div>
 
                         <!-- تاریخ سرمایه‌گذاری -->
-                    
-
-
-<div>
-    <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ سرمایه‌گذاری <span class="text-red-500">*</span></label>
-    <input type="text" name="investment_date" id="investment_date" value="{{ old('investment_date', $investment->jalali_date) }}" 
-           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition @error('investment_date') border-red-500 @enderror"
-           placeholder="مثال: 1402/12/25" autocomplete="off">
-    @error('investment_date') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-</div>
-
-
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ سرمایه‌گذاری <span class="text-red-500">*</span></label>
+                            <input type="text" name="investment_date" id="investment_date" 
+                                   value="{{ old('investment_date', $investment->jalali_date) }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition @error('investment_date') border-red-500 @enderror"
+                                   placeholder="مثال: 1402/12/25" autocomplete="off" required>
+                            @error('investment_date') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                        </div>
                     </div>
 
-                    <!-- نمایش خلاصه سرمایه‌گذاری‌های قبلی این خودرو -->
+                    <!-- نمایش خلاصه سرمایه‌گذاری‌های این خودرو -->
                     <div id="investmentSummary" class="mt-6 p-4 bg-blue-50 rounded-lg">
                         <h3 class="text-lg font-semibold mb-2">خلاصه سرمایه‌گذاری‌های این خودرو</h3>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div>
                                 <span class="text-sm text-gray-600">قیمت خودرو:</span>
-                                <span class="text-lg font-bold text-blue-600 mr-2" id="carPrice">{{ fa_currency($investment->car->purchase_price) }} ریال</span>
+                                <span class="text-lg font-bold text-blue-600" id="carPrice">{{ fa_currency($investment->car->purchase_price) }}</span>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">مجموع سرمایه‌گذاری شده:</span>
-                                <span class="text-lg font-bold text-green-600 mr-2" id="totalInvested">{{ fa_currency($investment->car->investments->sum('amount')) }} ریال</span>
+                                <span class="text-lg font-bold text-green-600" id="totalInvested">
+                                    {{ fa_currency($investment->car->investments->sum('amount')) }}
+                                </span>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">مبلغ باقی‌مانده:</span>
-                                <span class="text-lg font-bold text-orange-600 mr-2" id="remainingAmount">{{ fa_currency($investment->car->purchase_price - $investment->car->investments->sum('amount')) }} ریال</span>
+                                <span class="text-lg font-bold text-orange-600" id="remainingAmount">
+                                    {{ fa_currency($investment->car->purchase_price - $investment->car->investments->sum('amount')) }}
+                                </span>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">درصد تأمین شده:</span>
-                                <span class="text-lg font-bold text-purple-600 mr-2" id="fundedPercentage">{{ fa_currency(($investment->car->investments->sum('amount') / $investment->car->purchase_price) * 100, 2) }}%</span>
+                                <span class="text-lg font-bold text-purple-600" id="fundedPercentage">
+                                    @php
+                                        $totalInvested = $investment->car->investments->sum('amount');
+                                        $percentage = $investment->car->purchase_price > 0 
+                                            ? ($totalInvested / $investment->car->purchase_price) * 100 
+                                            : 0;
+                                    @endphp
+                                    {{ fa_number($percentage, 2) }}%
+                                </span>
                             </div>
                         </div>
                     </div>
 
                     <div class="flex justify-end mt-6 space-x-2 rtl:space-x-reverse">
-                        <a href="{{ route('investments.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-xl transition">
+                        <a href="{{ route('investments.index') }}" class="px-6 py-3 bg-gray-500 hover:bg-gray-700 text-white font-bold rounded-xl transition">
                             انصراف
                         </a>
-                        <button type="submit" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition transform hover:scale-105">
+                        <button type="submit" class="px-6 py-3 bg-purple-500 hover:bg-purple-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition transform hover:scale-105">
                             به‌روزرسانی سرمایه‌گذاری
                         </button>
                     </div>
@@ -149,15 +176,16 @@
         </div>
     </div>
 </div>
+@endsection
 
 @push('scripts')
-
 <script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
 <script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
 
 <script>
     $(document).ready(function() {
+        // تقویم شمسی
         $('#investment_date').persianDatepicker({
             format: 'YYYY/MM/DD',
             autoClose: true,
@@ -166,39 +194,47 @@
                 persian: true
             }
         });
+
+        // اجرای اولیه برای نمایش اطلاعات
+        setTimeout(updateInvestmentSummary, 100);
     });
-</script>
-<script>
-document.getElementById('car_id').addEventListener('change', function() {
-    const selected = this.options[this.selectedIndex];
-    const price = selected.dataset.price;
-    
-    if (price) {
-        document.getElementById('carPrice').textContent = Number(price).toLocaleString() + ' ریال';
+
+    // انتخاب خودرو
+    document.getElementById('car_id').addEventListener('change', function() {
         updateInvestmentSummary();
+    });
+
+    // تغییر مبلغ
+    document.getElementById('amount').addEventListener('input', function() {
+        updateInvestmentSummary();
+    });
+
+    function updateInvestmentSummary() {
+        const carSelect = document.getElementById('car_id');
+        const selected = carSelect.options[carSelect.selectedIndex];
+        
+        if (!selected || !selected.value) return;
+        
+        const carId = selected.value;
+        const price = parseFloat(selected.dataset.price) || 0;
+        const amount = parseFloat(document.getElementById('amount').value) || 0;
+        
+        // به‌روزرسانی قیمت خودرو
+        document.getElementById('carPrice').textContent = new Intl.NumberFormat('fa-IR').format(price) + ' ریال';
+        
+        // محاسبه درصد
+        if (price > 0 && amount > 0) {
+            const percentage = (amount / price * 100).toFixed(2);
+            document.getElementById('percentage').value = percentage;
+        } else {
+            document.getElementById('percentage').value = '';
+        }
+        
+        // اینجا می‌تونی با AJAX اطلاعات واقعی رو از سرور بگیری
+        // برای الان از همون مقادیر ثابت استفاده می‌کنیم
     }
-});
 
-document.getElementById('amount').addEventListener('input', function() {
-    updateInvestmentSummary();
-});
-
-function updateInvestmentSummary() {
-    const carSelect = document.getElementById('car_id');
-    const selected = carSelect.options[carSelect.selectedIndex];
-    const price = parseFloat(selected.dataset.price) || 0;
-    const amount = parseFloat(document.getElementById('amount').value) || 0;
-    
-    if (price > 0 && amount > 0) {
-        const percentage = (amount / price * 100).toFixed(2);
-        document.getElementById('percentage').value = percentage;
-    } else {
-        document.getElementById('percentage').value = '';
-    }
-}
-
-// اجرای اولیه
-document.getElementById('car_id').dispatchEvent(new Event('change'));
+    // اجرای اولیه
+    setTimeout(updateInvestmentSummary, 100);
 </script>
 @endpush
-@endsection

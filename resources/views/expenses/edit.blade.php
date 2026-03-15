@@ -42,11 +42,15 @@
                         </div>
 
                         <!-- تاریخ هزینه -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ هزینه <span class="text-red-500">*</span></label>
-                            <input type="date" name="expense_date" value="{{ old('expense_date', $expense->expense_date) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition" required>
-                        </div>
+<!-- تاریخ هزینه (شمسی) -->
+<div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ هزینه <span class="text-red-500">*</span></label>
+    <input type="text" name="expense_date" id="expense_date" 
+           value="{{ old('expense_date', $expense->jalali_expense_date) }}" 
+           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('expense_date') border-red-500 @enderror"
+           placeholder="مثال: 1402/12/25" autocomplete="off" required>
+    @error('expense_date') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+</div>
 
                         <!-- دسته‌بندی -->
                         <div>

@@ -27,8 +27,8 @@ class Receivable extends BaseModel
     ];
 
     protected $casts = [
-        'receivable_date' => 'date',
-        'due_date' => 'date',
+        'receivable_date' => 'datetime',
+        'due_date' => 'datetime',
         'amount' => 'decimal:2',
         'paid_amount' => 'decimal:2',
         'remaining_amount' => 'decimal:2',

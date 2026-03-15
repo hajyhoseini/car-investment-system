@@ -84,23 +84,26 @@ class LiabilityController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Liability $liability)
-    {
-        $people = Person::orderBy('full_name')->get();
-        
-        // تبدیل people به فرمت مناسب کامپوننت
-        $formattedPeople = $people->map(function($person) {
-            $text = $person->full_name;
-            $subtext = $person->type_label . ($person->mobile ? ' - ' . $person->mobile : '');
-            return [
-                'id' => $person->id,
-                'text' => $text,
-                'subtext' => $subtext
-            ];
-        })->toArray();
-        
-        return view('liabilities.edit', compact('liability', 'formattedPeople'));
-    }
+public function edit(Liability $liability)
+{
+    $people = Person::orderBy('full_name')->get();
+    
+    // تبدیل people به فرمت مناسب کامپوننت
+    $formattedPeople = $people->map(function($person) {
+        $text = $person->full_name;
+        $subtext = $person->type_label . ($person->phone ? ' - ' . $person->phone : '');
+        return [
+            'id' => $person->id,
+            'text' => $text,
+            'subtext' => $subtext
+        ];
+    })->toArray();
+    
+    // اضافه کردن تاریخ شمسی به liability
+    $liability->jalali_due_date = $liability->jalali_due_date;
+    
+    return view('liabilities.edit', compact('liability', 'formattedPeople'));
+}
 
     /**
      * Update the specified resource in storage.

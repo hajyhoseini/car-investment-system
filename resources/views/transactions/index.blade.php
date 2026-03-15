@@ -98,50 +98,50 @@
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">عملیات</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($transactions as $transaction)
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->transaction_number }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->transaction_date }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 rounded-full text-xs 
-                                        @if($transaction->type == 'income') bg-green-100 text-green-800
-                                        @else bg-red-100 text-red-800
-                                        @endif">
-                                        {{ $transaction->type_label }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap font-bold">{{ number_format($transaction->amount) }} ریال</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->fromAccount->name ?? '—' }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->toAccount->name ?? '—' }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->person->full_name ?? '—' }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 rounded-full text-xs 
-                                        @if($transaction->status == 'completed') bg-green-100 text-green-800
-                                        @elseif($transaction->status == 'pending') bg-yellow-100 text-yellow-800
-                                        @else bg-red-100 text-red-800
-                                        @endif">
-                                        {{ $transaction->status_label }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center space-x-2">
-                                        <a href="{{ route('transactions.show', $transaction) }}" class="text-blue-600 hover:text-blue-900" title="نمایش">
-                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                            </svg>
-                                        </a>
-                                        <a href="{{ route('transactions.edit', $transaction) }}" class="text-green-600 hover:text-green-900" title="ویرایش">
-                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                            </svg>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
+                      <tbody class="bg-white divide-y divide-gray-200">
+    @foreach($transactions as $transaction)
+    <tr>
+        <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->transaction_number }}</td>
+        <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->transaction_date }}</td>
+        <td class="px-6 py-4 whitespace-nowrap">
+            <span class="px-2 py-1 rounded-full text-xs 
+                @if($transaction->type == 'income') bg-green-100 text-green-800
+                @else bg-red-100 text-red-800
+                @endif">
+                {{ $transaction->type_label }}
+            </span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap font-bold">{{ number_format($transaction->amount) }} ریال</td>
+        <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->fromAsset->name ?? '—' }}</td>
+        <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->toAsset->name ?? '—' }}</td>
+        <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->person->full_name ?? '—' }}</td>
+        <td class="px-6 py-4 whitespace-nowrap">
+            <span class="px-2 py-1 rounded-full text-xs 
+                @if($transaction->status == 'completed') bg-green-100 text-green-800
+                @elseif($transaction->status == 'pending') bg-yellow-100 text-yellow-800
+                @else bg-red-100 text-red-800
+                @endif">
+                {{ $transaction->status_label }}
+            </span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center space-x-2">
+                <a href="{{ route('transactions.show', $transaction) }}" class="text-blue-600 hover:text-blue-900" title="نمایش">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                </a>
+                <a href="{{ route('transactions.edit', $transaction) }}" class="text-green-600 hover:text-green-900" title="ویرایش">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                </a>
+            </div>
+        </td>
+    </tr>
+    @endforeach
+</tbody>
                     </table>
                 </div>
 
