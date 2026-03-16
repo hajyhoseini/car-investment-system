@@ -20,12 +20,25 @@
                     @endcan
                 </div>
 
+                <!-- پیام‌ها -->
+                @if(session('success'))
+                    <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
                 <!-- کارت‌های آماری -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
                     <div class="bg-blue-50 border border-blue-100 rounded-xl p-5 text-center">
                         <div class="text-sm text-blue-700 font-medium mb-1">کل مبلغ سرمایه‌گذاری شده</div>
                         <div class="text-3xl font-bold text-blue-800">
-                            {{ fa_currency($investments->sum('amount')) }} <span class="text-xl">ریال</span>
+                            {{ number_format($investments->sum('amount')) }} <span class="text-xl">ریال</span>
                         </div>
                     </div>
 
@@ -37,7 +50,7 @@
                     <div class="bg-purple-50 border border-purple-100 rounded-xl p-5 text-center">
                         <div class="text-sm text-purple-700 font-medium mb-1">میانگین هر سرمایه‌گذاری</div>
                         <div class="text-3xl font-bold text-purple-800">
-                            {{ fa_currency($investments->avg('amount') ?? 0) }} <span class="text-xl">ریال</span>
+                            {{ number_format($investments->avg('amount') ?? 0) }} <span class="text-xl">ریال</span>
                         </div>
                     </div>
                 </div>
@@ -47,6 +60,7 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
+                                <th class="px-4 py-3.5 text-right text-sm font-semibold text-gray-700">#</th>
                                 <th class="px-4 py-3.5 text-right text-sm font-semibold text-gray-700">خودرو</th>
                                 <th class="px-4 py-3.5 text-right text-sm font-semibold text-gray-700">سرمایه‌گذار</th>
                                 <th class="px-4 py-3.5 text-right text-sm font-semibold text-gray-700">مبلغ سرمایه‌گذاری</th>
@@ -56,42 +70,40 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 bg-white">
-                            @forelse($investments as $investment)
+                            @forelse($investments as $index => $investment)
                                 <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-4 py-4 text-sm">
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ $investments->firstItem() + $index }}</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm">
                                         <a href="{{ route('cars.show', $investment->car) }}"
                                            class="text-blue-600 hover:text-blue-800 hover:underline font-medium">
                                             {{ $investment->car->title ?? '—' }}
                                         </a>
                                     </td>
-                                    <td class="px-4 py-4 text-sm">
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm">
                                         <a href="{{ route('investors.show', $investment->investor) }}"
                                            class="text-blue-600 hover:text-blue-800 hover:underline font-medium">
                                             {{ $investment->investor->full_name ?? '—' }}
                                         </a>
                                     </td>
-                                    <td class="px-4 py-4 text-sm font-bold text-green-700">
-                                        {{ fa_currency($investment->amount) }} ریال
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-green-700">
+                                        {{ number_format($investment->amount) }} ریال
                                     </td>
-                                    <td class="px-4 py-4 text-sm">
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                            {{ fa_currency($investment->percentage ?? 0, 2) }}%
+                                            {{ number_format($investment->percentage ?? 0, 2) }}%
                                         </span>
                                     </td>
-                               
-
-<td>
-    <div class="flex flex-col">
-        <span>{{ jalali_date($investment->investment_date) }}</span>
-        <span class="text-xs text-gray-500">{{ jalali_time($investment->investment_date) }}</span>
-    </div>
-</td>
-
-                                    <td class="px-4 py-4 text-sm font-medium">
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm">
+                                        <div class="flex flex-col">
+                                            <span>{{ jalali_date($investment->investment_date) }}</span>
+                                            <span class="text-xs text-gray-500">{{ jalali_time($investment->investment_date) }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex items-center gap-x-3">
                                             @can('view investments')
                                                 <a href="{{ route('investments.show', $investment) }}"
-                                                   class="text-indigo-600 hover:text-indigo-800 transition" title="نمایش جزئیات">
+                                                   class="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition" title="نمایش جزئیات">
                                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                     </svg>
@@ -100,18 +112,30 @@
 
                                             @can('edit investments')
                                                 <a href="{{ route('investments.edit', $investment) }}"
-                                                   class="text-green-600 hover:text-green-800 transition" title="ویرایش">
+                                                   class="text-green-600 hover:text-green-800 p-1 rounded hover:bg-green-50 transition" title="ویرایش">
                                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                     </svg>
                                                 </a>
+                                            @endcan
+
+                                            @can('delete investments')
+                                                <form action="{{ route('investments.destroy', $investment) }}" method="POST" class="inline" onsubmit="return confirm('آیا از حذف این سرمایه‌گذاری به مبلغ {{ number_format($investment->amount) }} ریال اطمینان دارید؟');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition" title="حذف">
+                                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                </form>
                                             @endcan
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                    <td colspan="7" class="px-6 py-12 text-center text-gray-500">
                                         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>

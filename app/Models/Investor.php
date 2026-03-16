@@ -1,5 +1,4 @@
 <?php
-// app/Models/Investor.php
 
 namespace App\Models;
 
@@ -9,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Investor extends Model
 {
     protected $fillable = [
-        'person_id',  // به جای فیلدهای قبلی
+        'person_id',
         'user_id',
         'description'
     ];
@@ -65,5 +64,21 @@ class Investor extends Model
     public function getPhoneAttribute()
     {
         return $this->person?->phone;
+    }
+
+    /**
+     * محاسبه کل سرمایه‌گذاری
+     */
+    public function getTotalInvestedAttribute()
+    {
+        return $this->investments()->sum('amount');
+    }
+
+    // اگه می‌خوای متد جداگانه داشته باشی (برای مواقعی که نیاز به به‌روزرسانی داری)
+    public function updateTotalInvested()
+    {
+        // اینجا می‌تونی هر کار دیگه‌ای که نیاز داری انجام بدی
+        // مثلاً به‌روزرسانی یه فیلد کش شده توی دیتابیس
+        return $this->total_invested;
     }
 }
