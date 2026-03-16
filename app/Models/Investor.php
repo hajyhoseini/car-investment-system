@@ -1,62 +1,69 @@
 <?php
+// app/Models/Investor.php
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Investor extends Model
 {
     protected $fillable = [
+        'person_id',  // به جای فیلدهای قبلی
         'user_id',
-        'full_name',
-        'national_code',
-        'phone',
-        'email',
-        'address',
-        'total_invested'
+        'description'
     ];
 
     protected $casts = [
-        'total_invested' => 'decimal:2'
+        'user_id' => 'integer',
+        'person_id' => 'integer'
     ];
 
+    /**
+     * رابطه با Person
+     */
+    public function person(): BelongsTo
+    {
+        return $this->belongsTo(Person::class);
+    }
+
+    /**
+     * رابطه با User
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function investments(): HasMany
+    /**
+     * رابطه با سرمایه‌گذاری‌ها
+     */
+    public function investments()
     {
         return $this->hasMany(Investment::class);
     }
 
-    public function updateTotalInvested(): void
+    /**
+     * دریافت نام سرمایه‌گذار از طریق Person
+     */
+    public function getFullNameAttribute()
     {
-        $this->total_invested = $this->investments()->sum('amount');
-        $this->save();
+        return $this->person?->display_name ?? 'نامشخص';
     }
 
     /**
-     * ایجاد سرمایه‌گذار برای کاربر (اگه نداره)
+     * دریافت کد ملی از طریق Person
      */
-    public static function findOrCreateForUser(User $user): self
+    public function getNationalCodeAttribute()
     {
-        $investor = self::where('user_id', $user->id)->first();
-        
-        if (!$investor) {
-            $investor = self::create([
-                'user_id' => $user->id,
-                'full_name' => $user->name,
-                'national_code' => '0000000000' . $user->id,
-                'phone' => '09120000000',
-                'email' => $user->email,
-                'address' => 'تهران',
-                'total_invested' => 0,
-            ]);
-        }
-        
-        return $investor;
+        return $this->person?->national_code;
+    }
+
+    /**
+     * دریافت تلفن از طریق Person
+     */
+    public function getPhoneAttribute()
+    {
+        return $this->person?->phone;
     }
 }

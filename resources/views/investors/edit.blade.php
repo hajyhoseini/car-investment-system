@@ -6,7 +6,7 @@
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6 bg-white border-b border-gray-200">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold">ویرایش سرمایه‌گذار: {{ $investor->full_name }}</h2>
+                    <h2 class="text-2xl font-bold">ویرایش سرمایه‌گذار: {{ $investor->person?->display_name ?? 'نامشخص' }}</h2>
                     <div class="flex gap-2">
                         <a href="{{ route('investors.show', $investor) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">
                             نمایش جزئیات
@@ -34,64 +34,81 @@
                     @method('PUT')
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- نام کامل -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">نام و نام خانوادگی <span class="text-red-500">*</span></label>
-                            <input type="text" name="full_name" value="{{ old('full_name', $investor->full_name) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition @error('full_name') border-red-500 @enderror" 
-                                   required>
-                            @error('full_name') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                        </div>
-
-                        <!-- کد ملی -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">کد ملی <span class="text-red-500">*</span></label>
-                            <input type="text" name="national_code" value="{{ old('national_code', $investor->national_code) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition @error('national_code') border-red-500 @enderror" 
-                                   required>
-                            @error('national_code') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                        </div>
-
-                        <!-- تلفن -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">تلفن <span class="text-red-500">*</span></label>
-                            <input type="text" name="phone" value="{{ old('phone', $investor->phone) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition @error('phone') border-red-500 @enderror" 
-                                   required>
-                            @error('phone') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                        </div>
-
-                        <!-- ایمیل -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">ایمیل</label>
-                            <input type="email" name="email" value="{{ old('email', $investor->email) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition @error('email') border-red-500 @enderror">
-                            @error('email') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                        </div>
-
-                        <!-- آدرس -->
+                        <!-- انتخاب شخص با کامپوننت searchable-select -->
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">آدرس</label>
-                            <textarea name="address" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition @error('address') border-red-500 @enderror">{{ old('address', $investor->address) }}</textarea>
-                            @error('address') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                            <x-searchable-select 
+                                name="person_id"
+                                label="انتخاب شخص"
+                                :options="$formattedPeople"
+                                :selected="old('person_id', $investor->person_id)"
+                                placeholder="جستجوی شخص..."
+                                required="true"
+                            />
+                            <p class="text-xs text-gray-500 mt-1">با تغییر شخص، اطلاعات سرمایه‌گذار به شخص جدید متصل می‌شود</p>
+                            <div class="mt-2 text-sm">
+                                <a href="{{ route('people.create') }}" target="_blank" class="text-indigo-600 hover:text-indigo-900">
+                                    + ایجاد شخص جدید
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- توضیحات -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">توضیحات</label>
+                            <textarea name="description" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition @error('description') border-red-500 @enderror" 
+                                      placeholder="توضیحات اضافی...">{{ old('description', $investor->description) }}</textarea>
+                            @error('description') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <!-- اطلاعات تکمیلی شخص انتخاب شده -->
+                    <div id="person_info" class="mt-6 p-4 bg-gray-50 rounded-xl {{ $investor->person_id ? '' : 'hidden' }}">
+                        <h4 class="font-bold text-md mb-3 text-green-600">اطلاعات شخص انتخاب شده:</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <span class="text-gray-600">نام و نام خانوادگی:</span>
+                                <span id="info_full_name" class="font-medium mr-1 block mt-1">{{ $investor->person?->full_name ?? '---' }}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">کد ملی:</span>
+                                <span id="info_national_code" class="font-medium mr-1 block mt-1">{{ $investor->person?->national_code ?? '---' }}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">تلفن:</span>
+                                <span id="info_phone" class="font-medium mr-1 block mt-1">{{ $investor->person?->phone ?? '---' }}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">نوع شخص:</span>
+                                <span id="info_type" class="font-medium mr-1 block mt-1">{{ $investor->person?->type_label ?? '---' }}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">ایمیل:</span>
+                                <span id="info_email" class="font-medium mr-1 block mt-1">{{ $investor->person?->email ?? '---' }}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">آدرس:</span>
+                                <span id="info_address" class="font-medium mr-1 block mt-1">{{ $investor->person?->address ?? '---' }}</span>
+                            </div>
                         </div>
                     </div>
 
                     <!-- خلاصه اطلاعات مالی -->
-                    <div class="mt-8 p-4 bg-gray-50 rounded-xl">
+                    <div class="mt-8 p-4 bg-gray-50 rounded-xl border border-green-200">
                         <h3 class="text-lg font-semibold mb-4 text-green-600">اطلاعات مالی</h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <span class="text-sm text-gray-600">کل سرمایه‌گذاری:</span>
-                                <span class="block text-xl font-bold text-green-600">{{ fa_currency($investor->total_invested) }} ریال</span>
+                                <span class="block text-xl font-bold text-green-600">{{ number_format($investor->investments->sum('amount')) }} ریال</span>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">تعداد سرمایه‌گذاری:</span>
                                 <span class="block text-xl font-bold text-blue-600">{{ $investor->investments->count() }}</span>
                             </div>
                             <div>
-                                <span class="text-sm text-gray-600">تاریخ ثبت‌نام:</span>
-                                <span class="block text-xl font-bold text-purple-600">{{ $investor->created_at->format('Y/m/d') }}</span>
+                                <span class="text-sm text-gray-600">آخرین سرمایه‌گذاری:</span>
+                                <span class="block text-xl font-bold text-purple-600">
+                                    {{ $investor->investments->max('created_at') ? \Carbon\Carbon::parse($investor->investments->max('created_at'))->format('Y/m/d') : '---' }}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -110,3 +127,36 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // گوش دادن به تغییرات سلکت باکس (برای کامپوننت searchable-select)
+    $(document).on('change', 'select[name="person_id"]', function() {
+        var selected = $(this).find(':selected');
+        var personId = $(this).val();
+        
+        if (personId) {
+            // اطلاعات از data-attributes سلکت شده
+            var fullName = selected.text().split('(')[0].trim();
+            var nationalCode = selected.data('national-code');
+            var phone = selected.data('phone');
+            var type = selected.data('type-label');
+            var email = selected.data('email');
+            var address = selected.data('address');
+            
+            $('#info_full_name').text(fullName || '---');
+            $('#info_national_code').text(nationalCode || '---');
+            $('#info_phone').text(phone || '---');
+            $('#info_type').text(type || '---');
+            $('#info_email').text(email || '---');
+            $('#info_address').text(address || '---');
+            
+            $('#person_info').removeClass('hidden');
+        } else {
+            $('#person_info').addClass('hidden');
+        }
+    });
+});
+</script>
+@endpush

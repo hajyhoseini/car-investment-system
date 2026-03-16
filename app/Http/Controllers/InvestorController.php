@@ -3,34 +3,51 @@
 namespace App\Http\Controllers;
 
 use App\Models\Investor;
+use App\Models\Person;
 use Illuminate\Http\Request;
 
 class InvestorController extends Controller
 {
-public function index()
-{
-    $investors = Investor::with('user')
-        ->whereNotNull('user_id')
-        ->orWhereNull('user_id')
-        ->latest()
-        ->paginate(10);
-    
-    return view('investors.index', compact('investors'));
-}
+    public function index()
+    {
+        $investors = Investor::with('person', 'user')
+            ->whereNotNull('user_id')
+            ->orWhereNull('user_id')
+            ->latest()
+            ->paginate(10);
+        
+        return view('investors.index', compact('investors'));
+    }
 
     public function create()
     {
-        return view('investors.create');
+        $people = Person::whereNotIn('id', Investor::pluck('person_id')->filter())
+            ->orderBy('full_name')
+            ->get();
+        
+        // فرمت کردن اشخاص برای کامپوننت searchable-select
+        $formattedPeople = $people->map(function($person) {
+            return [
+                'id' => $person->id,
+                'text' => $person->display_name . ($person->national_code ? ' (کد ملی: ' . $person->national_code . ')' : ''),
+                'data' => [
+                    'national-code' => $person->national_code,
+                    'phone' => $person->phone,
+                    'type-label' => $person->type_label,
+                    'email' => $person->email,
+                    'address' => $person->address
+                ]
+            ];
+        })->toArray();
+            
+        return view('investors.create', compact('formattedPeople'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'full_name' => 'required|string|max:255',
-            'national_code' => 'required|string|unique:investors|max:10',
-            'phone' => 'required|string|max:15',
-            'email' => 'nullable|email|max:255',
-            'address' => 'nullable|string',
+            'person_id' => 'required|exists:people,id|unique:investors,person_id',
+            'description' => 'nullable|string'
         ]);
 
         Investor::create($validated);
@@ -40,23 +57,40 @@ public function index()
 
     public function show(Investor $investor)
     {
-        $investor->load('investments.car');
+        $investor->load(['person', 'investments.car']);
         return view('investors.show', compact('investor'));
     }
 
     public function edit(Investor $investor)
     {
-        return view('investors.edit', compact('investor'));
+        $people = Person::whereNotIn('id', Investor::where('id', '!=', $investor->id)->pluck('person_id')->filter())
+            ->orWhere('id', $investor->person_id)
+            ->orderBy('full_name')
+            ->get();
+        
+        // فرمت کردن اشخاص برای کامپوننت searchable-select
+        $formattedPeople = $people->map(function($person) {
+            return [
+                'id' => $person->id,
+                'text' => $person->display_name . ($person->national_code ? ' (کد ملی: ' . $person->national_code . ')' : ''),
+                'data' => [
+                    'national-code' => $person->national_code,
+                    'phone' => $person->phone,
+                    'type-label' => $person->type_label,
+                    'email' => $person->email,
+                    'address' => $person->address
+                ]
+            ];
+        })->toArray();
+            
+        return view('investors.edit', compact('investor', 'formattedPeople'));
     }
 
     public function update(Request $request, Investor $investor)
     {
         $validated = $request->validate([
-            'full_name' => 'required|string|max:255',
-            'national_code' => 'required|string|unique:investors,national_code,' . $investor->id,
-            'phone' => 'required|string|max:15',
-            'email' => 'nullable|email|max:255',
-            'address' => 'nullable|string',
+            'person_id' => 'required|exists:people,id|unique:investors,person_id,' . $investor->id,
+            'description' => 'nullable|string'
         ]);
 
         $investor->update($validated);
