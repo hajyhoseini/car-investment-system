@@ -61,7 +61,11 @@ class InvestorSeeder extends Seeder
         ];
 
         foreach ($investors as $investor) {
-            Investor::create($investor);
+            // به جای create از firstOrCreate استفاده کن
+            Investor::firstOrCreate(
+                ['national_code' => $investor['national_code']], // شرط یکتا
+                $investor // داده‌های کامل
+            );
         }
     }
 }
