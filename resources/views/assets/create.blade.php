@@ -34,6 +34,43 @@
                             @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
 
+                        <!-- فیلدهای مخصوص حساب بانکی -->
+                        <div id="bankFields" class="hidden md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">نام بانک</label>
+                                <input type="text" name="bank_name" value="{{ old('bank_name') }}" 
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" 
+                                       placeholder="مثال: ملت">
+                                @error('bank_name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">شماره حساب</label>
+                                <input type="text" name="account_number" value="{{ old('account_number') }}" 
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" 
+                                       placeholder="مثال: 1234567890">
+                                @error('account_number') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">شماره کارت</label>
+                                <input type="text" name="card_number" value="{{ old('card_number') }}" 
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" 
+                                       placeholder="مثال: 1234-5678-9012-3456" 
+                                       maxlength="20">
+                                @error('card_number') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">شماره شبا</label>
+                                <input type="text" name="sheba_number" value="{{ old('sheba_number') }}" 
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" 
+                                       placeholder="مثال: IR12345678901234567890" 
+                                       maxlength="30">
+                                @error('sheba_number') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+
                         <!-- مقدار (بسته به نوع تغییر می‌کند) -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700" id="amountLabel">مقدار</label>
@@ -53,6 +90,20 @@
                                 :min="0"
                                 formId="assetForm"
                             />
+                        </div>
+
+                        <!-- وضعیت فعال/غیرفعال -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">وضعیت</label>
+                            <div class="mt-2">
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }} 
+                                           class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                    <span class="mr-2 text-sm text-gray-600">فعال</span>
+                                </label>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">در صورت غیرفعال بودن، دارایی در لیست‌ها نمایش داده نمی‌شود</p>
+                            @error('is_active') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- توضیحات -->
@@ -81,11 +132,9 @@
 
 @push('scripts')
 <script>
-    // منتظر می‌مونیم تا DOM کامل لود بشه و کامپوننت‌ها آماده بشن
     document.addEventListener('DOMContentLoaded', function() {
-        // یک تابع برای آپدیت کردن فیلدها براساس نوع دارایی
+        // تابع برای آپدیت کردن فیلدها براساس نوع دارایی
         function updateFieldsByType() {
-            // مقدار نوع دارایی رو از کامپوننت می‌گیریم
             const typeSelect = document.querySelector('[x-data*="type"]');
             if (!typeSelect || !typeSelect.__x) return;
             
@@ -93,40 +142,51 @@
             const type = typeData.selectedValue;
             
             const amountLabel = document.getElementById('amountLabel');
+            const amountInput = document.getElementById('amount');
             const valueField = document.getElementById('valueField');
+            const bankFields = document.getElementById('bankFields');
+            
+            // مخفی کردن همه فیلدهای شرطی اول
+            bankFields.classList.add('hidden');
+            valueField.classList.remove('hidden');
             
             switch(type) {
                 case 'bank':
                     amountLabel.textContent = 'موجودی (ریال)';
+                    amountInput.step = '1';
+                    amountInput.placeholder = 'مثال: ۵۰,۰۰۰,۰۰۰';
                     valueField.classList.add('hidden');
+                    bankFields.classList.remove('hidden');
                     break;
                 case 'dollar':
                     amountLabel.textContent = 'مقدار (دلار)';
-                    valueField.classList.remove('hidden');
+                    amountInput.step = '0.01';
+                    amountInput.placeholder = 'مثال: ۱۰۰۰';
                     break;
                 case 'gold':
                     amountLabel.textContent = 'مقدار (گرم)';
-                    valueField.classList.remove('hidden');
+                    amountInput.step = '0.001';
+                    amountInput.placeholder = 'مثال: ۱۸.۵';
                     break;
                 default:
                     amountLabel.textContent = 'مقدار';
-                    valueField.classList.remove('hidden');
+                    amountInput.step = '0.01';
+                    amountInput.placeholder = '۰';
             }
         }
 
         // گوش دادن به تغییرات نوع دارایی
         const typeSelect = document.querySelector('[x-data*="type"]');
         if (typeSelect) {
-            // با هر تغییری در کامپوننت
             typeSelect.addEventListener('change', function(e) {
                 setTimeout(updateFieldsByType, 50);
             });
             
-            // برای مقداردهی اولیه
+            // مقداردهی اولیه
             setTimeout(updateFieldsByType, 200);
         }
 
-        // اطمینان از اینکه مقدار value موقع ارسال فرم درست هست
+        // مدیریت ارسال فرم
         document.getElementById('assetForm')?.addEventListener('submit', function(e) {
             const typeSelect = document.querySelector('[x-data*="type"]');
             if (!typeSelect || !typeSelect.__x) return true;
@@ -134,11 +194,23 @@
             const typeData = typeSelect.__x.$data;
             const type = typeData.selectedValue;
             
-            // برای حساب بانکی، value نباید ارسال بشه
+            // برای حساب بانکی، فیلدهای اضافی رو فعال می‌ذاریم
             if (type === 'bank') {
+                // مقدار value رو خالی می‌کنیم چون نیازی نیست
                 const valueInput = document.querySelector('[name="value"]');
                 if (valueInput) {
-                    valueInput.value = ''; // مقدار رو خالی می‌کنیم
+                    valueInput.disabled = true;
+                }
+            } else {
+                // برای غیرحساب بانکی، فیلدهای بانکی رو غیرفعال می‌کنیم
+                const bankInputs = document.querySelectorAll('#bankFields input');
+                bankInputs.forEach(input => {
+                    input.disabled = true;
+                });
+                
+                const valueInput = document.querySelector('[name="value"]');
+                if (valueInput) {
+                    valueInput.disabled = false;
                 }
             }
             

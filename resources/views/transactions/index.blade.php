@@ -25,6 +25,12 @@
                     </div>
                 @endif
 
+                @if(session('error'))
+                    <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
                 <!-- فیلترها -->
                 <div class="mb-6 p-4 bg-gray-50 rounded-lg">
                     <form method="GET" action="{{ route('transactions.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -55,7 +61,10 @@
                                 <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>لغو شده</option>
                             </select>
                         </div>
-                        <div class="md:col-span-4 flex justify-end">
+                        <div class="md:col-span-4 flex justify-end gap-2">
+                            <a href="{{ route('transactions.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg transition">
+                                حذف فیلترها
+                            </a>
                             <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition">
                                 اعمال فیلتر
                             </button>
@@ -98,58 +107,137 @@
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">عملیات</th>
                             </tr>
                         </thead>
-                      <tbody class="bg-white divide-y divide-gray-200">
-    @foreach($transactions as $transaction)
-    <tr>
-        <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->transaction_number }}</td>
-        <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->transaction_date }}</td>
-        <td class="px-6 py-4 whitespace-nowrap">
-            <span class="px-2 py-1 rounded-full text-xs 
-                @if($transaction->type == 'income') bg-green-100 text-green-800
-                @else bg-red-100 text-red-800
-                @endif">
-                {{ $transaction->type_label }}
-            </span>
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap font-bold">{{ number_format($transaction->amount) }} ریال</td>
-        <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->fromAsset->name ?? '—' }}</td>
-        <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->toAsset->name ?? '—' }}</td>
-        <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->person->full_name ?? '—' }}</td>
-        <td class="px-6 py-4 whitespace-nowrap">
-            <span class="px-2 py-1 rounded-full text-xs 
-                @if($transaction->status == 'completed') bg-green-100 text-green-800
-                @elseif($transaction->status == 'pending') bg-yellow-100 text-yellow-800
-                @else bg-red-100 text-red-800
-                @endif">
-                {{ $transaction->status_label }}
-            </span>
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap">
-            <div class="flex items-center space-x-2">
-                <a href="{{ route('transactions.show', $transaction) }}" class="text-blue-600 hover:text-blue-900" title="نمایش">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                    </svg>
-                </a>
-                <a href="{{ route('transactions.edit', $transaction) }}" class="text-green-600 hover:text-green-900" title="ویرایش">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                    </svg>
-                </a>
-            </div>
-        </td>
-    </tr>
-    @endforeach
-</tbody>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @forelse($transactions as $transaction)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->transaction_number }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->transaction_date }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 py-1 rounded-full text-xs 
+                                        @if($transaction->type == 'income') bg-green-100 text-green-800
+                                        @else bg-red-100 text-red-800
+                                        @endif">
+                                        {{ $transaction->type_label }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap font-bold">{{ number_format($transaction->amount) }} ریال</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->fromAsset->name ?? '—' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->toAsset->name ?? '—' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->person->full_name ?? '—' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 py-1 rounded-full text-xs 
+                                        @if($transaction->status == 'completed') bg-green-100 text-green-800
+                                        @elseif($transaction->status == 'pending') bg-yellow-100 text-yellow-800
+                                        @else bg-red-100 text-red-800
+                                        @endif">
+                                        {{ $transaction->status_label }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center space-x-3 rtl:space-x-reverse">
+                                        <a href="{{ route('transactions.show', $transaction) }}" class="text-blue-600 hover:text-blue-900" title="نمایش">
+                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                            </svg>
+                                        </a>
+                                        <a href="{{ route('transactions.edit', $transaction) }}" class="text-green-600 hover:text-green-900" title="ویرایش">
+                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </a>
+                                        <button onclick="confirmDelete({{ $transaction->id }}, '{{ $transaction->transaction_number }}')" 
+                                                class="text-red-600 hover:text-red-900" title="حذف">
+                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <p class="mt-4 text-lg">هیچ تراکنشی یافت نشد</p>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
                     </table>
                 </div>
 
                 <div class="mt-4">
-                    {{ $transactions->links() }}
+                    {{ $transactions->withQueryString()->links() }}
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- مودال تأیید حذف -->
+<div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+        <div class="text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">تأیید حذف</h3>
+            <p class="text-sm text-gray-500 mb-4">
+                آیا از حذف تراکنش <span id="transactionNumber" class="font-bold text-red-600"></span> اطمینان دارید؟
+            </p>
+            <p class="text-xs text-red-500 mb-4">
+                توجه: در صورت تکمیل بودن تراکنش، موجودی حساب نیز اصلاح خواهد شد.
+            </p>
+            <div class="flex justify-center gap-3">
+                <button onclick="closeDeleteModal()" 
+                        class="px-4 py-2 bg-gray-500 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition">
+                    انصراف
+                </button>
+                <form id="deleteForm" method="POST" class="inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" 
+                            class="px-4 py-2 bg-red-600 hover:bg-red-800 text-white text-sm font-medium rounded-lg transition">
+                        بله، حذف کن
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    function confirmDelete(transactionId, transactionNumber) {
+        document.getElementById('transactionNumber').textContent = transactionNumber;
+        const deleteForm = document.getElementById('deleteForm');
+        deleteForm.action = '{{ url("transactions") }}/' + transactionId;
+        document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.add('hidden');
+    }
+
+    // بستن مودال با کلیک خارج از آن
+    window.onclick = function(event) {
+        const modal = document.getElementById('deleteModal');
+        if (event.target == modal) {
+            closeDeleteModal();
+        }
+    }
+
+    // بستن مودال با کلید Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeDeleteModal();
+        }
+    });
+</script>
+@endpush
 @endsection
