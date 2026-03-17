@@ -22,13 +22,13 @@
             </p>
         </div>
 
-        @if(isset($investor))
+        @if(isset($investor) && $investor)
             {{-- کارت‌های آمار شخصی --}}
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
                     <div class="text-sm text-gray-600">کل سرمایه‌گذاری</div>
                     <div class="text-2xl font-bold text-green-600">
-                        {{ fa_currency($investor->total_invested) }} ریال
+                        {{ number_format($investor->investments->sum('amount')) }} ریال
                     </div>
                 </div>
                 
@@ -42,7 +42,7 @@
                 <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
                     <div class="text-sm text-gray-600">سود دریافتی</div>
                     <div class="text-2xl font-bold text-purple-600">
-                        {{ fa_currency($totalProfit) }} ریال
+                        {{ number_format($totalProfit) }} ریال
                     </div>
                 </div>
             </div>
@@ -55,48 +55,52 @@
                     </h3>
                 </div>
                 <div class="p-6">
-                    <table class="min-w-full">
-                        <thead>
-                            <tr class="border-b">
-                                <th class="text-right py-2">خودرو</th>
-                                <th class="text-right py-2">مبلغ سرمایه‌گذاری</th>
-                                <th class="text-right py-2">درصد</th>
-                                <th class="text-right py-2">وضعیت</th>
-                                <th class="text-right py-2">عملیات</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($myInvestments as $investment)
-                            <tr class="border-b hover:bg-gray-50">
-                                <td class="py-3">
-                                    <a href="{{ route('cars.show', $investment->car) }}" class="text-blue-600 hover:underline">
-                                        {{ $investment->car->title }}
-                                    </a>
-                                </td>
-                                <td class="py-3">{{ fa_currency($investment->amount) }} ریال</td>
-                                <td class="py-3">{{ $investment->percentage }}%</td>
-                                <td class="py-3">
-                                    @if($investment->car->status == 'available')
-                                        <span class="text-green-600">در انتظار فروش</span>
-                                    @elseif($investment->car->status == 'sold')
-                                        <span class="text-purple-600">فروخته شده</span>
-                                    @endif
-                                </td>
-                                <td class="py-3">
-                                    <a href="{{ route('investments.show', $investment) }}" class="text-blue-600 hover:underline">
-                                        جزئیات
-                                    </a>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="5" class="py-4 text-center text-gray-500">
-                                    هیچ سرمایه‌گذاری برای شما ثبت نشده است.
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="text-right py-2">خودرو</th>
+                                    <th class="text-right py-2">مبلغ سرمایه‌گذاری</th>
+                                    <th class="text-right py-2">درصد</th>
+                                    <th class="text-right py-2">وضعیت</th>
+                                    <th class="text-right py-2">عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($myInvestments as $investment)
+                                <tr class="border-b hover:bg-gray-50">
+                                    <td class="py-3">
+                                        <a href="{{ route('cars.show', $investment->car) }}" class="text-blue-600 hover:underline">
+                                            {{ $investment->car->title }}
+                                        </a>
+                                    </td>
+                                    <td class="py-3">{{ number_format($investment->amount) }} ریال</td>
+                                    <td class="py-3">{{ number_format($investment->percentage, 2) }}%</td>
+                                    <td class="py-3">
+                                        @if($investment->car->status == 'available')
+                                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">در انتظار فروش</span>
+                                        @elseif($investment->car->status == 'sold')
+                                            <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">فروخته شده</span>
+                                        @elseif($investment->car->status == 'reserved')
+                                            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">رزرو</span>
+                                        @endif
+                                    </td>
+                                    <td class="py-3">
+                                        <a href="{{ route('investments.show', $investment) }}" class="text-blue-600 hover:underline">
+                                            جزئیات
+                                        </a>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="5" class="py-4 text-center text-gray-500">
+                                        هیچ سرمایه‌گذاری برای شما ثبت نشده است.
+                                    </td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                     <div class="mt-4">
                         {{ $myInvestments->links() }}
                     </div>
@@ -111,7 +115,7 @@
                 </svg>
                 <h3 class="text-xl font-bold text-yellow-800 mb-2">حساب سرمایه‌گذاری فعال نیست</h3>
                 <p class="text-yellow-600 mb-6 max-w-lg mx-auto">
-                    {{ $message }}
+                    {{ $message ?? 'شما سرمایه‌گذار نیستید.' }}
                 </p>
                 
                 @if(isset($userRole) && $userRole == 'admin')
@@ -119,7 +123,7 @@
                         <p class="text-blue-800 font-medium mb-2">🔹 شما به عنوان ادمین هستید</p>
                         <p class="text-blue-600 text-sm">برای مشاهده اطلاعات سرمایه‌گذاری به عنوان سرمایه‌گذار، می‌توانید:</p>
                         <ul class="text-blue-600 text-sm list-disc list-inside mt-2">
-                            <li>با حساب سرمایه‌گذار (مثلاً sara@example.com) وارد شوید</li>
+                            <li>با حساب سرمایه‌گذار (که person_id دارد) وارد شوید</li>
                             <li>یا از طریق پنل مدیریت، یک سرمایه‌گذار برای خود ایجاد کنید</li>
                         </ul>
                     </div>

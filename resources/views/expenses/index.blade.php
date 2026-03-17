@@ -1,5 +1,14 @@
 @extends('layouts.app')
 
+@section('styles')
+<style>
+    /* استایل برای dropdown فیلتر */
+    .filter-dropdown {
+        min-width: 250px;
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -45,16 +54,18 @@
 
                 <!-- فیلترها -->
                 <div class="mb-6 p-4 bg-gray-50 rounded-lg">
-                    <form method="GET" action="{{ route('expenses.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <form method="GET" action="{{ route('expenses.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">از تاریخ</label>
-                            <input type="date" name="start_date" value="{{ request('start_date') }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            <input type="text" name="start_date" id="start_date" value="{{ request('start_date') }}" 
+                                   class="jalali-datepicker w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                   placeholder="مثال: ۱۴۰۲/۰۱/۰۱" autocomplete="off">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">تا تاریخ</label>
-                            <input type="date" name="end_date" value="{{ request('end_date') }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            <input type="text" name="end_date" id="end_date" value="{{ request('end_date') }}" 
+                                   class="jalali-datepicker w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                   placeholder="مثال: ۱۴۰۲/۱۲/۲۹" autocomplete="off">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">دسته‌بندی</label>
@@ -68,8 +79,20 @@
                                 <option value="other" {{ request('category') == 'other' ? 'selected' : '' }}>سایر</option>
                             </select>
                         </div>
+                        
+                        <!-- شخص مرتبط با کامپوننت searchable-select -->
+                        <div class="filter-dropdown">
+                            <x-searchable-select 
+                                name="person_id"
+                                label="شخص"
+                                :options="$personOptions"
+                                :selected="request('person_id')"
+                                placeholder="همه اشخاص"
+                            />
+                        </div>
+                        
                         <div class="flex items-end">
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition">
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition w-full">
                                 اعمال فیلتر
                             </button>
                         </div>
@@ -95,7 +118,7 @@
                             @forelse($expenses as $index => $expense)
                             <tr class="hover:bg-gray-50 transition">
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $expenses->firstItem() + $index }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $expense->expense_date }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ $expense->expense_date_jalali }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap font-medium">{{ $expense->title }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $expense->category_label }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -162,3 +185,23 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
+<script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+
+<script>
+    $(document).ready(function() {
+        // تقویم شمسی برای فیلتر تاریخ‌ها
+        $('.jalali-datepicker').persianDatepicker({
+            format: 'YYYY/MM/DD',
+            autoClose: true,
+            initialValue: false,
+            calendar: {
+                persian: true
+            }
+        });
+    });
+</script>
+@endpush

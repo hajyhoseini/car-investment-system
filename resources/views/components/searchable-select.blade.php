@@ -14,7 +14,7 @@
     $selectedValue = old($name, $selected);
 @endphp
 
-<div {{ $attributes->merge(['class' => 'relative']) }} x-data="searchableSelect({
+<div {{ $attributes->merge(['class' => 'relative searchable-select-wrapper']) }} x-data="searchableSelect({
     name: '{{ $name }}',
     id: '{{ $id }}',
     options: {{ json_encode($options) }},
@@ -46,7 +46,7 @@
             </svg>
         </div>
 
-        <!-- دراپ دان جستجو -->
+        <!-- دراپ دان جستجو با اسکرول درست -->
         <div 
             x-show="isOpen" 
             @click.away="closeDropdown()"
@@ -56,11 +56,11 @@
             x-transition:leave="transition ease-in duration-75"
             x-transition:leave-start="transform opacity-100 scale-100"
             x-transition:leave-end="transform opacity-0 scale-95"
-            class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg"
-            style="max-height: 300px; overflow-y: auto;"
+            class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg overflow-hidden"
+            style="max-height: 350px; display: flex; flex-direction: column;"
         >
-            <!-- باکس جستجو -->
-            <div class="sticky top-0 bg-white p-2 border-b">
+            <!-- باکس جستجو (ثابت) -->
+            <div class="sticky top-0 bg-white p-2 border-b z-10">
                 <div class="relative">
                     <input type="text" 
                            x-model="searchText"
@@ -77,8 +77,8 @@
                 </div>
             </div>
 
-            <!-- لیست گزینه‌ها -->
-            <div class="py-1">
+            <!-- لیست گزینه‌ها با اسکرول -->
+            <div class="overflow-y-auto" style="max-height: 250px;" x-ref="optionsContainer">
                 <template x-for="(option, index) in filteredOptions" :key="option.id">
                     <div 
                         class="px-4 py-2 cursor-pointer transition"
@@ -89,14 +89,23 @@
                         }"
                         @click="selectOption(option)"
                         @mouseenter="hoveredIndex = index"
+                        x-ref="optionItems"
                     >
                         <div class="font-medium" x-text="option.text"></div>
                         <div class="text-sm text-gray-500" x-text="option.subtext" x-show="option.subtext"></div>
                     </div>
                 </template>
-                <div x-show="filteredOptions.length === 0" class="px-4 py-3 text-gray-500 text-center">
-                    موردی یافت نشد
+                <div x-show="filteredOptions.length === 0" class="px-4 py-8 text-gray-500 text-center">
+                    <svg class="mx-auto h-8 w-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <p>موردی یافت نشد</p>
                 </div>
+            </div>
+            
+            <!-- نمایش تعداد نتایج -->
+            <div class="sticky bottom-0 bg-gray-50 px-4 py-1 text-xs text-gray-500 border-t" x-show="filteredOptions.length > 0">
+                <span x-text="filteredOptions.length"></span> مورد یافت شد
             </div>
         </div>
     </div>
@@ -114,7 +123,7 @@ function searchableSelect(config) {
         id: config.id,
         options: config.options,
         selectedValue: config.selected,
-        selectedText: 'انتخاب کنید',
+        selectedText: config.placeholder || 'انتخاب کنید',
         searchText: '',
         isOpen: false,
         hoveredIndex: -1,
@@ -122,7 +131,7 @@ function searchableSelect(config) {
 
         init() {
             // تنظیم متن انتخاب شده اولیه
-            if (this.selectedValue) {
+            if (this.selectedValue && this.selectedValue !== '') {
                 const selected = this.options.find(opt => opt.id == this.selectedValue);
                 if (selected) {
                     this.selectedText = selected.subtext ? 
@@ -135,16 +144,31 @@ function searchableSelect(config) {
             this.$watch('searchText', () => {
                 this.hoveredIndex = -1;
             });
+            
+            // تنظیم observer برای اسکرول خودکار
+            this.$watch('hoveredIndex', (index) => {
+                if (index >= 0 && this.$refs.optionsContainer) {
+                    this.$nextTick(() => {
+                        const items = this.$refs.optionsContainer.children;
+                        if (items[index]) {
+                            items[index].scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'nearest' 
+                            });
+                        }
+                    });
+                }
+            });
         },
 
         get filteredOptions() {
-            if (!this.searchText.trim()) {
+            if (!this.searchText || this.searchText.trim() === '') {
                 return this.options;
             }
             
             const search = this.searchText.trim().toLowerCase();
             return this.options.filter(option => {
-                const text = option.text.toLowerCase();
+                const text = (option.text || '').toLowerCase();
                 const subtext = (option.subtext || '').toLowerCase();
                 return text.includes(search) || subtext.includes(search);
             });
@@ -153,8 +177,11 @@ function searchableSelect(config) {
         toggleDropdown() {
             this.isOpen = !this.isOpen;
             if (this.isOpen) {
+                this.searchText = '';
+                this.hoveredIndex = -1;
                 this.$nextTick(() => {
-                    this.$el.querySelector('input').focus();
+                    const input = this.$el.querySelector('input[type="text"]');
+                    if (input) input.focus();
                 });
             }
         },
@@ -173,9 +200,17 @@ function searchableSelect(config) {
             this.closeDropdown();
             
             // ایجاد رویداد change برای استفاده در فرم
-            this.$el.dispatchEvent(new CustomEvent('change', { 
+            const event = new CustomEvent('change', { 
                 detail: { value: option.id, option: option }
-            }));
+            });
+            this.$el.dispatchEvent(event);
+            
+            // ایجاد رویداد input برای لاراول
+            const inputEvent = new Event('input', { bubbles: true });
+            const hiddenInput = this.$el.querySelector(`input[type="hidden"][name="${this.name}"]`);
+            if (hiddenInput) {
+                hiddenInput.dispatchEvent(inputEvent);
+            }
         },
 
         selectFirstOption() {
@@ -193,14 +228,6 @@ function searchableSelect(config) {
             if (newIndex >= options.length) newIndex = options.length - 1;
             
             this.hoveredIndex = newIndex;
-            
-            // اسکرول به گزینه انتخاب شده
-            this.$nextTick(() => {
-                const items = this.$el.querySelectorAll('.person-item');
-                if (items[newIndex]) {
-                    items[newIndex].scrollIntoView({ block: 'nearest' });
-                }
-            });
         }
     }
 }

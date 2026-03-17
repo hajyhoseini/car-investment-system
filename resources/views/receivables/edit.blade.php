@@ -59,7 +59,7 @@
                     </div>
                 </div>
 
-                <form method="POST" action="{{ route('receivables.update', $receivable) }}" enctype="multipart/form-data">
+                <form method="POST" action="{{ route('receivables.update', $receivable) }}" enctype="multipart/form-data" id="receivableForm">
                     @csrf
                     @method('PUT')
 
@@ -73,84 +73,86 @@
                             @error('title') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- مبلغ -->
+                        <!-- مبلغ با کامپوننت price-input -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ <span class="text-red-500">*</span></label>
-                            <input type="number" name="amount" id="amount" value="{{ old('amount', $receivable->amount) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition @error('amount') border-red-500 @enderror" 
-                                   placeholder="مثال: 5000000" min="1000" required>
-                            @error('amount') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                            <x-price-input 
+                                name="amount"
+                                label="مبلغ"
+                                :value="old('amount', $receivable->amount)"
+                                placeholder="مثال: ۵,۰۰۰,۰۰۰"
+                                :required="true"
+                                :min="1000"
+                                formId="receivableForm"
+                            />
                         </div>
 
-                        <!-- نوع مطالبه -->
+                        <!-- نوع مطالبه با کامپوننت searchable-select -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">نوع <span class="text-red-500">*</span></label>
-                            <select name="currency_type" id="currency_type" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition @error('currency_type') border-red-500 @enderror" required>
-                                <option value="">انتخاب کنید</option>
-                                @foreach($currencyTypes as $key => $label)
-                                    <option value="{{ $key }}" {{ old('currency_type', $receivable->currency_type) == $key ? 'selected' : '' }}>
-                                        {{ $label }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('currency_type') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                            <x-searchable-select 
+                                name="currency_type"
+                                label="نوع"
+                                :options="$currencyTypeOptions"
+                                :selected="old('currency_type', $receivable->currency_type)"
+                                placeholder="انتخاب کنید..."
+                                required="true"
+                            />
                         </div>
 
-                        <!-- شخص مرتبط -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">شخص مرتبط</label>
-                            <select name="person_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition @error('person_id') border-red-500 @enderror">
-                                <option value="">بدون شخص</option>
-                                @foreach($formattedPeople as $person)
-                                    <option value="{{ $person['id'] }}" {{ old('person_id', $receivable->person_id) == $person['id'] ? 'selected' : '' }}>
-                                        {{ $person['text'] }}
-                                        @if(!empty($person['subtext']))
-                                            <span class="text-gray-500 text-xs">({{ $person['subtext'] }})</span>
-                                        @endif
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('person_id') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                        </div>
+                        <!-- شخص مرتبط با کامپوننت searchable-select -->
+                        <x-searchable-select 
+                            name="person_id"
+                            label="شخص مرتبط"
+                            :options="$formattedPeople"
+                            :selected="old('person_id', $receivable->person_id)"
+                            placeholder="جستجوی شخص..."
+                        />
 
-                        <!-- تاریخ مطالبه (شمسی) -->
+                        <!-- تاریخ مطالبه (شمسی) - بدون کامپوننت -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ مطالبه <span class="text-red-500">*</span></label>
                             <input type="text" name="receivable_date" id="receivable_date" 
                                    value="{{ old('receivable_date', $receivable->receivable_date ? jalali_date($receivable->receivable_date) : '') }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition @error('receivable_date') border-red-500 @enderror jalali-datepicker"
+                                   class="jalali-datepicker w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition @error('receivable_date') border-red-500 @enderror"
                                    placeholder="مثال: ۱۴۰۲/۱۲/۲۵" autocomplete="off" required>
                             @error('receivable_date') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- تاریخ سررسید (شمسی) -->
+                        <!-- تاریخ سررسید (شمسی) - بدون کامپوننت -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ سررسید</label>
                             <input type="text" name="due_date" id="due_date" 
                                    value="{{ old('due_date', $receivable->due_date ? jalali_date($receivable->due_date) : '') }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition @error('due_date') border-red-500 @enderror jalali-datepicker"
+                                   class="jalali-datepicker w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition @error('due_date') border-red-500 @enderror"
                                    placeholder="مثال: ۱۴۰۲/۱۲/۲۵" autocomplete="off">
                             @error('due_date') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- وضعیت -->
+                        <!-- وضعیت با کامپوننت searchable-select -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">وضعیت <span class="text-red-500">*</span></label>
-                            <select name="status" id="status" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition @error('status') border-red-500 @enderror" required>
-                                <option value="pending" {{ old('status', $receivable->status) == 'pending' ? 'selected' : '' }}>در انتظار</option>
-                                <option value="partially_paid" {{ old('status', $receivable->status) == 'partially_paid' ? 'selected' : '' }}>پرداخت جزئی</option>
-                                <option value="paid" {{ old('status', $receivable->status) == 'paid' ? 'selected' : '' }}>تسویه شده</option>
-                            </select>
-                            @error('status') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                            <x-searchable-select 
+                                name="status"
+                                label="وضعیت"
+                                :options="[
+                                    ['id' => 'pending', 'text' => 'در انتظار'],
+                                    ['id' => 'partially_paid', 'text' => 'پرداخت جزئی'],
+                                    ['id' => 'paid', 'text' => 'تسویه شده']
+                                ]"
+                                :selected="old('status', $receivable->status)"
+                                placeholder="انتخاب کنید..."
+                                required="true"
+                            />
                         </div>
 
-                        <!-- مبلغ پرداخت شده (برای وضعیت پرداخت جزئی) -->
+                        <!-- مبلغ پرداخت شده با کامپوننت price-input -->
                         <div id="paid_amount_field" class="{{ old('status', $receivable->status) == 'partially_paid' ? '' : 'hidden' }}">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ پرداخت شده</label>
-                            <input type="number" name="paid_amount" id="paid_amount" value="{{ old('paid_amount', $receivable->paid_amount) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition @error('paid_amount') border-red-500 @enderror" 
-                                   min="0" max="{{ $receivable->amount }}">
-                            @error('paid_amount') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                            <x-price-input 
+                                name="paid_amount"
+                                label="مبلغ پرداخت شده"
+                                :value="old('paid_amount', $receivable->paid_amount)"
+                                placeholder="مثال: ۲,۰۰۰,۰۰۰"
+                                :min="0"
+                                formId="receivableForm"
+                            />
                         </div>
 
                         <!-- فیلدهای اختصاصی بر اساس نوع -->
@@ -166,10 +168,10 @@
                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ چک</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ چک (شمسی)</label>
                                 <input type="text" name="currency_details[check_date]" id="check_date" 
                                        value="{{ old('currency_details.check_date', isset($receivable->currency_details['check_date']) ? jalali_date($receivable->currency_details['check_date']) : '') }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 jalali-datepicker"
+                                       class="jalali-datepicker w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500"
                                        placeholder="مثال: ۱۴۰۲/۱۲/۲۵" autocomplete="off">
                             </div>
                         </div>
@@ -195,8 +197,14 @@
                         <div id="dollar_fields" class="hidden col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">نرخ ارز (ریال)</label>
-                                <input type="number" name="currency_details[exchange_rate]" value="{{ old('currency_details.exchange_rate', $receivable->currency_details['exchange_rate'] ?? '') }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500">
+                                <x-price-input 
+                                    name="currency_details[exchange_rate]"
+                                    label=""
+                                    :value="old('currency_details.exchange_rate', $receivable->currency_details['exchange_rate'] ?? '')"
+                                    placeholder="مثال: ۵۰,۰۰۰"
+                                    :min="0"
+                                    formId="receivableForm"
+                                />
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">توضیحات</label>
@@ -280,73 +288,56 @@
         });
     });
 
-    // نمایش/مخفی کردن فیلدهای اختصاصی بر اساس نوع
-    document.getElementById('currency_type').addEventListener('change', function() {
-        const type = this.value;
+    // گوش دادن به تغییرات نوع مطالبه
+    document.addEventListener('DOMContentLoaded', function() {
+        const typeSelect = document.querySelector('[x-data*="currency_type"]');
+        const statusSelect = document.querySelector('[x-data*="status"]');
         
-        // مخفی کردن همه فیلدها
-        document.getElementById('check_fields')?.classList.add('hidden');
-        document.getElementById('gold_fields')?.classList.add('hidden');
-        document.getElementById('dollar_fields')?.classList.add('hidden');
-        
-        // نمایش فیلد مربوطه
-        if (type === 'check') {
-            document.getElementById('check_fields').classList.remove('hidden');
-        } else if (type === 'gold') {
-            document.getElementById('gold_fields').classList.remove('hidden');
-        } else if (type === 'dollar') {
-            document.getElementById('dollar_fields').classList.remove('hidden');
-        }
-    });
-
-    // نمایش/مخفی کردن فیلد مبلغ پرداخت شده بر اساس وضعیت
-    document.getElementById('status').addEventListener('change', function() {
-        const status = this.value;
-        const paidField = document.getElementById('paid_amount_field');
-        const amount = parseFloat(document.getElementById('amount').value) || 0;
-        
-        if (status === 'partially_paid') {
-            paidField.classList.remove('hidden');
-            document.getElementById('paid_amount').max = amount;
-        } else {
-            paidField.classList.add('hidden');
-        }
-    });
-
-    // تنظیم max برای paid_amount بر اساس amount
-    document.getElementById('amount').addEventListener('input', function() {
-        const amount = parseFloat(this.value) || 0;
-        const paidInput = document.getElementById('paid_amount');
-        if (paidInput) {
-            paidInput.max = amount;
-        }
-    });
-
-    // محاسبه خودکار مبلغ باقی‌مانده
-    document.getElementById('paid_amount').addEventListener('input', function() {
-        const amount = parseFloat(document.getElementById('amount').value) || 0;
-        const paid = parseFloat(this.value) || 0;
-        const remaining = amount - paid;
-        
-        // می‌تونی اینجا یه فیلد نمایشی برای باقی‌مانده اضافه کنی
-    });
-
-    // اجرای اولیه برای نمایش فیلدهای مربوطه
-    window.addEventListener('load', function() {
-        // نمایش فیلدهای نوع ارز
-        const currencyType = document.querySelector('select[name="currency_type"]').value;
-        if (currencyType === 'check') {
-            document.getElementById('check_fields').classList.remove('hidden');
-        } else if (currencyType === 'gold') {
-            document.getElementById('gold_fields').classList.remove('hidden');
-        } else if (currencyType === 'dollar') {
-            document.getElementById('dollar_fields').classList.remove('hidden');
+        function updateFieldsByType() {
+            if (!typeSelect || !typeSelect.__x) return;
+            
+            const typeData = typeSelect.__x.$data;
+            const type = typeData.selectedValue;
+            
+            document.getElementById('check_fields')?.classList.add('hidden');
+            document.getElementById('gold_fields')?.classList.add('hidden');
+            document.getElementById('dollar_fields')?.classList.add('hidden');
+            
+            if (type === 'check') {
+                document.getElementById('check_fields')?.classList.remove('hidden');
+            } else if (type === 'gold') {
+                document.getElementById('gold_fields')?.classList.remove('hidden');
+            } else if (type === 'dollar') {
+                document.getElementById('dollar_fields')?.classList.remove('hidden');
+            }
         }
 
-        // نمایش فیلد پرداخت شده
-        const status = document.querySelector('select[name="status"]').value;
-        if (status === 'partially_paid') {
-            document.getElementById('paid_amount_field').classList.remove('hidden');
+        function updatePaidFieldByStatus() {
+            if (!statusSelect || !statusSelect.__x) return;
+            
+            const statusData = statusSelect.__x.$data;
+            const status = statusData.selectedValue;
+            const paidField = document.getElementById('paid_amount_field');
+            
+            if (status === 'partially_paid') {
+                paidField.classList.remove('hidden');
+            } else {
+                paidField.classList.add('hidden');
+            }
+        }
+
+        if (typeSelect) {
+            typeSelect.addEventListener('change', function() {
+                setTimeout(updateFieldsByType, 100);
+            });
+            setTimeout(updateFieldsByType, 200);
+        }
+
+        if (statusSelect) {
+            statusSelect.addEventListener('change', function() {
+                setTimeout(updatePaidFieldByStatus, 100);
+            });
+            setTimeout(updatePaidFieldByStatus, 200);
         }
     });
 </script>

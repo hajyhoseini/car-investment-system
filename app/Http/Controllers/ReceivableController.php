@@ -83,6 +83,7 @@ class ReceivableController extends Controller implements HasMiddleware
             ];
         })->toArray();
         
+        // انواع ارزها برای نمایش در فرم
         $currencyTypes = [
             'cash' => 'نقد',
             'check' => 'چک',
@@ -91,7 +92,19 @@ class ReceivableController extends Controller implements HasMiddleware
             'other' => 'سایر',
         ];
 
-        return view('receivables.create', compact('formattedPeople', 'currencyTypes'));
+        // تبدیل به فرمت مناسب کامپوننت searchable-select
+        $currencyTypeOptions = collect($currencyTypes)->map(function($label, $value) {
+            return [
+                'id' => $value,
+                'text' => $label
+            ];
+        })->values()->toArray();
+
+        return view('receivables.create', compact(
+            'formattedPeople', 
+            'currencyTypes',
+            'currencyTypeOptions'
+        ));
     }
 
     /**
@@ -144,68 +157,128 @@ class ReceivableController extends Controller implements HasMiddleware
     /**
      * فرم ویرایش مطالبه
      */
-    public function edit(Receivable $receivable)
-    {
-        $people = Person::orderBy('full_name')->get();
-        
-        // تبدیل people به فرمت مناسب کامپوننت
-        $formattedPeople = $people->map(function($person) {
-            return [
-                'id' => $person->id,
-                'text' => $person->full_name,
-                'subtext' => $person->mobile ?? $person->national_code ?? ''
-            ];
-        })->toArray();
-        
-        $currencyTypes = [
-            'cash' => 'نقد',
-            'check' => 'چک',
-            'gold' => 'طلا',
-            'dollar' => 'دلار',
-            'other' => 'سایر',
-        ];
-
-        return view('receivables.edit', compact('receivable', 'formattedPeople', 'currencyTypes'));
+  public function edit(Receivable $receivable)
+{
+    // بررسی و پاکسازی تاریخ‌های عددی
+    if (is_numeric($receivable->receivable_date)) {
+        $receivable->receivable_date = null;
     }
+    
+    if (is_numeric($receivable->due_date)) {
+        $receivable->due_date = null;
+    }
+    
+    // بررسی تاریخ چک
+    $currencyDetails = $receivable->currency_details ?? [];
+    if (isset($currencyDetails['check_date']) && is_numeric($currencyDetails['check_date'])) {
+        $currencyDetails['check_date'] = null;
+        $receivable->currency_details = $currencyDetails;
+    }
+    
+    // بقیه کد...
+    $people = Person::orderBy('full_name')->get();
+    
+    $formattedPeople = $people->map(function($person) {
+        return [
+            'id' => $person->id,
+            'text' => $person->full_name,
+            'subtext' => $person->mobile ?? $person->national_code ?? ''
+        ];
+    })->toArray();
+    
+    $currencyTypes = [
+        'cash' => 'نقد',
+        'check' => 'چک',
+        'gold' => 'طلا',
+        'dollar' => 'دلار',
+        'other' => 'سایر',
+    ];
+
+    $currencyTypeOptions = collect($currencyTypes)->map(function($label, $value) {
+        return [
+            'id' => $value,
+            'text' => $label
+        ];
+    })->values()->toArray();
+
+    return view('receivables.edit', compact(
+        'receivable', 
+        'formattedPeople', 
+        'currencyTypes',
+        'currencyTypeOptions'
+    ));
+}
 
     /**
      * بروزرسانی مطالبه
      */
-    public function update(Request $request, Receivable $receivable)
-    {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'amount' => 'required|numeric|min:1000',
-            'currency_type' => 'required|in:cash,check,gold,dollar,other',
-            'currency_details' => 'nullable|array',
-            'receivable_date' => 'required|date',
-            'due_date' => 'nullable|date|after_or_equal:receivable_date',
-            'person_id' => 'nullable|exists:people,id',
-            'status' => 'required|in:pending,partially_paid,paid,overdue',
-            'paid_amount' => 'nullable|numeric|min:0|max:' . $request->amount,
-            'attachments' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
-            'notes' => 'nullable|string',
-        ]);
-
-        $validated['paid_amount'] = $validated['paid_amount'] ?? 0;
-        $validated['remaining_amount'] = $validated['amount'] - $validated['paid_amount'];
-
-        // آپلود فایل جدید
-        if ($request->hasFile('attachments')) {
-            // حذف فایل قبلی
-            if ($receivable->attachments) {
-                Storage::disk('public')->delete($receivable->attachments);
-            }
-            $path = $request->file('attachments')->store('receivables', 'public');
-            $validated['attachments'] = $path;
-        }
-
-        $receivable->update($validated);
-
-        return redirect()->route('receivables.index')
-            ->with('success', 'مطالبه با موفقیت بروزرسانی شد.');
+ public function update(Request $request, Receivable $receivable)
+{
+    // حذف کاما از مبلغ
+    if ($request->has('amount')) {
+        $amount = str_replace(',', '', $request->amount);
+        $request->merge(['amount' => $amount]);
     }
+    
+    if ($request->has('paid_amount')) {
+        $paidAmount = str_replace(',', '', $request->paid_amount);
+        $request->merge(['paid_amount' => $paidAmount]);
+    }
+    
+    // تبدیل تاریخ شمسی به میلادی
+    if ($request->filled('receivable_date')) {
+        $gregorianDate = jalali_to_gregorian($request->receivable_date);
+        $request->merge(['receivable_date' => $gregorianDate]);
+    }
+    
+    if ($request->filled('due_date')) {
+        $gregorianDate = jalali_to_gregorian($request->due_date);
+        $request->merge(['due_date' => $gregorianDate]);
+    }
+    
+    // تبدیل تاریخ چک اگر وجود داشت
+    if ($request->filled('currency_details.check_date')) {
+        $currencyDetails = $request->currency_details ?? [];
+        if (isset($currencyDetails['check_date']) && $currencyDetails['check_date']) {
+            $gregorianDate = jalali_to_gregorian($currencyDetails['check_date']);
+            $currencyDetails['check_date'] = $gregorianDate;
+            $request->merge(['currency_details' => $currencyDetails]);
+        }
+    }
+    
+    $validated = $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'amount' => 'required|numeric|min:1000|max:999999999', // افزایش max
+        'currency_type' => 'required|in:cash,check,gold,dollar,other',
+        'currency_details' => 'nullable|array',
+        'receivable_date' => 'required|date',
+        'due_date' => 'nullable|date|after_or_equal:receivable_date',
+        'person_id' => 'nullable|exists:people,id',
+        'status' => 'required|in:pending,partially_paid,paid,overdue',
+        'paid_amount' => 'nullable|numeric|min:0|max:999999999', // افزایش max
+        'attachments' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+        'notes' => 'nullable|string',
+    ]);
+
+    $validated['paid_amount'] = $validated['paid_amount'] ?? 0;
+    $validated['remaining_amount'] = $validated['amount'] - $validated['paid_amount'];
+
+    // آپلود فایل جدید
+    if ($request->hasFile('attachments')) {
+        // حذف فایل قبلی
+        if ($receivable->attachments) {
+            Storage::disk('public')->delete($receivable->attachments);
+        }
+        $path = $request->file('attachments')->store('receivables', 'public');
+        $validated['attachments'] = $path;
+    }
+
+    $receivable->update($validated);
+
+    return redirect()->route('receivables.index')
+        ->with('success', 'مطالبه با موفقیت بروزرسانی شد.');
+}
 
     /**
      * حذف مطالبه

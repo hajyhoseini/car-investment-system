@@ -1,5 +1,16 @@
 @extends('layouts.app')
 
+@section('styles')
+<link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+<style>
+    /* استایل برای اینپوت‌های قیمت */
+    .price-input {
+        text-align: left;
+        direction: ltr;
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -43,18 +54,20 @@
                     </div>
                 </div>
 
-                <!-- فیلترها -->
+                <!-- فیلترها با تاریخ شمسی -->
                 <div class="mb-6 p-4 bg-gray-50 rounded-lg">
                     <form method="GET" action="{{ route('receivables.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">از تاریخ</label>
-                            <input type="date" name="start_date" value="{{ request('start_date') }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            <input type="text" name="start_date" id="start_date" value="{{ request('start_date') }}" 
+                                   class="jalali-datepicker w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                   placeholder="مثال: ۱۴۰۲/۰۱/۰۱" autocomplete="off">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">تا تاریخ</label>
-                            <input type="date" name="end_date" value="{{ request('end_date') }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            <input type="text" name="end_date" id="end_date" value="{{ request('end_date') }}" 
+                                   class="jalali-datepicker w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                   placeholder="مثال: ۱۴۰۲/۱۲/۲۹" autocomplete="off">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">نوع</label>
@@ -157,7 +170,7 @@
                                             </svg>
                                         </a>
                                         @if($receivable->remaining_amount > 0)
-                                        <a href="#" onclick="openPaymentModal({{ $receivable->id }})" class="text-purple-600 hover:text-purple-900" title="ثبت پرداخت">
+                                        <a href="#" onclick="openPaymentModal({{ $receivable->id }}, {{ $receivable->remaining_amount }})" class="text-purple-600 hover:text-purple-900" title="ثبت پرداخت">
                                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                             </svg>
@@ -185,7 +198,7 @@
     </div>
 </div>
 
-<!-- مودال ثبت پرداخت -->
+<!-- مودال ثبت پرداخت با کامپوننت searchable-select -->
 <div id="paymentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
     <div class="bg-white rounded-lg p-8 max-w-md w-full">
         <h3 class="text-xl font-bold mb-4">ثبت پرداخت جدید</h3>
@@ -193,36 +206,47 @@
             @csrf
             <input type="hidden" id="receivable_id" name="receivable_id">
             
+            <!-- مبلغ پرداخت با فرمت ویرگول -->
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ پرداخت (ریال)</label>
-                <input type="number" name="payment_amount" id="payment_amount" 
-                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" 
-                       min="1000" required>
+                <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ پرداخت (ریال) <span class="text-red-500">*</span></label>
+                <input type="text" name="payment_amount_display" id="payment_amount_display" 
+                       class="price-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" 
+                       placeholder="مثال: ۱,۰۰۰,۰۰۰" required>
+                <input type="hidden" name="payment_amount" id="payment_amount" value="">
+                <p class="text-xs text-gray-500 mt-1" id="remainingAmountInfo">حداکثر مبلغ قابل پرداخت: ۰ ریال</p>
             </div>
             
+            <!-- تاریخ پرداخت شمسی -->
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ پرداخت</label>
-                <input type="date" name="payment_date" id="payment_date" 
-                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" 
-                       value="{{ now()->format('Y-m-d') }}" required>
+                <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ پرداخت <span class="text-red-500">*</span></label>
+                <input type="text" name="payment_date" id="payment_date" 
+                       value="{{ now_jalali('Y/m/d') }}" 
+                       class="jalali-datepicker w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                       placeholder="مثال: ۱۴۰۲/۱۲/۲۵" autocomplete="off" required>
             </div>
             
+            <!-- روش پرداخت با کامپوننت searchable-select -->
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">روش پرداخت</label>
-                <select name="payment_method" id="payment_method" 
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" required>
-                    <option value="">انتخاب کنید</option>
-                    <option value="cash">نقدی</option>
-                    <option value="card">کارت به کارت</option>
-                    <option value="check">چک</option>
-                    <option value="transfer">حواله</option>
-                </select>
+                <x-searchable-select 
+                    name="payment_method"
+                    label="روش پرداخت"
+                    :options="[
+                        ['id' => 'cash', 'text' => 'نقدی'],
+                        ['id' => 'card', 'text' => 'کارت به کارت'],
+                        ['id' => 'check', 'text' => 'چک'],
+                        ['id' => 'transfer', 'text' => 'حواله']
+                    ]"
+                    placeholder="انتخاب کنید..."
+                    required="true"
+                />
             </div>
             
+            <!-- یادداشت -->
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-2">یادداشت</label>
                 <textarea name="payment_notes" rows="3" 
-                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"></textarea>
+                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                          placeholder="یادداشت..."></textarea>
             </div>
             
             <div class="flex justify-end gap-2">
@@ -230,7 +254,7 @@
                         class="px-4 py-2 bg-gray-500 hover:bg-gray-700 text-white rounded-lg transition">
                     انصراف
                 </button>
-                <button type="submit" 
+                <button type="submit" onclick="return handlePaymentSubmit()"
                         class="px-4 py-2 bg-purple-500 hover:bg-purple-700 text-white rounded-lg transition">
                     ثبت پرداخت
                 </button>
@@ -240,18 +264,121 @@
 </div>
 
 @push('scripts')
+<script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
+<script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
-    function openPaymentModal(receivableId) {
+    let currentReceivableId = null;
+    let currentRemainingAmount = 0;
+
+    $(document).ready(function() {
+        // تقویم شمسی برای فیلتر تاریخ‌ها
+        $('.jalali-datepicker').persianDatepicker({
+            format: 'YYYY/MM/DD',
+            autoClose: true,
+            initialValue: false,
+            calendar: {
+                persian: true
+            }
+        });
+
+        // تقویم شمسی برای مودال
+        $('#payment_date').persianDatepicker({
+            format: 'YYYY/MM/DD',
+            autoClose: true,
+            initialValue: true,
+            calendar: {
+                persian: true
+            }
+        });
+
+        // فرمت کردن مبلغ با ویرگول
+        $('.price-input').on('input', function() {
+            let value = this.value.replace(/[^\d]/g, '');
+            if (value) {
+                this.value = Number(value).toLocaleString('en-US');
+            }
+        });
+    });
+
+    function openPaymentModal(receivableId, remainingAmount) {
+        currentReceivableId = receivableId;
+        currentRemainingAmount = remainingAmount;
+        
+        // آپدیت متن حداکثر مبلغ
+        document.getElementById('remainingAmountInfo').textContent = 
+            `حداکثر مبلغ قابل پرداخت: ${Number(remainingAmount).toLocaleString('fa-IR')} ریال`;
+        
+        // نمایش مودال
         document.getElementById('paymentModal').classList.remove('hidden');
         document.getElementById('paymentModal').classList.add('flex');
         document.getElementById('receivable_id').value = receivableId;
         document.getElementById('paymentForm').action = `/receivables/${receivableId}/payment`;
+        
+        // پاک کردن مقدار قبلی
+        document.getElementById('payment_amount_display').value = '';
+        document.getElementById('payment_amount').value = '';
+        
+        // جلوگیری از اسکرول صفحه
+        document.body.style.overflow = 'hidden';
     }
     
     function closePaymentModal() {
         document.getElementById('paymentModal').classList.add('hidden');
         document.getElementById('paymentModal').classList.remove('flex');
+        
+        // برگردوندن اسکرول
+        document.body.style.overflow = 'auto';
     }
+
+    function handlePaymentSubmit() {
+        const displayInput = document.getElementById('payment_amount_display');
+        const hiddenInput = document.getElementById('payment_amount');
+        
+        // گرفتن مقدار عددی (حذف کاما)
+        let numericValue = displayInput.value.replace(/[^\d]/g, '');
+        
+        if (!numericValue) {
+            alert('لطفاً مبلغ پرداخت را وارد کنید');
+            return false;
+        }
+        
+        numericValue = parseInt(numericValue);
+        
+        // validation
+        if (numericValue < 1000) {
+            alert('مبلغ پرداخت باید حداقل ۱۰۰۰ ریال باشد');
+            return false;
+        }
+        
+        if (numericValue > currentRemainingAmount) {
+            alert(`مبلغ پرداخت نمی‌تواند از ${currentRemainingAmount.toLocaleString('fa-IR')} ریال بیشتر باشد`);
+            return false;
+        }
+        
+        // ست کردن مقدار در hidden input
+        hiddenInput.value = numericValue;
+        
+        return true;
+    }
+
+    // بستن مودال با کلیک روی پس‌زمینه
+    document.getElementById('paymentModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closePaymentModal();
+        }
+    });
+
+    // بستن مودال با کلید Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('paymentModal');
+            if (!modal.classList.contains('hidden')) {
+                closePaymentModal();
+            }
+        }
+    });
 </script>
 @endpush
 @endsection

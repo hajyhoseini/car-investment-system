@@ -22,7 +22,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('expenses.store') }}" enctype="multipart/form-data">
+                <form method="POST" action="{{ route('expenses.store') }}" enctype="multipart/form-data" id="expenseForm">
                     @csrf
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -35,16 +35,20 @@
                             @error('title') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- مبلغ با فرمت ویرگول -->
+                        <!-- مبلغ با کامپوننت price-input -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ (ریال) <span class="text-red-500">*</span></label>
-                            <input type="text" name="amount" id="amount" value="{{ old('amount') }}" 
-                                   class="price-format w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('amount') border-red-500 @enderror" 
-                                   placeholder="مثال: ۵۰۰,۰۰۰" required>
-                            @error('amount') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                            <x-price-input 
+                                name="amount"
+                                label="مبلغ"
+                                :value="old('amount')"
+                                placeholder="مثال: ۵۰۰,۰۰۰"
+                                :required="true"
+                                :min="1000"
+                                formId="expenseForm"
+                            />
                         </div>
 
-                        <!-- تاریخ هزینه (شمسی با تقویم) -->
+                        <!-- تاریخ هزینه (شمسی با تقویم) - بدون کامپوننت -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ هزینه <span class="text-red-500">*</span></label>
                             <input type="text" name="expense_date" id="expense_date" 
@@ -54,75 +58,60 @@
                             @error('expense_date') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- دسته‌بندی -->
+                        <!-- دسته‌بندی با کامپوننت searchable-select -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">دسته‌بندی <span class="text-red-500">*</span></label>
-                            <select name="category" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('category') border-red-500 @enderror" required>
-                                <option value="">انتخاب کنید</option>
-                                @foreach($categories as $key => $label)
-                                    <option value="{{ $key }}" {{ old('category') == $key ? 'selected' : '' }}>
-                                        {{ $label }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('category') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                            <x-searchable-select 
+                                name="category"
+                                label="دسته‌بندی"
+                                :options="$categoryOptions"
+                                :selected="old('category')"
+                                placeholder="انتخاب کنید..."
+                                required="true"
+                            />
                         </div>
 
-                        <!-- خودرو مرتبط (اختیاری) -->
+                        <!-- خودرو مرتبط با کامپوننت searchable-select -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">خودرو مرتبط</label>
-                            <select name="car_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('car_id') border-red-500 @enderror">
-                                <option value="">بدون خودرو (هزینه عمومی)</option>
-                                @foreach($cars as $car)
-                                    <option value="{{ $car->id }}" {{ old('car_id') == $car->id ? 'selected' : '' }}>
-                                        {{ $car->title }} - {{ $car->brand }} {{ $car->model }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('car_id') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                            <x-searchable-select 
+                                name="car_id"
+                                label="خودرو مرتبط"
+                                :options="$carOptions"
+                                :selected="old('car_id')"
+                                placeholder="بدون خودرو (هزینه عمومی)"
+                            />
                         </div>
 
-                        <!-- شخص مرتبط -->
+                        <!-- شخص مرتبط با کامپوننت searchable-select -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">شخص مرتبط</label>
-                            <select name="person_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('person_id') border-red-500 @enderror">
-                                <option value="">بدون شخص</option>
-                                @foreach($people as $person)
-                                    <option value="{{ $person->id }}" {{ old('person_id') == $person->id ? 'selected' : '' }}>
-                                        {{ $person->full_name }}
-                                        @if($person->company_name) ({{ $person->company_name }}) @endif
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('person_id') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                            <x-searchable-select 
+                                name="person_id"
+                                label="شخص مرتبط"
+                                :options="$personOptions"
+                                :selected="old('person_id')"
+                                placeholder="بدون شخص"
+                            />
                         </div>
 
-                        <!-- حساب پرداخت -->
+                        <!-- حساب پرداخت با کامپوننت searchable-select -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">حساب پرداخت</label>
-                            <select name="account_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('account_id') border-red-500 @enderror">
-                                <option value="">بدون کسر از حساب</option>
-                                @foreach($accounts as $account)
-                                    <option value="{{ $account->id }}" {{ old('account_id') == $account->id ? 'selected' : '' }}>
-                                        {{ $account->name }} (موجودی: {{ number_format($account->amount) }} ریال)
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('account_id') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                            <x-searchable-select 
+                                name="account_id"
+                                label="حساب پرداخت"
+                                :options="$accountOptions"
+                                :selected="old('account_id')"
+                                placeholder="بدون کسر از حساب"
+                            />
                         </div>
 
-                        <!-- روش پرداخت -->
+                        <!-- روش پرداخت با کامپوننت searchable-select -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">روش پرداخت</label>
-                            <select name="payment_method_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('payment_method_id') border-red-500 @enderror">
-                                <option value="">انتخاب کنید</option>
-                                @foreach($paymentMethods as $method)
-                                    <option value="{{ $method->id }}" {{ old('payment_method_id') == $method->id ? 'selected' : '' }}>
-                                        {{ $method->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('payment_method_id') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                            <x-searchable-select 
+                                name="payment_method_id"
+                                label="روش پرداخت"
+                                :options="$paymentMethodOptions"
+                                :selected="old('payment_method_id')"
+                                placeholder="انتخاب کنید..."
+                            />
                         </div>
 
                         <!-- تصویر رسید -->
@@ -179,26 +168,6 @@
             calendar: {
                 persian: true
             }
-        });
-
-        // فرمت عدد با ویرگول
-        $('.price-format').on('input', function() {
-            let value = this.value.replace(/[^\d]/g, '');
-            if (value) {
-                this.value = Number(value).toLocaleString('en-US');
-            } else {
-                this.value = '';
-            }
-        });
-
-        // جلوگیری از ارسال فرم با ویرگول
-        $('form').on('submit', function() {
-            $('.price-format').each(function() {
-                let value = this.value.replace(/[^\d]/g, '');
-                if (value) {
-                    this.value = value;
-                }
-            });
         });
     });
 </script>

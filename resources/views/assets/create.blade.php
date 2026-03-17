@@ -11,43 +11,56 @@
                     @csrf
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- نوع دارایی -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">نوع دارایی <span class="text-red-500">*</span></label>
-                            <select name="type" id="type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required>
-                                <option value="">انتخاب کنید</option>
-                                <option value="bank" {{ old('type') == 'bank' ? 'selected' : '' }}>حساب بانکی</option>
-                                <option value="dollar" {{ old('type') == 'dollar' ? 'selected' : '' }}>دلار</option>
-                                <option value="gold" {{ old('type') == 'gold' ? 'selected' : '' }}>طلا</option>
-                            </select>
-                            @error('type') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                        </div>
+                        <!-- نوع دارایی با کامپوننت -->
+                        <x-searchable-select 
+                            name="type"
+                            label="نوع دارایی"
+                            :options="[
+                                ['id' => 'bank', 'text' => 'حساب بانکی'],
+                                ['id' => 'dollar', 'text' => 'دلار'],
+                                ['id' => 'gold', 'text' => 'طلا']
+                            ]"
+                            :selected="old('type')"
+                            placeholder="انتخاب کنید..."
+                            required="true"
+                        />
 
                         <!-- نام دارایی -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700">نام <span class="text-red-500">*</span></label>
-                            <input type="text" name="name" value="{{ old('name') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required>
+                            <input type="text" name="name" value="{{ old('name') }}" 
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" 
+                                   placeholder="مثال: حساب سپهر" required>
                             @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- مقدار (بسته به نوع تغییر می‌کند) -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700" id="amountLabel">مقدار</label>
-                            <input type="number" step="0.01" name="amount" id="amount" value="{{ old('amount') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required>
+                            <input type="number" step="0.01" name="amount" id="amount" value="{{ old('amount') }}" 
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" 
+                                   placeholder="۰" required>
                             @error('amount') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- ارزش به ریال (برای دلار و طلا) -->
-                        <div id="valueField">
-                            <label class="block text-sm font-medium text-gray-700">ارزش به ریال</label>
-                            <input type="number" name="value" value="{{ old('value') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                            @error('value') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        <!-- ارزش به ریال (برای دلار و طلا) با کامپوننت price-input -->
+                        <div id="valueField" class="{{ old('type') == 'bank' ? 'hidden' : '' }}">
+                            <x-price-input 
+                                name="value"
+                                label="ارزش به ریال"
+                                :value="old('value')"
+                                placeholder="مثال: ۵۰,۰۰۰,۰۰۰"
+                                :min="0"
+                                formId="assetForm"
+                            />
                         </div>
 
                         <!-- توضیحات -->
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700">توضیحات</label>
-                            <textarea name="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">{{ old('description') }}</textarea>
+                            <textarea name="description" rows="3" 
+                                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                      placeholder="توضیحات اضافی">{{ old('description') }}</textarea>
                             @error('description') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
                     </div>
@@ -68,32 +81,70 @@
 
 @push('scripts')
 <script>
-document.getElementById('type').addEventListener('change', function() {
-    const type = this.value;
-    const amountLabel = document.getElementById('amountLabel');
-    const valueField = document.getElementById('valueField');
-    
-    switch(type) {
-        case 'bank':
-            amountLabel.textContent = 'موجودی (ریال)';
-            valueField.style.display = 'none';
-            break;
-        case 'dollar':
-            amountLabel.textContent = 'مقدار (دلار)';
-            valueField.style.display = 'block';
-            break;
-        case 'gold':
-            amountLabel.textContent = 'مقدار (گرم)';
-            valueField.style.display = 'block';
-            break;
-        default:
-            amountLabel.textContent = 'مقدار';
-            valueField.style.display = 'block';
-    }
-});
+    // منتظر می‌مونیم تا DOM کامل لود بشه و کامپوننت‌ها آماده بشن
+    document.addEventListener('DOMContentLoaded', function() {
+        // یک تابع برای آپدیت کردن فیلدها براساس نوع دارایی
+        function updateFieldsByType() {
+            // مقدار نوع دارایی رو از کامپوننت می‌گیریم
+            const typeSelect = document.querySelector('[x-data*="type"]');
+            if (!typeSelect || !typeSelect.__x) return;
+            
+            const typeData = typeSelect.__x.$data;
+            const type = typeData.selectedValue;
+            
+            const amountLabel = document.getElementById('amountLabel');
+            const valueField = document.getElementById('valueField');
+            
+            switch(type) {
+                case 'bank':
+                    amountLabel.textContent = 'موجودی (ریال)';
+                    valueField.classList.add('hidden');
+                    break;
+                case 'dollar':
+                    amountLabel.textContent = 'مقدار (دلار)';
+                    valueField.classList.remove('hidden');
+                    break;
+                case 'gold':
+                    amountLabel.textContent = 'مقدار (گرم)';
+                    valueField.classList.remove('hidden');
+                    break;
+                default:
+                    amountLabel.textContent = 'مقدار';
+                    valueField.classList.remove('hidden');
+            }
+        }
 
-// اجرای اولیه
-document.getElementById('type').dispatchEvent(new Event('change'));
+        // گوش دادن به تغییرات نوع دارایی
+        const typeSelect = document.querySelector('[x-data*="type"]');
+        if (typeSelect) {
+            // با هر تغییری در کامپوننت
+            typeSelect.addEventListener('change', function(e) {
+                setTimeout(updateFieldsByType, 50);
+            });
+            
+            // برای مقداردهی اولیه
+            setTimeout(updateFieldsByType, 200);
+        }
+
+        // اطمینان از اینکه مقدار value موقع ارسال فرم درست هست
+        document.getElementById('assetForm')?.addEventListener('submit', function(e) {
+            const typeSelect = document.querySelector('[x-data*="type"]');
+            if (!typeSelect || !typeSelect.__x) return true;
+            
+            const typeData = typeSelect.__x.$data;
+            const type = typeData.selectedValue;
+            
+            // برای حساب بانکی، value نباید ارسال بشه
+            if (type === 'bank') {
+                const valueInput = document.querySelector('[name="value"]');
+                if (valueInput) {
+                    valueInput.value = ''; // مقدار رو خالی می‌کنیم
+                }
+            }
+            
+            return true;
+        });
+    });
 </script>
 @endpush
 @endsection

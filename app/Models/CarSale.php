@@ -1,4 +1,5 @@
 <?php
+// app/Models/CarSale.php
 
 namespace App\Models;
 
@@ -9,11 +10,12 @@ class CarSale extends Model
 {
     protected $fillable = [
         'car_id',
+        'person_id',
         'selling_price',
         'total_profit',
         'sale_date',
-        'buyer_name',
-        'buyer_phone'
+        'buyer_name', // برای سازگاری با عقب
+        'buyer_phone' // برای سازگاری با عقب
     ];
 
     protected $casts = [
@@ -24,15 +26,37 @@ class CarSale extends Model
     {
         return $this->belongsTo(Car::class);
     }
-/**
- * شخص مرتبط با این فروش (خریدار)
- */
-public function person(): BelongsTo
-{
-    return $this->belongsTo(Person::class);
-}
 
-// برای سازگاری با عقب، می‌تونیم buyer_name رو هم نگه داریم
+    /**
+     * شخص مرتبط با این فروش (خریدار)
+     */
+    public function person(): BelongsTo
+    {
+        return $this->belongsTo(Person::class);
+    }
+
+    /**
+     * دریافت نام خریدار
+     */
+    public function getBuyerNameAttribute($value)
+    {
+        if ($this->person) {
+            return $this->person->display_name;
+        }
+        return $value;
+    }
+
+    /**
+     * دریافت تلفن خریدار
+     */
+    public function getBuyerPhoneAttribute($value)
+    {
+        if ($this->person) {
+            return $this->person->phone;
+        }
+        return $value;
+    }
+
     public function calculateInvestorProfits(): array
     {
         $investments = $this->car->investments;

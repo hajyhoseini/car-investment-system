@@ -22,7 +22,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('expenses.update', $expense) }}" enctype="multipart/form-data">
+                <form method="POST" action="{{ route('expenses.update', $expense) }}" enctype="multipart/form-data" id="expenseForm">
                     @csrf
                     @method('PUT')
 
@@ -31,110 +31,113 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">عنوان <span class="text-red-500">*</span></label>
                             <input type="text" name="title" value="{{ old('title', $expense->title) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition" required>
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('title') border-red-500 @enderror" 
+                                   placeholder="مثال: صافکاری خودرو" required>
+                            @error('title') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- مبلغ -->
+                        <!-- مبلغ با کامپوننت price-input -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ (ریال) <span class="text-red-500">*</span></label>
-                            <input type="number" name="amount" value="{{ old('amount', $expense->amount) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition" min="1000" required>
+                            <x-price-input 
+                                name="amount"
+                                label="مبلغ"
+                                :value="old('amount', $expense->amount)"
+                                placeholder="مثال: ۵۰۰,۰۰۰"
+                                :required="true"
+                                :min="1000"
+                                formId="expenseForm"
+                            />
                         </div>
 
-                        <!-- تاریخ هزینه -->
-<!-- تاریخ هزینه (شمسی) -->
-<div>
-    <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ هزینه <span class="text-red-500">*</span></label>
-    <input type="text" name="expense_date" id="expense_date" 
-           value="{{ old('expense_date', $expense->jalali_expense_date) }}" 
-           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('expense_date') border-red-500 @enderror"
-           placeholder="مثال: 1402/12/25" autocomplete="off" required>
-    @error('expense_date') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-</div>
-
-                        <!-- دسته‌بندی -->
+                        <!-- تاریخ هزینه (شمسی) - بدون کامپوننت -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">دسته‌بندی <span class="text-red-500">*</span></label>
-                            <select name="category" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition" required>
-                                @foreach($categories as $key => $label)
-                                    <option value="{{ $key }}" {{ old('category', $expense->category) == $key ? 'selected' : '' }}>
-                                        {{ $label }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ هزینه <span class="text-red-500">*</span></label>
+                            <input type="text" name="expense_date" id="expense_date" 
+                                   value="{{ old('expense_date', $expense->expense_date ? jalali_date($expense->expense_date) : '') }}" 
+                                   class="jalali-datepicker w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('expense_date') border-red-500 @enderror"
+                                   placeholder="مثال: ۱۴۰۲/۱۲/۲۵" autocomplete="off" required>
+                            @error('expense_date') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- خودرو مرتبط -->
+                        <!-- دسته‌بندی با کامپوننت searchable-select -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">خودرو مرتبط</label>
-                            <select name="car_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition">
-                                <option value="">بدون خودرو (هزینه عمومی)</option>
-                                @foreach($cars as $car)
-                                    <option value="{{ $car->id }}" {{ old('car_id', $expense->car_id) == $car->id ? 'selected' : '' }}>
-                                        {{ $car->title }} - {{ $car->brand }} {{ $car->model }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-<!-- شخص مرتبط -->
-<div>
-    <label class="block text-sm font-medium text-gray-700 mb-2">شخص مرتبط</label>
-    <select name="person_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition">
-        <option value="">بدون شخص</option>
-        @foreach($people as $person)
-            <option value="{{ $person->id }}" {{ old('person_id', $expense->person_id) == $person->id ? 'selected' : '' }}>
-                {{ $person->full_name }}
-                @if($person->company_name) ({{ $person->company_name }}) @endif
-            </option>
-        @endforeach
-    </select>
-</div>
-                        <!-- حساب پرداخت -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">حساب پرداخت</label>
-                            <select name="account_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition">
-                                <option value="">بدون کسر از حساب</option>
-                                @foreach($accounts as $account)
-                                    <option value="{{ $account->id }}" {{ old('account_id', $expense->account_id) == $account->id ? 'selected' : '' }}>
-                                        {{ $account->name }} (موجودی: {{ number_format($account->amount) }} ریال)
-                                    </option>
-                                @endforeach
-                            </select>
+                            <x-searchable-select 
+                                name="category"
+                                label="دسته‌بندی"
+                                :options="$categoryOptions"
+                                :selected="old('category', $expense->category)"
+                                placeholder="انتخاب کنید..."
+                                required="true"
+                            />
                         </div>
 
-                        <!-- روش پرداخت -->
+                        <!-- خودرو مرتبط با کامپوننت searchable-select -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">روش پرداخت</label>
-                            <select name="payment_method_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition">
-                                <option value="">انتخاب کنید</option>
-                                @foreach($paymentMethods as $method)
-                                    <option value="{{ $method->id }}" {{ old('payment_method_id', $expense->payment_method_id) == $method->id ? 'selected' : '' }}>
-                                        {{ $method->name }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <x-searchable-select 
+                                name="car_id"
+                                label="خودرو مرتبط"
+                                :options="$carOptions"
+                                :selected="old('car_id', $expense->car_id)"
+                                placeholder="بدون خودرو (هزینه عمومی)"
+                            />
+                        </div>
+
+                        <!-- شخص مرتبط با کامپوننت searchable-select -->
+                        <div>
+                            <x-searchable-select 
+                                name="person_id"
+                                label="شخص مرتبط"
+                                :options="$personOptions"
+                                :selected="old('person_id', $expense->person_id)"
+                                placeholder="بدون شخص"
+                            />
+                        </div>
+
+                        <!-- حساب پرداخت با کامپوننت searchable-select -->
+                        <div>
+                            <x-searchable-select 
+                                name="account_id"
+                                label="حساب پرداخت"
+                                :options="$accountOptions"
+                                :selected="old('account_id', $expense->account_id)"
+                                placeholder="بدون کسر از حساب"
+                            />
+                        </div>
+
+                        <!-- روش پرداخت با کامپوننت searchable-select -->
+                        <div>
+                            <x-searchable-select 
+                                name="payment_method_id"
+                                label="روش پرداخت"
+                                :options="$paymentMethodOptions"
+                                :selected="old('payment_method_id', $expense->payment_method_id)"
+                                placeholder="انتخاب کنید..."
+                            />
                         </div>
 
                         <!-- تصویر رسید جدید -->
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">تصویر رسید جدید</label>
                             <input type="file" name="receipt_image" accept="image/*"
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition">
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('receipt_image') border-red-500 @enderror">
                             @if($expense->receipt_image)
                                 <p class="text-xs text-gray-500 mt-1">تصویر فعلی: <a href="{{ asset('storage/' . $expense->receipt_image) }}" target="_blank" class="text-blue-600 hover:underline">مشاهده</a></p>
                             @endif
+                            @error('receipt_image') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- توضیحات -->
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">توضیحات</label>
-                            <textarea name="description" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition">{{ old('description', $expense->description) }}</textarea>
+                            <textarea name="description" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('description') border-red-500 @enderror">{{ old('description', $expense->description) }}</textarea>
+                            @error('description') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- یادداشت‌ها -->
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">یادداشت‌ها</label>
-                            <textarea name="notes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition">{{ old('notes', $expense->notes) }}</textarea>
+                            <textarea name="notes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition @error('notes') border-red-500 @enderror">{{ old('notes', $expense->notes) }}</textarea>
+                            @error('notes') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
                     </div>
 
@@ -152,3 +155,23 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
+<script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+
+<script>
+    $(document).ready(function() {
+        // تقویم شمسی
+        $('.jalali-datepicker').persianDatepicker({
+            format: 'YYYY/MM/DD',
+            autoClose: true,
+            initialValue: true,
+            calendar: {
+                persian: true
+            }
+        });
+    });
+</script>
+@endpush

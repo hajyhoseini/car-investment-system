@@ -104,13 +104,18 @@
                             @error('transmission') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- قیمت خرید با ویرگول -->
+                        <!-- قیمت خرید با کامپوننت price-input -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">قیمت خرید (ریال) <span class="text-red-500">*</span></label>
-                            <input type="text" name="purchase_price" id="purchase_price" value="{{ old('purchase_price') }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition @error('purchase_price') border-red-500 @enderror" 
-                                   placeholder="مثال: ۴۵۰,۰۰۰,۰۰۰" min="0" required>
-                            @error('purchase_price') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                            <x-price-input 
+                                name="purchase_price"
+                                label="قیمت خرید (ریال)"
+                                :value="old('purchase_price')"
+                                placeholder="مثال: ۴۵۰,۰۰۰,۰۰۰"
+                                :min="1000000"
+                                :required="true"
+                                currency="ریال"
+                                formId="carForm"
+                            />
                         </div>
 
                         <!-- تاریخ خرید (شمسی) -->
@@ -119,14 +124,14 @@
                             <input type="text" name="purchase_date" id="purchase_date" value="{{ old('purchase_date', $todayJalali ?? '') }}" 
                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition @error('purchase_date') border-red-500 @enderror" 
                                    placeholder="مثال: 1402/05/15" autocomplete="off" required>
-                            @error('purchase_date') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror>
+                            @error('purchase_date') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
                         {{-- بخش آپلود عکس‌ها --}}
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">تصاویر خودرو</label>
                             <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-500 transition" id="dropzone">
-                                <input type="file" name="images[]" id="images" multiple accept="image/*" class="hidden" onchange="previewImages(this)">
+                                <input type="file" name="images[]" id="images" multiple accept="image/*" class="hidden">
                                 <div class="cursor-pointer" onclick="document.getElementById('images').click()">
                                     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
@@ -176,9 +181,6 @@
 <script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
 
-{{-- کتابخونه AutoNumeric برای فرمت اعداد --}}
-<script src="https://cdn.jsdelivr.net/npm/autonumeric@4.6.0/dist/autoNumeric.min.js"></script>
-
 <script>
     $(document).ready(function() {
         // تقویم شمسی
@@ -188,23 +190,13 @@
             initialValue: true,
             calendar: { persian: true }
         });
-
-        // فرمت قیمت خرید
-        if ($('#purchase_price').length) {
-            new AutoNumeric('#purchase_price', {
-                digitGroupSeparator: ',',
-                decimalCharacter: '.',
-                decimalPlaces: 0,
-                minimumValue: '0',
-                maximumValue: '999999999999999',
-                modifyValueOnWheel: false,
-                unformatOnSubmit: true,
-                allowDecimalPadding: false
-            });
-        }
     });
 
     // پیش‌نمایش عکس‌ها
+    document.getElementById('images').addEventListener('change', function(e) {
+        previewImages(this);
+    });
+
     function previewImages(input) {
         const previewContainer = document.getElementById('preview-container');
         previewContainer.innerHTML = '';
@@ -242,11 +234,25 @@
 
     function removeImage(button) {
         button.closest('.relative').remove();
-        // ریست کردن input file (اختیاری - می‌تونی کاملترش کنی)
-        document.getElementById('images').value = '';
+        
+        // ریست کردن input file (ساخت FileList جدید)
+        const input = document.getElementById('images');
+        const dt = new DataTransfer();
+        
+        // اضافه کردن فایل‌های باقی‌مونده به لیست جدید
+        const remainingImages = document.querySelectorAll('#preview-container .relative');
+        const files = input.files;
+        
+        for (let i = 0; i < files.length; i++) {
+            let shouldKeep = true;
+            // اینجا منطق نگهداری فایل‌ها رو می‌تونی پیاده‌سازی کنی
+            // برای سادگی، فعلاً همه رو حذف می‌کنیم
+        }
+        
+        input.files = dt.files;
     }
 
-    // درگ و دراپ ساده
+    // درگ و دراپ
     const dropzone = document.getElementById('dropzone');
     
     dropzone.addEventListener('dragover', (e) => {

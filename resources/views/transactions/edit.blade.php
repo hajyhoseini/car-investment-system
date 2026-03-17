@@ -30,76 +30,72 @@
                     <input type="hidden" name="type" value="{{ $transaction->type }}">
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- مبلغ -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ (ریال) <span class="text-red-500">*</span></label>
-                            <input type="number" name="amount" value="{{ old('amount', $transaction->amount) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
-                                   min="1000" required>
-                        </div>
+                        <!-- مبلغ با کامپوننت price-input -->
+                        <x-price-input 
+                            name="amount"
+                            label="مبلغ (ریال)"
+                            :value="old('amount', $transaction->amount)"
+                            placeholder="مثال: ۱,۰۰۰,۰۰۰"
+                            :min="1000"
+                            :required="true"
+                            formId="transactionForm"
+                        />
 
                         <!-- تاریخ تراکنش (شمسی) -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ تراکنش <span class="text-red-500">*</span></label>
                             <input type="text" name="transaction_date" id="transaction_date" 
-                                   value="{{ old('transaction_date', jalali_date($transaction->transaction_date)) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition jalali-datepicker"
+                                   value="{{ old('transaction_date', $transaction->transaction_date ? jalali_date($transaction->transaction_date) : '') }}" 
+                                   class="jalali-datepicker w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition @error('transaction_date') border-red-500 @enderror"
                                    placeholder="مثال: ۱۴۰۲/۱۲/۲۵" autocomplete="off" required>
+                            @error('transaction_date') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- حساب (شرطی بر اساس نوع) -->
+                        <!-- حساب (شرطی بر اساس نوع) با کامپوننت searchable-select -->
                         @if($transaction->type === 'income')
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">حساب مقصد (دریافت به) <span class="text-red-500">*</span></label>
-                                <select name="to_asset_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" required>
-                                    <option value="">انتخاب کنید</option>
-                                    @foreach($accounts as $account)
-                                        <option value="{{ $account->id }}" 
-                                            {{ old('to_asset_id', $transaction->to_asset_id) == $account->id ? 'selected' : '' }}>
-                                            {{ $account->name }} (موجودی: {{ number_format($account->amount) }} ریال)
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <x-searchable-select 
+                                    name="to_asset_id"
+                                    label="حساب مقصد (دریافت به)"
+                                    :options="$accountOptions"
+                                    :selected="old('to_asset_id', $transaction->to_asset_id)"
+                                    placeholder="انتخاب کنید..."
+                                    required="true"
+                                />
                             </div>
                         @else
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">حساب مبدأ (پرداخت از) <span class="text-red-500">*</span></label>
-                                <select name="from_asset_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" required>
-                                    <option value="">انتخاب کنید</option>
-                                    @foreach($accounts as $account)
-                                        <option value="{{ $account->id }}" 
-                                            {{ old('from_asset_id', $transaction->from_asset_id) == $account->id ? 'selected' : '' }}>
-                                            {{ $account->name }} (موجودی: {{ number_format($account->amount) }} ریال)
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <x-searchable-select 
+                                    name="from_asset_id"
+                                    label="حساب مبدأ (پرداخت از)"
+                                    :options="$accountOptions"
+                                    :selected="old('from_asset_id', $transaction->from_asset_id)"
+                                    placeholder="انتخاب کنید..."
+                                    required="true"
+                                />
                             </div>
                         @endif
 
-                        <!-- شخص مرتبط -->
+                        <!-- شخص مرتبط با کامپوننت searchable-select -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">شخص مرتبط</label>
-                            <select name="person_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
-                                <option value="">انتخاب کنید</option>
-                                @foreach($people as $person)
-                                    <option value="{{ $person->id }}" {{ old('person_id', $transaction->person_id) == $person->id ? 'selected' : '' }}>
-                                        {{ $person->full_name }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <x-searchable-select 
+                                name="person_id"
+                                label="شخص مرتبط"
+                                :options="$personOptions"
+                                :selected="old('person_id', $transaction->person_id)"
+                                placeholder="انتخاب کنید..."
+                            />
                         </div>
 
-                        <!-- روش پرداخت -->
+                        <!-- روش پرداخت با کامپوننت searchable-select -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">روش پرداخت</label>
-                            <select name="payment_method_id" id="payment_method_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
-                                <option value="">انتخاب کنید</option>
-                                @foreach($paymentMethods as $method)
-                                    <option value="{{ $method->id }}" {{ old('payment_method_id', $transaction->payment_method_id) == $method->id ? 'selected' : '' }}>
-                                        {{ $method->name }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <x-searchable-select 
+                                name="payment_method_id"
+                                label="روش پرداخت"
+                                :options="$paymentMethodOptions"
+                                :selected="old('payment_method_id', $transaction->payment_method_id)"
+                                placeholder="انتخاب کنید..."
+                            />
                         </div>
 
                         <!-- شماره چک (نمایش شرطی) -->
@@ -110,35 +106,39 @@
                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ چک</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ چک (شمسی)</label>
                                 <input type="text" name="check_date" id="check_date" 
                                        value="{{ old('check_date', $transaction->check_date ? jalali_date($transaction->check_date) : '') }}" 
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition jalali-datepicker"
+                                       class="jalali-datepicker w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                                        placeholder="مثال: ۱۴۰۲/۱۲/۲۵" autocomplete="off">
                             </div>
                         </div>
 
-                        <!-- دارایی مرتبط -->
+                        <!-- دارایی مرتبط با کامپوننت searchable-select -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">دارایی مرتبط</label>
-                            <select name="asset_id" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
-                                <option value="">انتخاب کنید</option>
-                                @foreach($assets as $asset)
-                                    <option value="{{ $asset->id }}" {{ old('asset_id', $transaction->asset_id) == $asset->id ? 'selected' : '' }}>
-                                        {{ $asset->name }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <x-searchable-select 
+                                name="asset_id"
+                                label="دارایی مرتبط"
+                                :options="$assetOptions"
+                                :selected="old('asset_id', $transaction->asset_id)"
+                                placeholder="انتخاب کنید..."
+                            />
                         </div>
 
-                        <!-- وضعیت -->
+                        <!-- وضعیت با کامپوننت searchable-select -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">وضعیت <span class="text-red-500">*</span></label>
-                            <select name="status" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" required>
-                                <option value="pending" {{ old('status', $transaction->status) == 'pending' ? 'selected' : '' }}>در انتظار</option>
-                                <option value="completed" {{ old('status', $transaction->status) == 'completed' ? 'selected' : '' }}>تکمیل شده</option>
-                                <option value="cancelled" {{ old('status', $transaction->status) == 'cancelled' ? 'selected' : '' }}>لغو شده</option>
-                            </select>
+                            <x-searchable-select 
+                                name="status"
+                                label="وضعیت"
+                                :options="[
+                                    ['id' => 'pending', 'text' => 'در انتظار'],
+                                    ['id' => 'completed', 'text' => 'تکمیل شده'],
+                                    ['id' => 'cancelled', 'text' => 'لغو شده']
+                                ]"
+                                :selected="old('status', $transaction->status)"
+                                placeholder="انتخاب کنید..."
+                                required="true"
+                            />
                         </div>
 
                         <!-- توضیحات -->
@@ -189,14 +189,33 @@
     });
 
     // نمایش فیلدهای چک در صورت انتخاب روش پرداخت "چک"
-    document.getElementById('payment_method_id').addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
+    document.addEventListener('DOMContentLoaded', function() {
+        const paymentSelect = document.querySelector('[x-data*="payment_method_id"]');
         const checkFields = document.getElementById('check_fields');
         
-        if (selectedOption && selectedOption.text.includes('چک')) {
-            checkFields.classList.remove('hidden');
-        } else {
-            checkFields.classList.add('hidden');
+        function updateCheckFields() {
+            if (!paymentSelect || !paymentSelect.__x) return;
+            
+            const paymentData = paymentSelect.__x.$data;
+            const selectedId = paymentData.selectedValue;
+            
+            if (selectedId) {
+                const selectedOption = paymentData.options.find(opt => opt.id == selectedId);
+                if (selectedOption && selectedOption.text.includes('چک')) {
+                    checkFields.classList.remove('hidden');
+                } else {
+                    checkFields.classList.add('hidden');
+                }
+            } else {
+                checkFields.classList.add('hidden');
+            }
+        }
+
+        if (paymentSelect) {
+            paymentSelect.addEventListener('change', function() {
+                setTimeout(updateCheckFields, 100);
+            });
+            setTimeout(updateCheckFields, 200);
         }
     });
 </script>

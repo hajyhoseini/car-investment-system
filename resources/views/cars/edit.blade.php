@@ -24,7 +24,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('cars.update', $car) }}" enctype="multipart/form-data">
+                <form method="POST" action="{{ route('cars.update', $car) }}" enctype="multipart/form-data" id="carEditForm">
                     @csrf
                     @method('PUT')
 
@@ -105,13 +105,17 @@
                             @error('transmission') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- قیمت خرید با ویرگول -->
+                        <!-- قیمت خرید با کامپوننت price-input -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">قیمت خرید (ریال) <span class="text-red-500">*</span></label>
-                            <input type="text" name="purchase_price" id="purchase_price" value="{{ old('purchase_price', number_format($car->purchase_price)) }}" 
-                                   class="price-format w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition @error('purchase_price') border-red-500 @enderror" 
-                                   placeholder="مثال: 450,000,000" min="0" required>
-                            @error('purchase_price') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                            <x-price-input 
+                                name="purchase_price"
+                                label="قیمت خرید (ریال)"
+                                :value="old('purchase_price', $car->purchase_price)"
+                                placeholder="مثال: 450,000,000"
+                                :min="1000000"
+                                :required="true"
+                                formId="carEditForm"
+                            />
                         </div>
 
                         <!-- تاریخ خرید (شمسی) -->
@@ -210,17 +214,6 @@
             initialValue: true,
             calendar: {
                 persian: true
-            }
-        });
-        
-        // فرمت عدد با ویرگول - روش ساده
-        $('.price-format').on('input', function() {
-            // حذف همه کاراکترهای غیرعددی
-            var value = this.value.replace(/[^\d]/g, '');
-            
-            // اضافه کردن ویرگول
-            if (value) {
-                this.value = Number(value).toLocaleString('en-US');
             }
         });
     });

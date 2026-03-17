@@ -31,23 +31,26 @@
                     @method('PUT')
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- نوع دارایی -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">نوع دارایی <span class="text-red-500">*</span></label>
-                            <select name="type" id="type" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition @error('type') border-red-500 @enderror" required>
-                                <option value="bank" {{ old('type', $asset->type) == 'bank' ? 'selected' : '' }}>حساب بانکی</option>
-                                <option value="dollar" {{ old('type', $asset->type) == 'dollar' ? 'selected' : '' }}>دلار</option>
-                                <option value="gold" {{ old('type', $asset->type) == 'gold' ? 'selected' : '' }}>طلا</option>
-                            </select>
-                            @error('type') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                        </div>
+                        <!-- نوع دارایی با کامپوننت -->
+                        <x-searchable-select 
+                            name="type"
+                            label="نوع دارایی"
+                            :options="[
+                                ['id' => 'bank', 'text' => 'حساب بانکی'],
+                                ['id' => 'dollar', 'text' => 'دلار'],
+                                ['id' => 'gold', 'text' => 'طلا']
+                            ]"
+                            :selected="old('type', $asset->type)"
+                            placeholder="انتخاب کنید..."
+                            required="true"
+                        />
 
                         <!-- نام دارایی -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">نام <span class="text-red-500">*</span></label>
                             <input type="text" name="name" value="{{ old('name', $asset->name) }}" 
                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition @error('name') border-red-500 @enderror" 
-                                   required>
+                                   placeholder="مثال: حساب سپهر" required>
                             @error('name') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
@@ -66,23 +69,30 @@
                             </label>
                             <input type="number" step="0.01" name="amount" id="amount" value="{{ old('amount', $asset->amount) }}" 
                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition @error('amount') border-red-500 @enderror" 
-                                   required>
+                                   placeholder="۰" required>
                             @error('amount') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- ارزش به ریال -->
+                        <!-- ارزش به ریال با کامپوننت price-input -->
                         <div id="valueField" @if($asset->type == 'bank') style="display: none;" @endif>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">ارزش به ریال</label>
-                            <input type="number" name="value" id="value" value="{{ old('value', $asset->value) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition @error('value') border-red-500 @enderror">
-                            @error('value') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                            <x-price-input 
+                                name="value"
+                                label="ارزش به ریال"
+                                :value="old('value', $asset->value)"
+                                placeholder="مثال: ۵۰,۰۰۰,۰۰۰"
+                                :min="0"
+                                :required="$asset->type != 'bank'"
+                                formId="assetForm"
+                            />
                             <p class="text-xs text-gray-500 mt-1">برای دلار و طلا، ارزش به ریال را وارد کنید</p>
                         </div>
 
                         <!-- توضیحات -->
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">توضیحات</label>
-                            <textarea name="description" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition @error('description') border-red-500 @enderror">{{ old('description', $asset->description) }}</textarea>
+                            <textarea name="description" rows="3" 
+                                      class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition @error('description') border-red-500 @enderror"
+                                      placeholder="توضیحات اضافی">{{ old('description', $asset->description) }}</textarea>
                             @error('description') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
                     </div>
@@ -93,11 +103,11 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <span class="text-sm text-gray-600">تاریخ ایجاد:</span>
-                                <span class="block font-medium">{{ $asset->created_at->format('Y/m/d H:i') }}</span>
+                                <span class="block font-medium">{{ \Morilog\Jalali\Jalalian::fromCarbon($asset->created_at)->format('Y/m/d H:i') }}</span>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">آخرین به‌روزرسانی:</span>
-                                <span class="block font-medium">{{ $asset->updated_at->format('Y/m/d H:i') }}</span>
+                                <span class="block font-medium">{{ \Morilog\Jalali\Jalalian::fromCarbon($asset->updated_at)->format('Y/m/d H:i') }}</span>
                             </div>
                         </div>
                     </div>
@@ -118,33 +128,80 @@
 
 @push('scripts')
 <script>
-document.getElementById('type').addEventListener('change', function() {
-    const type = this.value;
-    const amountLabel = document.getElementById('amountLabel');
-    const valueField = document.getElementById('valueField');
-    const valueInput = document.getElementById('value');
-    
-    switch(type) {
-        case 'bank':
-            amountLabel.textContent = 'موجودی (ریال)';
-            valueField.style.display = 'none';
-            valueInput.removeAttribute('required');
-            break;
-        case 'dollar':
-            amountLabel.textContent = 'مقدار (دلار)';
-            valueField.style.display = 'block';
-            valueInput.setAttribute('required', 'required');
-            break;
-        case 'gold':
-            amountLabel.textContent = 'مقدار (گرم)';
-            valueField.style.display = 'block';
-            valueInput.setAttribute('required', 'required');
-            break;
-    }
-});
+    // منتظر می‌مونیم تا DOM کامل لود بشه و کامپوننت‌ها آماده بشن
+    document.addEventListener('DOMContentLoaded', function() {
+        // یک تابع برای آپدیت کردن فیلدها براساس نوع دارایی
+        function updateFieldsByType() {
+            // مقدار نوع دارایی رو از کامپوننت می‌گیریم
+            const typeSelect = document.querySelector('[x-data*="type"]');
+            if (!typeSelect || !typeSelect.__x) return;
+            
+            const typeData = typeSelect.__x.$data;
+            const type = typeData.selectedValue;
+            
+            const amountLabel = document.getElementById('amountLabel');
+            const valueField = document.getElementById('valueField');
+            const valueInput = valueField ? valueField.querySelector('[name="value"]') : null;
+            
+            switch(type) {
+                case 'bank':
+                    amountLabel.textContent = 'موجودی (ریال)';
+                    valueField.style.display = 'none';
+                    if (valueInput && valueInput._x_dataStack) {
+                        valueInput._x_dataStack[0].setRequired?.(false);
+                    }
+                    break;
+                case 'dollar':
+                    amountLabel.textContent = 'مقدار (دلار)';
+                    valueField.style.display = 'block';
+                    if (valueInput && valueInput._x_dataStack) {
+                        valueInput._x_dataStack[0].setRequired?.(true);
+                    }
+                    break;
+                case 'gold':
+                    amountLabel.textContent = 'مقدار (گرم)';
+                    valueField.style.display = 'block';
+                    if (valueInput && valueInput._x_dataStack) {
+                        valueInput._x_dataStack[0].setRequired?.(true);
+                    }
+                    break;
+                default:
+                    amountLabel.textContent = 'مقدار';
+                    valueField.style.display = 'block';
+            }
+        }
 
-// اجرای اولیه
-document.getElementById('type').dispatchEvent(new Event('change'));
+        // گوش دادن به تغییرات نوع دارایی
+        const typeSelect = document.querySelector('[x-data*="type"]');
+        if (typeSelect) {
+            // با هر تغییری در کامپوننت
+            typeSelect.addEventListener('change', function(e) {
+                setTimeout(updateFieldsByType, 50);
+            });
+            
+            // برای مقداردهی اولیه
+            setTimeout(updateFieldsByType, 200);
+        }
+
+        // اطمینان از اینکه مقدار value موقع ارسال فرم درست هست
+        document.getElementById('assetForm')?.addEventListener('submit', function(e) {
+            const typeSelect = document.querySelector('[x-data*="type"]');
+            if (!typeSelect || !typeSelect.__x) return true;
+            
+            const typeData = typeSelect.__x.$data;
+            const type = typeData.selectedValue;
+            
+            // برای حساب بانکی، value نباید ارسال بشه
+            if (type === 'bank') {
+                const valueInput = document.querySelector('[name="value"]');
+                if (valueInput) {
+                    valueInput.value = ''; // مقدار رو خالی می‌کنیم
+                }
+            }
+            
+            return true;
+        });
+    });
 </script>
 @endpush
 @endsection

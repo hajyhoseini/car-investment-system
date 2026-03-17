@@ -8,6 +8,7 @@ use App\Models\Investor;
 use App\Models\Investment;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Morilog\Jalali\Jalalian;
 
 class InvestmentController extends Controller
 {
@@ -41,12 +42,11 @@ class InvestmentController extends Controller
 
     public function store(Request $request)
     {
-        // اعتبارسنجی با تاریخ شمسی
+        // اعتبارسنجی - دیگه percentage رو چک نمی‌کنیم
         $validated = $request->validate([
             'car_id' => 'required|exists:cars,id',
             'investor_id' => 'required|exists:investors,id',
-            'amount' => 'required|numeric|min:1000',
-            'percentage' => 'required|numeric|min:0.01|max:100',
+            'amount' => 'required|numeric|min:1',
             'investment_date' => 'required|string',
         ]);
 
@@ -77,8 +77,11 @@ class InvestmentController extends Controller
         // بررسی اینکه مجموع سرمایه‌گذاری‌ها از قیمت خودرو بیشتر نشه
         if (($totalInvested + $validated['amount']) > $car->purchase_price) {
             $remaining = $car->purchase_price - $totalInvested;
-            return back()->withErrors(['amount' => "مجموع سرمایه‌گذاری‌ها نمی‌تواند از قیمت خودرو بیشتر باشد. مبلغ باقی‌مانده: " . fa_currency($remaining) . " ریال"])->withInput();
+            return back()->withErrors(['amount' => "مجموع سرمایه‌گذاری‌ها نمی‌تواند از قیمت خودرو بیشتر باشد. مبلغ باقی‌مانده: " . number_format($remaining) . " ریال"])->withInput();
         }
+
+        // محاسبه درصد در سرور
+        $validated['percentage'] = ($validated['amount'] / $car->purchase_price) * 100;
 
         $investment = Investment::create($validated);
         
@@ -105,54 +108,88 @@ class InvestmentController extends Controller
         return view('investments.show', compact('investment'));
     }
 
-    /**
-     * نمایش فرم ویرایش با اطلاعات کامل
-     */
-    public function edit(Investment $investment)
-    {
-        // دریافت لیست خودروهای موجود
-        $cars = Car::where('status', 'available')
-            ->with('investments')
-            ->get()
-            ->map(function($car) use ($investment) {
-                // محاسبه مجموع سرمایه‌گذاری‌ها به جز این سرمایه‌گذاری
-                $totalInvested = $car->investments()
-                    ->where('id', '!=', $investment->id)
-                    ->sum('amount');
-                $car->available_for_investment = $car->purchase_price - $totalInvested;
-                return $car;
-            });
-        
-        $investors = Investor::all();
-        
-        // تبدیل تاریخ به شمسی برای نمایش در فرم
-        $investment->jalali_date = jalali_date($investment->investment_date);
-        
-        // محاسبه باقی‌مانده برای این خودرو
-        $car = $investment->car;
-        $totalInvestedInCar = $car->investments()
+  public function edit(Investment $investment)
+{
+    // دریافت لیست خودروهای موجود
+    $cars = Car::where('status', 'available')
+        ->with('investments')
+        ->get();
+    
+    // فرمت کردن خودروها برای کامپوننت searchable-select
+    $formattedCars = $cars->map(function($car) use ($investment) {
+        // محاسبه مجموع سرمایه‌گذاری‌ها به جز این سرمایه‌گذاری
+        $totalInvested = $car->investments()
             ->where('id', '!=', $investment->id)
             ->sum('amount');
-        $remainingForCar = $car->purchase_price - $totalInvestedInCar;
-
-        return view('investments.edit', compact(
-            'investment', 
-            'cars', 
-            'investors',
-            'remainingForCar'
-        ));
+        
+        $remaining = $car->purchase_price - $totalInvested;
+        $fundedPercentage = $car->purchase_price > 0 ? ($totalInvested / $car->purchase_price) * 100 : 0;
+        
+        return [
+            'id' => $car->id,
+            'text' => $car->title . ' - ' . $car->brand . ' ' . $car->model,
+            'subtext' => number_format($car->purchase_price) . ' ریال - ' . 
+                         number_format($fundedPercentage, 1) . '% تأمین - ' .
+                         number_format($remaining) . ' ریال باقی‌مانده',
+            'data' => [
+                'price' => $car->purchase_price,
+                'remaining' => $remaining,
+                'total_invested' => $totalInvested
+            ]
+        ];
+    })->values();
+    
+    // فرمت کردن سرمایه‌گذاران برای کامپوننت searchable-select
+    $investors = Investor::all();
+    $formattedInvestors = $investors->map(function($investor) {
+        return [
+            'id' => $investor->id,
+            'text' => $investor->full_name,
+            'subtext' => $investor->user_id == auth()->id() ? 'شما' : '',
+            'data' => [
+                'national_code' => $investor->national_code,
+                'phone' => $investor->phone
+            ]
+        ];
+    })->values();
+    
+    // تاریخ رو به فرمت صحیح تبدیل کن
+    // اگه تاریخ به صورت شمسی در دیتابیسه، باید اول به میلادی تبدیل بشه
+    $investmentDate = $investment->investment_date;
+    
+    // بررسی کن ببینیم تاریخ میلادی هست یا شمسی
+    if (preg_match('/^[1-4]\d{3}\/\d{1,2}\/\d{1,2}/', $investmentDate)) {
+        // اگه شمسی بود، به میلادی تبدیل کن
+        $gregorianDate = jalali_to_gregorian($investmentDate);
+        $carbonDate = Carbon::parse($gregorianDate);
+    } else {
+        // اگه میلادی بود، مستقیم استفاده کن
+        $carbonDate = Carbon::parse($investmentDate);
     }
+    
+    $investment->jalali_date = Jalalian::fromCarbon($carbonDate)->format('Y/m/d');
+    
+    // محاسبه باقی‌مانده برای این خودرو
+    $car = $investment->car;
+    $totalInvestedInCar = $car->investments()
+        ->where('id', '!=', $investment->id)
+        ->sum('amount');
+    $remainingForCar = $car->purchase_price - $totalInvestedInCar;
 
-    /**
-     * بروزرسانی سرمایه‌گذاری
-     */
+    return view('investments.edit', compact(
+        'investment', 
+        'formattedCars',
+        'formattedInvestors',
+        'remainingForCar'
+    ));
+}
     public function update(Request $request, Investment $investment)
     {
+        // اعتبارسنجی - دیگه percentage رو چک نمی‌کنیم
         $validated = $request->validate([
             'car_id' => 'required|exists:cars,id',
             'investor_id' => 'required|exists:investors,id',
             'amount' => 'required|numeric|min:1000',
-            'percentage' => 'required|numeric|min:0.01|max:100',
             'investment_date' => 'required|string',
         ]);
 
@@ -178,7 +215,7 @@ class InvestmentController extends Controller
                 $remaining = $newCar->purchase_price - $totalInvestedInNewCar;
                 return back()->withErrors([
                     'amount' => 'مجموع سرمایه‌گذاری‌ها در خودروی جدید نمی‌تواند از قیمت آن بیشتر باشد. '
-                        . 'مبلغ باقی‌مانده: ' . fa_currency($remaining)
+                        . 'مبلغ باقی‌مانده: ' . number_format($remaining) . ' ریال'
                 ])->withInput();
             }
         } else {
@@ -191,18 +228,13 @@ class InvestmentController extends Controller
                 $remaining = $newCar->purchase_price - $totalInvested;
                 return back()->withErrors([
                     'amount' => 'مجموع سرمایه‌گذاری‌ها نمی‌تواند از قیمت خودرو بیشتر باشد. '
-                        . 'مبلغ باقی‌مانده: ' . fa_currency($remaining)
+                        . 'مبلغ باقی‌مانده: ' . number_format($remaining) . ' ریال'
                 ])->withInput();
             }
         }
 
-        // بررسی درصد (اختیاری - می‌تونی خودکار محاسبه کنی)
-        $calculatedPercentage = ($validated['amount'] / $newCar->purchase_price) * 100;
-        if (abs($calculatedPercentage - $validated['percentage']) > 0.01) {
-            // اگر درصد با مبلغ همخوانی نداشت، می‌تونی خطا بدی یا خودکار اصلاح کنی
-            // اینجا خودکار اصلاح می‌کنیم
-            $validated['percentage'] = $calculatedPercentage;
-        }
+        // محاسبه درصد در سرور
+        $validated['percentage'] = ($validated['amount'] / $newCar->purchase_price) * 100;
 
         // به‌روزرسانی سرمایه‌گذاری
         $investment->update($validated);

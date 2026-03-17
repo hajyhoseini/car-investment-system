@@ -17,7 +17,6 @@ class PersonController extends Controller implements HasMiddleware
     {
         return [
             new Middleware('auth'),
-            // برای لاراول ۱۱/۱۲، authorizeResource به این شکل استفاده میشه
         ];
     }
 
@@ -43,18 +42,24 @@ class PersonController extends Controller implements HasMiddleware
      */
     public function store(Request $request)
     {
+        // تبدیل تاریخ شمسی به میلادی
+        if ($request->filled('birth_date')) {
+            $gregorianDate = jalali_to_gregorian($request->birth_date);
+            $request->merge(['birth_date' => $gregorianDate]);
+        }
+        
         $validated = $request->validate([
             'full_name' => 'required|string|max:255',
-            'national_code' => 'nullable|string|size:10|unique:people',
-            'phone' => 'nullable|string|max:20',
+            'national_code' => 'nullable|string|unique:people', // حذف size:10
+            'phone' => 'nullable|string|max:255', // افزایش max
             'email' => 'nullable|email|max:255',
             'address' => 'nullable|string',
             'type' => 'required|in:buyer,seller,creditor,debtor,other',
             'description' => 'nullable|string',
             'is_legal' => 'sometimes|boolean',
             'company_name' => 'nullable|string|max:255',
-            'economic_code' => 'nullable|string|max:20',
-            'postal_code' => 'nullable|string|size:10',
+            'economic_code' => 'nullable|string|max:255', // افزایش max
+            'postal_code' => 'nullable|string|max:255', // حذف size:10
             'birth_date' => 'nullable|date',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ]);
@@ -76,16 +81,16 @@ class PersonController extends Controller implements HasMiddleware
     /**
      * Display the specified resource.
      */
-public function show(Person $person)
-{
-    // بارگذاری روابط
-    $person->load([
-        'purchases.car', 
-        'liabilities'
-    ]);
-    
-    return view('people.show', compact('person'));
-}
+    public function show(Person $person)
+    {
+        // بارگذاری روابط
+        $person->load([
+            'purchases.car', 
+            'liabilities'
+        ]);
+        
+        return view('people.show', compact('person'));
+    }
 
     /**
      * Show the form for editing the specified resource.
@@ -100,18 +105,24 @@ public function show(Person $person)
      */
     public function update(Request $request, Person $person)
     {
+        // تبدیل تاریخ شمسی به میلادی
+        if ($request->filled('birth_date')) {
+            $gregorianDate = jalali_to_gregorian($request->birth_date);
+            $request->merge(['birth_date' => $gregorianDate]);
+        }
+        
         $validated = $request->validate([
             'full_name' => 'required|string|max:255',
-            'national_code' => 'nullable|string|size:10|unique:people,national_code,' . $person->id,
-            'phone' => 'nullable|string|max:20',
+            'national_code' => 'nullable|string|unique:people,national_code,' . $person->id, // حذف size:10
+            'phone' => 'nullable|string|max:255', // افزایش max
             'email' => 'nullable|email|max:255',
             'address' => 'nullable|string',
             'type' => 'required|in:buyer,seller,creditor,debtor,other',
             'description' => 'nullable|string',
             'is_legal' => 'sometimes|boolean',
             'company_name' => 'nullable|string|max:255',
-            'economic_code' => 'nullable|string|max:20',
-            'postal_code' => 'nullable|string|size:10',
+            'economic_code' => 'nullable|string|max:255', // افزایش max
+            'postal_code' => 'nullable|string|max:255', // حذف size:10
             'birth_date' => 'nullable|date',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ]);

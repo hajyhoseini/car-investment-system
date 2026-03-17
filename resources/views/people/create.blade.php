@@ -34,25 +34,28 @@
                                    placeholder="مثال: علی محمدی" required>
                         </div>
 
-                        <!-- نوع شخص -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">نوع شخص <span class="text-red-500">*</span></label>
-                            <select name="type" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" required>
-                                <option value="">انتخاب کنید</option>
-                                <option value="buyer" {{ old('type') == 'buyer' ? 'selected' : '' }}>خریدار</option>
-                                <option value="seller" {{ old('type') == 'seller' ? 'selected' : '' }}>فروشنده</option>
-                                <option value="creditor" {{ old('type') == 'creditor' ? 'selected' : '' }}>طلبکار</option>
-                                <option value="debtor" {{ old('type') == 'debtor' ? 'selected' : '' }}>بدهکار</option>
-                                <option value="other" {{ old('type') == 'other' ? 'selected' : '' }}>سایر</option>
-                            </select>
-                        </div>
+                        <!-- نوع شخص با کامپوننت -->
+                        <x-searchable-select 
+                            name="type"
+                            label="نوع شخص"
+                            :options="[
+                                ['id' => 'buyer', 'text' => 'خریدار'],
+                                ['id' => 'seller', 'text' => 'فروشنده'],
+                                ['id' => 'creditor', 'text' => 'طلبکار'],
+                                ['id' => 'debtor', 'text' => 'بدهکار'],
+                                ['id' => 'other', 'text' => 'سایر']
+                            ]"
+                            :selected="old('type')"
+                            placeholder="انتخاب کنید..."
+                            required="true"
+                        />
 
                         <!-- کد ملی -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">کد ملی</label>
                             <input type="text" name="national_code" value="{{ old('national_code') }}" 
                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
-                                   placeholder="مثال: 1234567890" maxlength="10">
+                                   placeholder="کد ملی ۱۰ رقمی">
                         </div>
 
                         <!-- تلفن -->
@@ -60,7 +63,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">تلفن</label>
                             <input type="text" name="phone" value="{{ old('phone') }}" 
                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
-                                   placeholder="مثال: 09123456789">
+                                   placeholder="مثال: ۰۹۱۲۳۴۵۶۷۸۹">
                         </div>
 
                         <!-- ایمیل -->
@@ -68,7 +71,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">ایمیل</label>
                             <input type="email" name="email" value="{{ old('email') }}" 
                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
-                                   placeholder="مثال: info@example.com">
+                                   placeholder="info@example.com">
                         </div>
 
                         <!-- کد پستی -->
@@ -76,7 +79,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">کد پستی</label>
                             <input type="text" name="postal_code" value="{{ old('postal_code') }}" 
                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
-                                   placeholder="مثال: 1234567890" maxlength="10">
+                                   placeholder="کد پستی ۱۰ رقمی">
                         </div>
 
                         <!-- کد اقتصادی -->
@@ -84,14 +87,16 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">کد اقتصادی</label>
                             <input type="text" name="economic_code" value="{{ old('economic_code') }}" 
                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
-                                   placeholder="مثال: 12345678">
+                                   placeholder="کد اقتصادی">
                         </div>
 
-                        <!-- تاریخ تولد -->
+                        <!-- تاریخ تولد (شمسی) -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ تولد</label>
-                            <input type="date" name="birth_date" value="{{ old('birth_date') }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                            <input type="text" name="birth_date" id="birth_date" value="{{ old('birth_date') }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition @error('birth_date') border-red-500 @enderror"
+                                   placeholder="مثال: ۱۳۷۰/۰۱/۰۱" autocomplete="off">
+                            @error('birth_date') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- حقوقی / حقیقی -->
@@ -120,13 +125,15 @@
                         <!-- آدرس -->
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">آدرس</label>
-                            <textarea name="address" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">{{ old('address') }}</textarea>
+                            <textarea name="address" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
+                                      placeholder="آدرس کامل">{{ old('address') }}</textarea>
                         </div>
 
                         <!-- توضیحات -->
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">توضیحات</label>
-                            <textarea name="description" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">{{ old('description') }}</textarea>
+                            <textarea name="description" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
+                                      placeholder="توضیحات اضافی">{{ old('description') }}</textarea>
                         </div>
                     </div>
 
@@ -145,8 +152,33 @@
 </div>
 @endsection
 
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+@endpush
+
 @push('scripts')
+<script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
+<script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
+    $(document).ready(function() {
+        // تقویم شمسی برای تاریخ تولد
+        $('#birth_date').persianDatepicker({
+            format: 'YYYY/MM/DD',
+            autoClose: true,
+            initialValue: false,
+            calendar: {
+                persian: true
+            },
+            toolbox: {
+                calendarSwitch: {
+                    enabled: false
+                }
+            }
+        });
+    });
+
     // نمایش/مخفی کردن فیلد شرکت
     document.getElementById('is_legal').addEventListener('change', function() {
         const companyField = document.getElementById('company_field');

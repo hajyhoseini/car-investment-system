@@ -34,39 +34,44 @@
                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" required>
                         </div>
 
-                        <!-- نوع شخص -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">نوع شخص <span class="text-red-500">*</span></label>
-                            <select name="type" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" required>
-                                <option value="">انتخاب کنید</option>
-                                <option value="buyer" {{ old('type', $person->type) == 'buyer' ? 'selected' : '' }}>خریدار</option>
-                                <option value="seller" {{ old('type', $person->type) == 'seller' ? 'selected' : '' }}>فروشنده</option>
-                                <option value="creditor" {{ old('type', $person->type) == 'creditor' ? 'selected' : '' }}>طلبکار</option>
-                                <option value="debtor" {{ old('type', $person->type) == 'debtor' ? 'selected' : '' }}>بدهکار</option>
-                                <option value="other" {{ old('type', $person->type) == 'other' ? 'selected' : '' }}>سایر</option>
-                            </select>
-                        </div>
+                        <!-- نوع شخص با کامپوننت -->
+                        <x-searchable-select 
+                            name="type"
+                            label="نوع شخص"
+                            :options="[
+                                ['id' => 'buyer', 'text' => 'خریدار'],
+                                ['id' => 'seller', 'text' => 'فروشنده'],
+                                ['id' => 'creditor', 'text' => 'طلبکار'],
+                                ['id' => 'debtor', 'text' => 'بدهکار'],
+                                ['id' => 'other', 'text' => 'سایر']
+                            ]"
+                            :selected="old('type', $person->type)"
+                            placeholder="انتخاب کنید..."
+                            required="true"
+                        />
 
                         <!-- کد ملی -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">کد ملی</label>
                             <input type="text" name="national_code" value="{{ old('national_code', $person->national_code) }}" 
                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
-                                   maxlength="10">
+                                   placeholder="کد ملی ۱۰ رقمی">
                         </div>
 
                         <!-- تلفن -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">تلفن</label>
                             <input type="text" name="phone" value="{{ old('phone', $person->phone) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
+                                   placeholder="مثال: ۰۹۱۲۳۴۵۶۷۸۹">
                         </div>
 
                         <!-- ایمیل -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">ایمیل</label>
                             <input type="email" name="email" value="{{ old('email', $person->email) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
+                                   placeholder="info@example.com">
                         </div>
 
                         <!-- کد پستی -->
@@ -74,21 +79,25 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">کد پستی</label>
                             <input type="text" name="postal_code" value="{{ old('postal_code', $person->postal_code) }}" 
                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
-                                   maxlength="10">
+                                   placeholder="کد پستی ۱۰ رقمی">
                         </div>
 
                         <!-- کد اقتصادی -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">کد اقتصادی</label>
                             <input type="text" name="economic_code" value="{{ old('economic_code', $person->economic_code) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
+                                   placeholder="کد اقتصادی">
                         </div>
 
-                        <!-- تاریخ تولد -->
+                        <!-- تاریخ تولد (شمسی) -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ تولد</label>
-                            <input type="date" name="birth_date" value="{{ old('birth_date', $person->birth_date ? $person->birth_date->format('Y-m-d') : '') }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                            <input type="text" name="birth_date" id="birth_date" 
+                                   value="{{ old('birth_date', $person->birth_date ? \Morilog\Jalali\Jalalian::fromCarbon(\Carbon\Carbon::parse($person->birth_date))->format('Y/m/d') : '') }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition @error('birth_date') border-red-500 @enderror"
+                                   placeholder="مثال: ۱۳۷۰/۰۱/۰۱" autocomplete="off">
+                            @error('birth_date') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- حقوقی / حقیقی -->
@@ -102,7 +111,8 @@
                         <div id="company_field" class="{{ old('is_legal', $person->is_legal) ? '' : 'hidden' }}">
                             <label class="block text-sm font-medium text-gray-700 mb-2">نام شرکت</label>
                             <input type="text" name="company_name" value="{{ old('company_name', $person->company_name) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
+                                   placeholder="مثال: شرکت بازرگانی البرز">
                         </div>
 
                         <!-- تصویر فعلی -->
@@ -124,13 +134,15 @@
                         <!-- آدرس -->
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">آدرس</label>
-                            <textarea name="address" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">{{ old('address', $person->address) }}</textarea>
+                            <textarea name="address" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
+                                      placeholder="آدرس کامل">{{ old('address', $person->address) }}</textarea>
                         </div>
 
                         <!-- توضیحات -->
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">توضیحات</label>
-                            <textarea name="description" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">{{ old('description', $person->description) }}</textarea>
+                            <textarea name="description" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
+                                      placeholder="توضیحات اضافی">{{ old('description', $person->description) }}</textarea>
                         </div>
                     </div>
 
@@ -149,8 +161,33 @@
 </div>
 @endsection
 
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+@endpush
+
 @push('scripts')
+<script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
+<script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
+    $(document).ready(function() {
+        // تقویم شمسی برای تاریخ تولد
+        $('#birth_date').persianDatepicker({
+            format: 'YYYY/MM/DD',
+            autoClose: true,
+            initialValue: true,
+            calendar: {
+                persian: true
+            },
+            toolbox: {
+                calendarSwitch: {
+                    enabled: false
+                }
+            }
+        });
+    });
+
     // نمایش/مخفی کردن فیلد شرکت
     document.getElementById('is_legal').addEventListener('change', function() {
         const companyField = document.getElementById('company_field');

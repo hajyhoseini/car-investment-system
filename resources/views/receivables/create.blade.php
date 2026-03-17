@@ -22,7 +22,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('receivables.store') }}" enctype="multipart/form-data">
+                <form method="POST" action="{{ route('receivables.store') }}" enctype="multipart/form-data" id="receivableForm">
                     @csrf
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -34,35 +34,38 @@
                                    placeholder="مثال: فروش خودرو" required>
                         </div>
 
-                        <!-- مبلغ -->
+                        <!-- مبلغ با کامپوننت price-input -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ (ریال) <span class="text-red-500">*</span></label>
-                            <input type="text" name="amount" id="amount" value="{{ old('amount') }}" 
-                                   class="price-format w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" 
-                                   placeholder="مثال: ۵,۰۰۰,۰۰۰" required>
+                            <x-price-input 
+                                name="amount"
+                                label="مبلغ"
+                                :value="old('amount')"
+                                placeholder="مثال: ۵,۰۰۰,۰۰۰"
+                                :required="true"
+                                :min="1000"
+                                formId="receivableForm"
+                            />
                         </div>
 
-                        <!-- نوع مطالبه -->
+                        <!-- نوع مطالبه با کامپوننت searchable-select -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">نوع <span class="text-red-500">*</span></label>
-                            <select name="currency_type" id="currency_type" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" required>
-                                <option value="">انتخاب کنید</option>
-                                @foreach($currencyTypes as $key => $label)
-                                    <option value="{{ $key }}" {{ old('currency_type') == $key ? 'selected' : '' }}>
-                                        {{ $label }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <x-searchable-select 
+                                name="currency_type"
+                                label="نوع"
+                                :options="$currencyTypeOptions"
+                                :selected="old('currency_type')"
+                                placeholder="انتخاب کنید..."
+                                required="true"
+                            />
                         </div>
 
-                        <!-- استفاده از کامپوننت searchable-select -->
+                        <!-- شخص مرتبط با کامپوننت searchable-select -->
                         <x-searchable-select 
                             name="person_id"
                             label="شخص مرتبط"
                             :options="$formattedPeople"
                             :selected="old('person_id')"
                             placeholder="جستجوی شخص..."
-                            required="false"
                         />
 
                         <!-- تاریخ مطالبه -->
@@ -82,25 +85,111 @@
                                    placeholder="مثال: ۱۴۰۲/۱۲/۲۵" autocomplete="off">
                         </div>
 
-                        <!-- وضعیت -->
+                        <!-- وضعیت با کامپوننت searchable-select -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">وضعیت <span class="text-red-500">*</span></label>
-                            <select name="status" id="status" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" required>
-                                <option value="pending" {{ old('status') == 'pending' ? 'selected' : '' }}>در انتظار</option>
-                                <option value="partially_paid" {{ old('status') == 'partially_paid' ? 'selected' : '' }}>پرداخت جزئی</option>
-                                <option value="paid" {{ old('status') == 'paid' ? 'selected' : '' }}>تسویه شده</option>
-                            </select>
+                            <x-searchable-select 
+                                name="status"
+                                label="وضعیت"
+                                :options="[
+                                    ['id' => 'pending', 'text' => 'در انتظار'],
+                                    ['id' => 'partially_paid', 'text' => 'پرداخت جزئی'],
+                                    ['id' => 'paid', 'text' => 'تسویه شده']
+                                ]"
+                                :selected="old('status', 'pending')"
+                                placeholder="انتخاب کنید..."
+                                required="true"
+                            />
                         </div>
 
-                        <!-- مبلغ پرداخت شده -->
+                        <!-- مبلغ پرداخت شده با کامپوننت price-input -->
                         <div id="paid_amount_field" class="hidden">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ پرداخت شده (ریال)</label>
-                            <input type="text" name="paid_amount" id="paid_amount" value="{{ old('paid_amount') }}" 
-                                   class="price-format w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" 
-                                   placeholder="مثال: ۲,۰۰۰,۰۰۰">
+                            <x-price-input 
+                                name="paid_amount"
+                                label="مبلغ پرداخت شده"
+                                :value="old('paid_amount')"
+                                placeholder="مثال: ۲,۰۰۰,۰۰۰"
+                                :min="0"
+                                formId="receivableForm"
+                            />
                         </div>
 
-                        <!-- بقیه فیلدها ... -->
+                        <!-- فیلدهای اختصاصی بر اساس نوع -->
+                        <div id="check_fields" class="hidden col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">شماره چک</label>
+                                <input type="text" name="currency_details[check_number]" value="{{ old('currency_details.check_number') }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">نام بانک</label>
+                                <input type="text" name="currency_details[bank_name]" value="{{ old('currency_details.bank_name') }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">تاریخ چک</label>
+                                <input type="text" name="currency_details[check_date]" id="check_date" 
+                                       value="{{ old('currency_details.check_date') }}"
+                                       class="jalali-datepicker w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500"
+                                       placeholder="مثال: ۱۴۰۲/۱۲/۲۵" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <div id="gold_fields" class="hidden col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">وزن (گرم)</label>
+                                <input type="number" step="0.01" name="currency_details[weight]" value="{{ old('currency_details.weight') }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">عیار</label>
+                                <input type="text" name="currency_details[karat]" value="{{ old('currency_details.karat') }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">توضیحات</label>
+                                <input type="text" name="currency_details[description]" value="{{ old('currency_details.description') }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500">
+                            </div>
+                        </div>
+
+                        <div id="dollar_fields" class="hidden col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">نرخ ارز (ریال)</label>
+                                <x-price-input 
+                                    name="currency_details[exchange_rate]"
+                                    label=""
+                                    :value="old('currency_details.exchange_rate')"
+                                    placeholder="مثال: ۵۰,۰۰۰"
+                                    :min="0"
+                                    formId="receivableForm"
+                                />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">توضیحات</label>
+                                <input type="text" name="currency_details[description]" value="{{ old('currency_details.description') }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500">
+                            </div>
+                        </div>
+
+                        <!-- فایل ضمیمه -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">فایل ضمیمه (تصویر چک/سند)</label>
+                            <input type="file" name="attachments" accept="image/*,application/pdf"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 transition">
+                            <p class="text-xs text-gray-500 mt-1">فرمت‌های مجاز: jpeg, png, jpg, pdf (حداکثر ۲ مگابایت)</p>
+                        </div>
+
+                        <!-- توضیحات -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">توضیحات</label>
+                            <textarea name="description" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 transition">{{ old('description') }}</textarea>
+                        </div>
+
+                        <!-- یادداشت‌ها -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">یادداشت‌ها</label>
+                            <textarea name="notes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 transition">{{ old('notes') }}</textarea>
+                        </div>
                     </div>
 
                     <div class="flex justify-end mt-6 space-x-2">
@@ -117,7 +206,6 @@
     </div>
 </div>
 
-<!-- اسکریپت‌های قبلی -->
 @push('scripts')
 <script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
 <script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
@@ -133,42 +221,60 @@
                 persian: true
             }
         });
+    });
 
-        $('.price-format').on('input', function() {
-            let value = this.value.replace(/[^\d]/g, '');
-            if (value) {
-                this.value = Number(value).toLocaleString('en-US');
+    // گوش دادن به تغییرات نوع مطالبه
+    document.addEventListener('DOMContentLoaded', function() {
+        const typeSelect = document.querySelector('[x-data*="currency_type"]');
+        const statusSelect = document.querySelector('[x-data*="status"]');
+        
+        function updateFieldsByType() {
+            if (!typeSelect || !typeSelect.__x) return;
+            
+            const typeData = typeSelect.__x.$data;
+            const type = typeData.selectedValue;
+            
+            document.getElementById('check_fields')?.classList.add('hidden');
+            document.getElementById('gold_fields')?.classList.add('hidden');
+            document.getElementById('dollar_fields')?.classList.add('hidden');
+            
+            if (type === 'check') {
+                document.getElementById('check_fields')?.classList.remove('hidden');
+            } else if (type === 'gold') {
+                document.getElementById('gold_fields')?.classList.remove('hidden');
+            } else if (type === 'dollar') {
+                document.getElementById('dollar_fields')?.classList.remove('hidden');
             }
-        });
-    });
-
-    document.getElementById('currency_type').addEventListener('change', function() {
-        const type = this.value;
-        
-        document.getElementById('check_fields')?.classList.add('hidden');
-        document.getElementById('gold_fields')?.classList.add('hidden');
-        document.getElementById('dollar_fields')?.classList.add('hidden');
-        
-        if (type === 'check') {
-            document.getElementById('check_fields').classList.remove('hidden');
-        } else if (type === 'gold') {
-            document.getElementById('gold_fields').classList.remove('hidden');
-        } else if (type === 'dollar') {
-            document.getElementById('dollar_fields').classList.remove('hidden');
         }
-    });
 
-    document.getElementById('status').addEventListener('change', function() {
-        const status = this.value;
-        const paidField = document.getElementById('paid_amount_field');
-        
-        if (status === 'partially_paid') {
-            paidField.classList.remove('hidden');
-        } else {
-            paidField.classList.add('hidden');
+        function updatePaidFieldByStatus() {
+            if (!statusSelect || !statusSelect.__x) return;
+            
+            const statusData = statusSelect.__x.$data;
+            const status = statusData.selectedValue;
+            const paidField = document.getElementById('paid_amount_field');
+            
+            if (status === 'partially_paid') {
+                paidField.classList.remove('hidden');
+            } else {
+                paidField.classList.add('hidden');
+            }
+        }
+
+        if (typeSelect) {
+            typeSelect.addEventListener('change', function() {
+                setTimeout(updateFieldsByType, 100);
+            });
+            setTimeout(updateFieldsByType, 200);
+        }
+
+        if (statusSelect) {
+            statusSelect.addEventListener('change', function() {
+                setTimeout(updatePaidFieldByStatus, 100);
+            });
+            setTimeout(updatePaidFieldByStatus, 200);
         }
     });
 </script>
 @endpush
-
 @endsection
