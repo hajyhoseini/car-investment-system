@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use App\Models\Person;
 use App\Models\Investor;
 
 class InvestorSeeder extends Seeder
@@ -16,7 +17,6 @@ class InvestorSeeder extends Seeder
                 'phone' => '09121234567',
                 'email' => 'ali@gmail.com',
                 'address' => 'تهران، خیابان انقلاب',
-                'total_invested' => 0,
             ],
             [
                 'full_name' => 'سارا احمدی',
@@ -24,7 +24,6 @@ class InvestorSeeder extends Seeder
                 'phone' => '09131234567',
                 'email' => 'sara@yahoo.com',
                 'address' => 'اصفهان، چهارباغ',
-                'total_invested' => 0,
             ],
             [
                 'full_name' => 'رضا کریمی',
@@ -32,7 +31,6 @@ class InvestorSeeder extends Seeder
                 'phone' => '09141234567',
                 'email' => 'reza@gmail.com',
                 'address' => 'شیراز، معالی‌آباد',
-                'total_invested' => 0,
             ],
             [
                 'full_name' => 'مریم حسینی',
@@ -40,7 +38,6 @@ class InvestorSeeder extends Seeder
                 'phone' => '09151234567',
                 'email' => 'maryam@yahoo.com',
                 'address' => 'مشهد، احمدآباد',
-                'total_invested' => 0,
             ],
             [
                 'full_name' => 'مهدی رضایی',
@@ -48,7 +45,6 @@ class InvestorSeeder extends Seeder
                 'phone' => '09161234567',
                 'email' => 'mehdi@gmail.com',
                 'address' => 'تبریز، ولیعصر',
-                'total_invested' => 0,
             ],
             [
                 'full_name' => 'زهرا موسوی',
@@ -56,15 +52,23 @@ class InvestorSeeder extends Seeder
                 'phone' => '09171234567',
                 'email' => 'zahra@yahoo.com',
                 'address' => 'کرج، عظیمیه',
-                'total_invested' => 0,
             ],
         ];
 
-        foreach ($investors as $investor) {
-            // به جای create از firstOrCreate استفاده کن
+        foreach ($investors as $investorData) {
+            // اول Person رو ایجاد کن
+            $person = Person::firstOrCreate(
+                ['national_code' => $investorData['national_code']],
+                $investorData
+            );
+            
+            // بعد Investor رو بهش وصل کن
             Investor::firstOrCreate(
-                ['national_code' => $investor['national_code']], // شرط یکتا
-                $investor // داده‌های کامل
+                ['person_id' => $person->id],
+                [
+                    'person_id' => $person->id,
+                    'description' => 'سرمایه‌گذار خودکار ایجاد شده'
+                ]
             );
         }
     }
