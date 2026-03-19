@@ -8,6 +8,11 @@
         text-align: left;
         direction: ltr;
     }
+    
+    /* استایل برای dropdown فیلتر */
+    .filter-dropdown {
+        min-width: 250px;
+    }
 </style>
 @endsection
 
@@ -56,7 +61,7 @@
 
                 <!-- فیلترها با تاریخ شمسی -->
                 <div class="mb-6 p-4 bg-gray-50 rounded-lg">
-                    <form method="GET" action="{{ route('receivables.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <form method="GET" action="{{ route('receivables.index') }}" class="grid grid-cols-1 md:grid-cols-6 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">از تاریخ</label>
                             <input type="text" name="start_date" id="start_date" value="{{ request('start_date') }}" 
@@ -90,6 +95,18 @@
                                 <option value="overdue" {{ request('status') == 'overdue' ? 'selected' : '' }}>سررسید گذشته</option>
                             </select>
                         </div>
+                        
+                        <!-- فیلتر شخص با کامپوننت searchable-select -->
+                        <div class="filter-dropdown">
+                            <x-searchable-select 
+                                name="person_id"
+                                label="شخص"
+                                :options="$personOptions"
+                                :selected="request('person_id')"
+                                placeholder="همه اشخاص"
+                            />
+                        </div>
+                        
                         <div class="flex items-end">
                             <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition w-full">
                                 اعمال فیلتر
@@ -262,6 +279,7 @@
         </form>
     </div>
 </div>
+@endsection
 
 @push('scripts')
 <script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
@@ -381,4 +399,3 @@
     });
 </script>
 @endpush
-@endsection

@@ -1,5 +1,13 @@
 @extends('layouts.app')
 
+@section('styles')
+<style>
+    .filter-dropdown {
+        min-width: 250px;
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -32,45 +40,58 @@
                 @endif
 
                 <!-- فیلترها -->
-                <div class="mb-6 p-4 bg-gray-50 rounded-lg">
-                    <form method="GET" action="{{ route('transactions.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">از تاریخ</label>
-                            <input type="date" name="start_date" value="{{ request('start_date') }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">تا تاریخ</label>
-                            <input type="date" name="end_date" value="{{ request('end_date') }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">نوع</label>
-                            <select name="type" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <option value="">همه</option>
-                                <option value="income" {{ request('type') == 'income' ? 'selected' : '' }}>دریافت</option>
-                                <option value="expense" {{ request('type') == 'expense' ? 'selected' : '' }}>پرداخت</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">وضعیت</label>
-                            <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <option value="">همه</option>
-                                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>در انتظار</option>
-                                <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>تکمیل شده</option>
-                                <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>لغو شده</option>
-                            </select>
-                        </div>
-                        <div class="md:col-span-4 flex justify-end gap-2">
-                            <a href="{{ route('transactions.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg transition">
-                                حذف فیلترها
-                            </a>
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition">
-                                اعمال فیلتر
-                            </button>
-                        </div>
-                    </form>
-                </div>
+            <!-- فیلترها -->
+<div class="mb-6 p-4 bg-gray-50 rounded-lg">
+    <form method="GET" action="{{ route('transactions.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">از تاریخ</label>
+            <input type="date" name="start_date" value="{{ request('start_date') }}" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">تا تاریخ</label>
+            <input type="date" name="end_date" value="{{ request('end_date') }}" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">نوع</label>
+            <select name="type" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                <option value="">همه</option>
+                <option value="income" {{ request('type') == 'income' ? 'selected' : '' }}>دریافت</option>
+                <option value="expense" {{ request('type') == 'expense' ? 'selected' : '' }}>پرداخت</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">وضعیت</label>
+            <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                <option value="">همه</option>
+                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>در انتظار</option>
+                <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>تکمیل شده</option>
+                <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>لغو شده</option>
+            </select>
+        </div>
+        
+        <!-- فیلتر شخص با کامپوننت searchable-select -->
+        <div class="filter-dropdown">
+            <x-searchable-select 
+                name="person_id"
+                label="شخص"
+                :options="$personOptions"
+                :selected="request('person_id')"
+                placeholder="همه اشخاص"
+            />
+        </div>
+        
+        <div class="md:col-span-5 flex justify-end gap-2">
+            <a href="{{ route('transactions.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg transition">
+                حذف فیلترها
+            </a>
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition">
+                اعمال فیلتر
+            </button>
+        </div>
+    </form>
+</div>
 
                 <!-- خلاصه آماری -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -123,7 +144,15 @@
                                 <td class="px-6 py-4 whitespace-nowrap font-bold">{{ number_format($transaction->amount) }} ریال</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->fromAsset->name ?? '—' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->toAsset->name ?? '—' }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $transaction->person->full_name ?? '—' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($transaction->person)
+                                        <a href="{{ route('people.show', $transaction->person) }}" class="text-blue-600 hover:underline">
+                                            {{ $transaction->person->full_name }}
+                                        </a>
+                                    @else
+                                        <span class="text-gray-500">—</span>
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="px-2 py-1 rounded-full text-xs 
                                         @if($transaction->status == 'completed') bg-green-100 text-green-800
@@ -210,6 +239,7 @@
         </div>
     </div>
 </div>
+@endsection
 
 @push('scripts')
 <script>
@@ -224,7 +254,6 @@
         document.getElementById('deleteModal').classList.add('hidden');
     }
 
-    // بستن مودال با کلیک خارج از آن
     window.onclick = function(event) {
         const modal = document.getElementById('deleteModal');
         if (event.target == modal) {
@@ -232,7 +261,6 @@
         }
     }
 
-    // بستن مودال با کلید Escape
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeDeleteModal();
@@ -240,4 +268,3 @@
     });
 </script>
 @endpush
-@endsection

@@ -1,5 +1,11 @@
 @extends('layouts.app')
 
+@section('styles')
+<style>
+    /* استایل اضافی در صورت نیاز */
+</style>
+@endsection
+
 @section('content')
 <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -24,24 +30,26 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('liabilities.store') }}">
+                <form method="POST" action="{{ route('liabilities.store') }}" id="liabilityForm">
                     @csrf
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- نوع تعهد -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">نوع تعهد <span class="text-red-500">*</span></label>
-                            <select name="type" id="type" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition @error('type') border-red-500 @enderror" required>
-                                <option value="">انتخاب کنید</option>
-                                <option value="debt" {{ old('type') == 'debt' ? 'selected' : '' }}>بدهی</option>
-                                <option value="check" {{ old('type') == 'check' ? 'selected' : '' }}>چک</option>
-                                <option value="installment" {{ old('type') == 'installment' ? 'selected' : '' }}>قسط</option>
-                            </select>
+                        <!-- نوع تعهد با کامپوننت searchable-select -->
+                        <div class="md:col-span-2">
+                            <x-searchable-select 
+                                name="type"
+                                label="نوع تعهد"
+                                :options="[
+                                    ['id' => 'debt', 'text' => 'بدهی'],
+                                    ['id' => 'check', 'text' => 'چک'],
+                                    ['id' => 'installment', 'text' => 'قسط']
+                                ]"
+                                :selected="old('type')"
+                                placeholder="انتخاب کنید..."
+                                required="true"
+                            />
                             @error('type') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
-
-                        <!-- فیلد خالی برای حفظ گرید -->
-                        <div></div>
 
                         <!-- شخص مرتبط با قابلیت جستجو -->
                         <div class="md:col-span-2">
@@ -55,21 +63,29 @@
                             <p class="text-xs text-gray-500 mt-1">با انتخاب شخص، نیازی به وارد کردن نام طلبکار نیست</p>
                         </div>
 
-                        <!-- مبلغ کل -->
+                        <!-- مبلغ کل با کامپوننت price-input -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ کل (ریال) <span class="text-red-500">*</span></label>
-                            <input type="text" name="amount" id="amount" value="{{ old('amount') }}" 
-                                   class="price-format w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition @error('amount') border-red-500 @enderror" 
-                                   placeholder="مثال: ۱۵۰,۰۰۰,۰۰۰" min="0" required>
+                            <x-price-input 
+                                name="amount"
+                                label="مبلغ کل (ریال)"
+                                :value="old('amount')"
+                                placeholder="مثال: ۱۵۰,۰۰۰,۰۰۰"
+                                :min="1000"
+                                :required="true"
+                            />
                             @error('amount') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- مبلغ باقی‌مانده -->
+                        <!-- مبلغ باقی‌مانده با کامپوننت price-input -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">مبلغ باقی‌مانده (ریال) <span class="text-red-500">*</span></label>
-                            <input type="text" name="remaining_amount" id="remaining_amount" value="{{ old('remaining_amount') }}" 
-                                   class="price-format w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition @error('remaining_amount') border-red-500 @enderror" 
-                                   placeholder="مثال: ۱۵۰,۰۰۰,۰۰۰" min="0" required>
+                            <x-price-input 
+                                name="remaining_amount"
+                                label="مبلغ باقی‌مانده (ریال)"
+                                :value="old('remaining_amount')"
+                                placeholder="مثال: ۱۵۰,۰۰۰,۰۰۰"
+                                :min="0"
+                                :required="true"
+                            />
                             @error('remaining_amount') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
@@ -83,14 +99,20 @@
                             <p class="text-xs text-gray-500 mt-1">تاریخ را به فرمت شمسی وارد کنید</p>
                         </div>
 
-                        <!-- وضعیت -->
+                        <!-- وضعیت با کامپوننت searchable-select -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">وضعیت <span class="text-red-500">*</span></label>
-                            <select name="status" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition @error('status') border-red-500 @enderror" required>
-                                <option value="pending" {{ old('status') == 'pending' ? 'selected' : '' }}>در انتظار</option>
-                                <option value="paid" {{ old('status') == 'paid' ? 'selected' : '' }}>پرداخت شده</option>
-                                <option value="overdue" {{ old('status') == 'overdue' ? 'selected' : '' }}>سررسید گذشته</option>
-                            </select>
+                            <x-searchable-select 
+                                name="status"
+                                label="وضعیت"
+                                :options="[
+                                    ['id' => 'pending', 'text' => 'در انتظار'],
+                                    ['id' => 'paid', 'text' => 'پرداخت شده'],
+                                    ['id' => 'overdue', 'text' => 'سررسید گذشته']
+                                ]"
+                                :selected="old('status', 'pending')"
+                                placeholder="انتخاب کنید..."
+                                required="true"
+                            />
                             @error('status') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
@@ -121,7 +143,7 @@
 @push('scripts')
 <script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
 <script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
 $(document).ready(function() {
@@ -135,45 +157,63 @@ $(document).ready(function() {
         }
     });
 
-    // فرمت عدد با ویرگول برای فیلدهای مبلغ
-    $('.price-format').on('input', function() {
-        let value = this.value.replace(/[^\d]/g, '');
-        if (value) {
-            this.value = Number(value).toLocaleString('en-US');
-        } else {
-            this.value = '';
-        }
-    });
-
     // مدیریت خودکار مبلغ باقی‌مانده
-    $('#amount').on('input', function() {
-        const amount = parseFloat($(this).val().replace(/[^\d]/g, '')) || 0;
-        const remainingField = $('#remaining_amount');
-        const remainingValue = parseFloat(remainingField.val().replace(/[^\d]/g, '')) || 0;
+    const amountInput = document.querySelector('input[name="amount"]');
+    const remainingInput = document.querySelector('input[name="remaining_amount"]');
+    
+    if (amountInput && remainingInput) {
+        const amountHidden = document.getElementById('amount');
+        const remainingHidden = document.getElementById('remaining_amount');
         
-        // اگر remaining_amount خالی بود یا از مقدار کل بیشتر بود
-        if (!remainingField.val() || remainingValue > amount) {
-            remainingField.val(amount.toLocaleString('en-US'));
-        }
-    });
+        // وقتی مبلغ کل تغییر می‌کند
+        amountInput.addEventListener('priceChange', function(e) {
+            const amount = e.detail.rawValue;
+            const remaining = parseInt(remainingHidden.value) || 0;
+            
+            // اگر باقی‌مانده خالی بود یا از مبلغ کل بیشتر بود
+            if (!remainingHidden.value || remaining > amount) {
+                // به‌روزرسانی فیلد باقی‌مانده
+                const remainingDisplay = document.querySelector('input[name="remaining_amount"]');
+                if (remainingDisplay) {
+                    remainingDisplay.value = Number(amount).toLocaleString('en-US');
+                    remainingHidden.value = amount;
+                    
+                    // ایجاد رویداد برای اطلاع کامپوننت
+                    remainingDisplay.dispatchEvent(new CustomEvent('priceUpdate', {
+                        detail: { rawValue: amount }
+                    }));
+                }
+            }
+        });
+        
+        // وقتی مبلغ باقی‌مانده تغییر می‌کند
+        remainingInput.addEventListener('priceChange', function(e) {
+            const remaining = e.detail.rawValue;
+            const amount = parseInt(amountHidden.value) || 0;
+            
+            // اگر باقی‌مانده از مبلغ کل بیشتر بود
+            if (remaining > amount && amount > 0) {
+                alert('مبلغ باقی‌مانده نمی‌تواند از مبلغ کل بیشتر باشد.');
+                
+                // برگرداندن به مقدار قبلی
+                remainingInput.value = Number(amount).toLocaleString('en-US');
+                remainingHidden.value = amount;
+            }
+        });
+    }
 
-    // اطمینان از اینکه remaining_amount بیشتر از amount نباشه
-    $('#remaining_amount').on('input', function() {
-        const amount = parseFloat($('#amount').val().replace(/[^\d]/g, '')) || 0;
-        const remaining = parseFloat($(this).val().replace(/[^\d]/g, '')) || 0;
+    // اعتبارسنجی قبل از ارسال فرم
+    $('#liabilityForm').on('submit', function(e) {
+        const amount = parseInt($('#amount').val()) || 0;
+        const remaining = parseInt($('#remaining_amount').val()) || 0;
         
         if (remaining > amount) {
-            $(this).val(amount.toLocaleString('en-US'));
+            e.preventDefault();
             alert('مبلغ باقی‌مانده نمی‌تواند از مبلغ کل بیشتر باشد.');
+            return false;
         }
-    });
-
-    // فعال‌سازی مجدد price-format بعد از تغییر خودکار
-    $('#amount, #remaining_amount').on('change', function() {
-        let value = this.value.replace(/[^\d]/g, '');
-        if (value) {
-            this.value = Number(value).toLocaleString('en-US');
-        }
+        
+        return true;
     });
 });
 </script>

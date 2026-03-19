@@ -20,50 +20,72 @@ class TransactionController extends Controller implements HasMiddleware
         ];
     }
 
-    public function index(Request $request)
-    {
-        $query = Transaction::with(['fromAsset', 'toAsset', 'person', 'paymentMethod'])
-            ->latest('transaction_date');
+  public function index(Request $request)
+{
+    $query = Transaction::with(['fromAsset', 'toAsset', 'person', 'paymentMethod'])
+        ->latest('transaction_date');
 
-        if ($request->filled('start_date')) {
-            $query->whereDate('transaction_date', '>=', $request->start_date);
-        }
-        if ($request->filled('end_date')) {
-            $query->whereDate('transaction_date', '<=', $request->end_date);
-        }
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
-        }
-        if ($request->filled('account_id')) {
-            $query->where(function($q) use ($request) {
-                $q->where('from_asset_id', $request->account_id)
-                  ->orWhere('to_asset_id', $request->account_id);
-            });
-        }
-
-        $transactions = $query->paginate(20);
-        
-        $today = now()->toDateString();
-        $todayIncome = Transaction::whereDate('transaction_date', $today)
-            ->where('type', 'income')
-            ->where('status', 'completed')
-            ->sum('amount');
-        $todayExpense = Transaction::whereDate('transaction_date', $today)
-            ->where('type', 'expense')
-            ->where('status', 'completed')
-            ->sum('amount');
-
-        $totalIncome = Transaction::where('type', 'income')->where('status', 'completed')->sum('amount');
-        $totalExpense = Transaction::where('type', 'expense')->where('status', 'completed')->sum('amount');
-
-        return view('transactions.index', compact(
-            'transactions', 
-            'todayIncome', 
-            'todayExpense',
-            'totalIncome',
-            'totalExpense'
-        ));
+    if ($request->filled('start_date')) {
+        $query->whereDate('transaction_date', '>=', $request->start_date);
     }
+    if ($request->filled('end_date')) {
+        $query->whereDate('transaction_date', '<=', $request->end_date);
+    }
+    if ($request->filled('type')) {
+        $query->where('type', $request->type);
+    }
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+    if ($request->filled('account_id')) {
+        $query->where(function($q) use ($request) {
+            $q->where('from_asset_id', $request->account_id)
+              ->orWhere('to_asset_id', $request->account_id);
+        });
+    }
+    
+    // اضافه کردن فیلتر بر اساس شخص
+    if ($request->filled('person_id')) {
+        $query->where('person_id', $request->person_id);
+    }
+
+    $transactions = $query->paginate(20);
+    
+    $today = now()->toDateString();
+    $todayIncome = Transaction::whereDate('transaction_date', $today)
+        ->where('type', 'income')
+        ->where('status', 'completed')
+        ->sum('amount');
+    $todayExpense = Transaction::whereDate('transaction_date', $today)
+        ->where('type', 'expense')
+        ->where('status', 'completed')
+        ->sum('amount');
+
+    $totalIncome = Transaction::where('type', 'income')->where('status', 'completed')->sum('amount');
+    $totalExpense = Transaction::where('type', 'expense')->where('status', 'completed')->sum('amount');
+
+    // تهیه لیست اشخاص برای کامپوننت فیلتر
+    $people = Person::orderBy('full_name')->get();
+    $personOptions = $people->map(function($person) {
+        $text = $person->full_name;
+        if ($person->company_name) {
+            $text .= ' (' . $person->company_name . ')';
+        }
+        return [
+            'id' => $person->id,
+            'text' => $text
+        ];
+    })->prepend(['id' => '', 'text' => 'همه اشخاص'])->values()->toArray();
+
+    return view('transactions.index', compact(
+        'transactions', 
+        'todayIncome', 
+        'todayExpense',
+        'totalIncome',
+        'totalExpense',
+        'personOptions' // اضافه کردن این متغیر
+    ));
+}
 
     public function create(Request $request)
     {

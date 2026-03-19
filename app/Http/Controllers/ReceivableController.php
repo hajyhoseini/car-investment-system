@@ -22,51 +22,67 @@ class ReceivableController extends Controller implements HasMiddleware
     /**
      * نمایش لیست مطالبات
      */
-    public function index(Request $request)
-    {
-        $query = Receivable::with(['person', 'creator'])
-            ->latest('receivable_date');
+  public function index(Request $request)
+{
+    $query = Receivable::with(['person', 'creator'])
+        ->latest('receivable_date');
 
-        // فیلتر بر اساس شخص
-        if ($request->filled('person_id')) {
-            $query->where('person_id', $request->person_id);
-        }
-
-        // فیلتر بر اساس نوع ارز
-        if ($request->filled('currency_type')) {
-            $query->where('currency_type', $request->currency_type);
-        }
-
-        // فیلتر بر اساس وضعیت
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        // فیلتر بر اساس بازه زمانی
-        if ($request->filled('start_date')) {
-            $query->whereDate('receivable_date', '>=', $request->start_date);
-        }
-        if ($request->filled('end_date')) {
-            $query->whereDate('receivable_date', '<=', $request->end_date);
-        }
-
-        $receivables = $query->paginate(20);
-        
-        // آمار
-        $totalAmount = $receivables->sum('amount');
-        $totalRemaining = $receivables->sum('remaining_amount');
-        $totalPaid = $receivables->sum('paid_amount');
-        $overdueCount = $receivables->where('status', 'overdue')->count();
-
-        return view('receivables.index', compact(
-            'receivables',
-            'totalAmount',
-            'totalRemaining',
-            'totalPaid',
-            'overdueCount'
-        ));
+    // فیلتر بر اساس شخص
+    if ($request->filled('person_id')) {
+        $query->where('person_id', $request->person_id);
     }
 
+    // فیلتر بر اساس نوع ارز
+    if ($request->filled('currency_type')) {
+        $query->where('currency_type', $request->currency_type);
+    }
+
+    // فیلتر بر اساس وضعیت
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    // فیلتر بر اساس بازه زمانی (تبدیل تاریخ شمسی به میلادی)
+    if ($request->filled('start_date')) {
+        $startDate = jalali_to_gregorian($request->start_date);
+        $query->whereDate('receivable_date', '>=', $startDate);
+    }
+    if ($request->filled('end_date')) {
+        $endDate = jalali_to_gregorian($request->end_date);
+        $query->whereDate('receivable_date', '<=', $endDate);
+    }
+
+    $receivables = $query->paginate(20);
+    
+    // آمار
+    $totalAmount = $receivables->sum('amount');
+    $totalRemaining = $receivables->sum('remaining_amount');
+    $totalPaid = $receivables->sum('paid_amount');
+    $overdueCount = $receivables->where('status', 'overdue')->count();
+
+    // تهیه لیست اشخاص برای کامپوننت فیلتر
+    $people = Person::orderBy('full_name')->get();
+    $personOptions = $people->map(function($person) {
+        $text = $person->full_name;
+        if ($person->company_name) {
+            $text .= ' (' . $person->company_name . ')';
+        }
+        return [
+            'id' => $person->id,
+            'text' => $text,
+            'subtext' => $person->mobile ?? $person->national_code ?? ''
+        ];
+    })->prepend(['id' => '', 'text' => 'همه اشخاص'])->values()->toArray();
+
+    return view('receivables.index', compact(
+        'receivables',
+        'totalAmount',
+        'totalRemaining',
+        'totalPaid',
+        'overdueCount',
+        'personOptions' // اضافه کردن این متغیر
+    ));
+}
     /**
      * فرم ایجاد مطالبه جدید
      */
