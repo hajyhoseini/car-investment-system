@@ -12,18 +12,105 @@ use Morilog\Jalali\Jalalian;
 
 class InvestmentController extends Controller
 {
-    public function index()
-    {
-        $investments = Investment::with(['car', 'investor'])->latest()->paginate(10);
-        
-        // تبدیل تاریخ‌ها به شمسی برای نمایش (با ساعت)
-        foreach ($investments as $investment) {
-            $investment->jalali_date = jalali_datetime($investment->investment_date);
-        }
-        
-        return view('investments.index', compact('investments'));
+  public function index(Request $request)
+{
+    $query = Investment::with(['car', 'investor.person']); // اضافه کردن person به لود
+
+    // فیلتر جستجو بر اساس نام خودرو یا سرمایه‌گذار
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->whereHas('car', function($car) use ($search) {
+                $car->where('title', 'like', "%{$search}%")
+                    ->orWhere('brand', 'like', "%{$search}%")
+                    ->orWhere('model', 'like', "%{$search}%");
+            })->orWhereHas('investor.person', function($person) use ($search) { // از طریق person جستجو کن
+                $person->where('full_name', 'like', "%{$search}%")
+                    ->orWhere('national_code', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
+            });
+        });
     }
 
+    // فیلتر بر اساس حداقل مبلغ
+    if ($request->filled('min_amount')) {
+        $minAmount = str_replace(',', '', $request->min_amount);
+        $query->where('amount', '>=', $minAmount);
+    }
+
+    // فیلتر بر اساس حداکثر مبلغ
+    if ($request->filled('max_amount')) {
+        $maxAmount = str_replace(',', '', $request->max_amount);
+        $query->where('amount', '<=', $maxAmount);
+    }
+
+    // فیلتر بر اساس خودرو
+    if ($request->filled('car_id')) {
+        $query->where('car_id', $request->car_id);
+    }
+
+    // فیلتر بر اساس سرمایه‌گذار
+    if ($request->filled('investor_id')) {
+        $query->where('investor_id', $request->investor_id);
+    }
+
+    // فیلتر بر اساس بازه تاریخ
+    if ($request->filled('start_date')) {
+        $startDate = jalali_to_gregorian($request->start_date);
+        $query->whereDate('investment_date', '>=', $startDate);
+    }
+
+    if ($request->filled('end_date')) {
+        $endDate = jalali_to_gregorian($request->end_date);
+        $query->whereDate('investment_date', '<=', $endDate);
+    }
+
+    $investments = $query->latest()->paginate(20);
+
+    // محاسبه آمار با در نظر گرفتن فیلترها
+    $totalAmount = $investments->sum('amount');
+    $totalCount = $investments->total();
+    $averageAmount = $investments->avg('amount') ?? 0;
+
+    // تهیه لیست خودروها برای کامپوننت فیلتر
+    $cars = Car::orderBy('title')->get();
+    $carOptions = $cars->map(function($car) {
+        return [
+            'id' => $car->id,
+            'text' => $car->title . ' - ' . $car->brand . ' ' . $car->model,
+            'subtext' => number_format($car->purchase_price) . ' ریال'
+        ];
+    })->prepend(['id' => '', 'text' => 'همه خودروها'])->values()->toArray();
+
+    // تهیه لیست سرمایه‌گذاران برای کامپوننت فیلتر (با استفاده از person)
+    $investors = Investor::with('person')->get();
+    $investorOptions = $investors->map(function($investor) {
+        $person = $investor->person;
+        $text = $person->full_name ?? 'نامشخص';
+        if ($person->national_code) {
+            $text .= ' (کد ملی: ' . $person->national_code . ')';
+        }
+        return [
+            'id' => $investor->id,
+            'text' => $text,
+            'subtext' => $person->phone ?? ''
+        ];
+    })->prepend(['id' => '', 'text' => 'همه سرمایه‌گذاران'])->values()->toArray();
+
+    // تبدیل تاریخ‌ها به شمسی برای نمایش
+    foreach ($investments as $investment) {
+        $investment->jalali_date = jalali_datetime($investment->investment_date);
+    }
+
+    return view('investments.index', compact(
+        'investments',
+        'totalAmount',
+        'totalCount',
+        'averageAmount',
+        'carOptions',
+        'investorOptions'
+    ));
+}
     public function create()
     {
         $cars = Car::where('status', 'available')

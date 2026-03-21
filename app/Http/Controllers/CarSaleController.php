@@ -11,11 +11,101 @@ use Illuminate\Http\Request;
 
 class CarSaleController extends Controller
 {
-    public function index()
-    {
-        $sales = CarSale::with(['car', 'person'])->latest()->paginate(10);
-        return view('car-sales.index', compact('sales'));
+public function index(Request $request) // اضافه کردن Request
+{
+    $query = CarSale::with(['car', 'person']);
+
+    // فیلتر جستجو بر اساس نام خودرو یا خریدار
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->whereHas('car', function($car) use ($search) {
+                $car->where('title', 'like', "%{$search}%")
+                    ->orWhere('brand', 'like', "%{$search}%")
+                    ->orWhere('model', 'like', "%{$search}%");
+            })->orWhereHas('person', function($person) use ($search) {
+                $person->where('full_name', 'like', "%{$search}%")
+                    ->orWhere('national_code', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
+            })->orWhere('buyer_name', 'like', "%{$search}%");
+        });
     }
+
+    // فیلتر بر اساس حداقل قیمت فروش
+    if ($request->filled('min_price')) {
+        $minPrice = str_replace(',', '', $request->min_price);
+        $query->where('selling_price', '>=', $minPrice);
+    }
+
+    // فیلتر بر اساس حداکثر قیمت فروش
+    if ($request->filled('max_price')) {
+        $maxPrice = str_replace(',', '', $request->max_price);
+        $query->where('selling_price', '<=', $maxPrice);
+    }
+
+    // فیلتر بر اساس خودرو
+    if ($request->filled('car_id')) {
+        $query->where('car_id', $request->car_id);
+    }
+
+    // فیلتر بر اساس خریدار
+    if ($request->filled('buyer_person_id')) {
+        $query->where('person_id', $request->buyer_person_id);
+    }
+
+    // فیلتر بر اساس بازه تاریخ
+    if ($request->filled('start_date')) {
+        $startDate = jalali_to_gregorian($request->start_date);
+        $query->whereDate('sale_date', '>=', $startDate);
+    }
+
+    if ($request->filled('end_date')) {
+        $endDate = jalali_to_gregorian($request->end_date);
+        $query->whereDate('sale_date', '<=', $endDate);
+    }
+
+    $sales = $query->latest()->paginate(20);
+
+    // محاسبه آمار با در نظر گرفتن فیلترها
+    $totalCount = $sales->total();
+    $totalAmount = $sales->sum('selling_price');
+    $totalProfit = $sales->sum('total_profit');
+    $averageProfit = $sales->avg('total_profit') ?? 0;
+
+    // تهیه لیست خودروها برای کامپوننت فیلتر
+    $cars = Car::orderBy('title')->get();
+    $carOptions = $cars->map(function($car) {
+        return [
+            'id' => $car->id,
+            'text' => $car->title . ' - ' . $car->brand . ' ' . $car->model,
+            'subtext' => number_format($car->purchase_price) . ' ریال'
+        ];
+    })->prepend(['id' => '', 'text' => 'همه خودروها'])->values()->toArray();
+
+    // تهیه لیست خریداران برای کامپوننت فیلتر
+    $buyers = Person::orderBy('full_name')->get();
+    $buyerOptions = $buyers->map(function($person) {
+        $text = $person->full_name;
+        if ($person->national_code) {
+            $text .= ' (کد ملی: ' . $person->national_code . ')';
+        }
+        return [
+            'id' => $person->id,
+            'text' => $text,
+            'subtext' => $person->phone ?? ''
+        ];
+    })->prepend(['id' => '', 'text' => 'همه خریداران'])->values()->toArray();
+
+    return view('car-sales.index', compact(
+        'sales',
+        'totalCount',
+        'totalAmount',
+        'totalProfit',
+        'averageProfit',
+        'carOptions',
+        'buyerOptions'
+    ));
+}
 
     public function create(Car $car)
     {

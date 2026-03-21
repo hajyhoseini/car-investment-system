@@ -8,15 +8,66 @@ use Illuminate\Http\Request;
 
 class InvestorController extends Controller
 {
-    public function index()
+    public function index(Request $request) // اضافه کردن Request به پارامترها
     {
-        $investors = Investor::with('person', 'user')
-            ->whereNotNull('user_id')
-            ->orWhereNull('user_id')
-            ->latest()
-            ->paginate(10);
+        $query = Investor::with('person', 'user');
         
-        return view('investors.index', compact('investors'));
+        // فیلتر جستجو بر اساس نام، کد ملی یا تلفن
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('person', function($q) use ($search) {
+                $q->where('full_name', 'like', "%{$search}%")
+                  ->orWhere('national_code', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+        
+        // فیلتر بر اساس حداقل سرمایه
+        if ($request->filled('min_investment')) {
+            $minInvestment = str_replace(',', '', $request->min_investment);
+            $query->where('total_invested', '>=', $minInvestment);
+        }
+        
+        // فیلتر بر اساس حداکثر سرمایه
+        if ($request->filled('max_investment')) {
+            $maxInvestment = str_replace(',', '', $request->max_investment);
+            $query->where('total_invested', '<=', $maxInvestment);
+        }
+        
+        // فیلتر بر اساس وضعیت (فعال/غیرفعال)
+        if ($request->filled('status')) {
+            if ($request->status == 'active') {
+                $query->whereNotNull('user_id');
+            } elseif ($request->status == 'inactive') {
+                $query->whereNull('user_id');
+            }
+        }
+        
+        // فیلتر بر اساس نوع شخص (حقیقی/حقوقی)
+        if ($request->filled('person_type')) {
+            $query->whereHas('person', function($q) use ($request) {
+                $q->where('type', $request->person_type);
+            });
+        }
+        
+        $investors = $query->latest()->paginate(20);
+        
+        // محاسبه آمار با در نظر گرفتن فیلترها
+        $totalInvested = $investors->sum('total_invested');
+        $averageInvested = $investors->avg('total_invested') ?? 0;
+        
+        // آمار تعداد سرمایه‌گذاران فعال و غیرفعال
+        $activeCount = Investor::whereNotNull('user_id')->count();
+        $inactiveCount = Investor::whereNull('user_id')->count();
+        
+        return view('investors.index', compact(
+            'investors', 
+            'totalInvested', 
+            'averageInvested',
+            'activeCount',
+            'inactiveCount'
+        ));
     }
 
     public function create()
@@ -30,6 +81,7 @@ class InvestorController extends Controller
             return [
                 'id' => $person->id,
                 'text' => $person->display_name . ($person->national_code ? ' (کد ملی: ' . $person->national_code . ')' : ''),
+                'subtext' => $person->type_label . ($person->phone ? ' - ' . $person->phone : ''),
                 'data' => [
                     'national-code' => $person->national_code,
                     'phone' => $person->phone,
@@ -73,6 +125,7 @@ class InvestorController extends Controller
             return [
                 'id' => $person->id,
                 'text' => $person->display_name . ($person->national_code ? ' (کد ملی: ' . $person->national_code . ')' : ''),
+                'subtext' => $person->type_label . ($person->phone ? ' - ' . $person->phone : ''),
                 'data' => [
                     'national-code' => $person->national_code,
                     'phone' => $person->phone,

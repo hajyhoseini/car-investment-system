@@ -1,5 +1,13 @@
 @extends('layouts.app')
 
+@section('styles')
+<style>
+    .filter-dropdown {
+        min-width: 250px;
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="py-10 md:py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -20,6 +28,91 @@
                     @endcan
                 </div>
 
+                <!-- فیلترها -->
+                <div class="mb-8 p-5 bg-gray-50 rounded-xl border border-gray-200">
+                    <form method="GET" action="{{ route('investments.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <!-- جستجو بر اساس خودرو یا سرمایه‌گذار -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">جستجو</label>
+                            <input type="text" name="search" value="{{ request('search') }}" 
+                                   class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" 
+                                   placeholder="نام خودرو یا سرمایه‌گذار...">
+                        </div>
+
+                        <!-- فیلتر بر اساس حداقل مبلغ -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">حداقل مبلغ (ریال)</label>
+                            <input type="text" name="min_amount" id="min_amount" value="{{ request('min_amount') }}" 
+                                   class="price-input w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" 
+                                   placeholder="مثال: ۱۰,۰۰۰,۰۰۰">
+                        </div>
+
+                        <!-- فیلتر بر اساس حداکثر مبلغ -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">حداکثر مبلغ (ریال)</label>
+                            <input type="text" name="max_amount" id="max_amount" value="{{ request('max_amount') }}" 
+                                   class="price-input w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" 
+                                   placeholder="مثال: ۱۰۰,۰۰۰,۰۰۰">
+                        </div>
+
+                        <!-- فیلتر بر اساس خودرو -->
+                        <div class="filter-dropdown">
+                            <x-searchable-select 
+                                name="car_id"
+                                label="خودرو"
+                                :options="$carOptions"
+                                :selected="request('car_id')"
+                                placeholder="همه خودروها"
+                            />
+                        </div>
+
+                        <!-- فیلتر بر اساس سرمایه‌گذار -->
+                        <div class="filter-dropdown">
+                            <x-searchable-select 
+                                name="investor_id"
+                                label="سرمایه‌گذار"
+                                :options="$investorOptions"
+                                :selected="request('investor_id')"
+                                placeholder="همه سرمایه‌گذاران"
+                            />
+                        </div>
+
+                        <!-- فیلتر بازه تاریخ از -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">از تاریخ سرمایه‌گذاری</label>
+                            <input type="text" name="start_date" id="start_date" value="{{ request('start_date') }}" 
+                                   class="jalali-datepicker w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" 
+                                   placeholder="مثال: ۱۴۰۲/۰۱/۰۱" autocomplete="off">
+                        </div>
+
+                        <!-- فیلتر بازه تاریخ تا -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">تا تاریخ سرمایه‌گذاری</label>
+                            <input type="text" name="end_date" id="end_date" value="{{ request('end_date') }}" 
+                                   class="jalali-datepicker w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" 
+                                   placeholder="مثال: ۱۴۰۲/۱۲/۲۹" autocomplete="off">
+                        </div>
+
+                        <!-- دکمه‌های فیلتر -->
+                        <div class="md:col-span-7 flex justify-end gap-3 mt-2">
+                            <a href="{{ route('investments.index') }}" 
+                               class="px-5 py-2.5 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                                <svg class="h-5 w-5 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                                حذف فیلترها
+                            </a>
+                            <button type="submit" 
+                                    class="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+                                <svg class="h-5 w-5 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                </svg>
+                                اعمال فیلتر
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
                 <!-- پیام‌ها -->
                 @if(session('success'))
                     <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
@@ -33,24 +126,24 @@
                     </div>
                 @endif
 
-                <!-- کارت‌های آماری -->
+                <!-- کارت‌های آماری با در نظر گرفتن فیلترها -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
                     <div class="bg-blue-50 border border-blue-100 rounded-xl p-5 text-center">
                         <div class="text-sm text-blue-700 font-medium mb-1">کل مبلغ سرمایه‌گذاری شده</div>
                         <div class="text-3xl font-bold text-blue-800">
-                            {{ number_format($investments->sum('amount')) }} <span class="text-xl">ریال</span>
+                            {{ number_format($totalAmount) }} <span class="text-xl">ریال</span>
                         </div>
                     </div>
 
                     <div class="bg-green-50 border border-green-100 rounded-xl p-5 text-center">
                         <div class="text-sm text-green-700 font-medium mb-1">تعداد سرمایه‌گذاری‌ها</div>
-                        <div class="text-3xl font-bold text-green-800">{{ $investments->total() }}</div>
+                        <div class="text-3xl font-bold text-green-800">{{ $totalCount }}</div>
                     </div>
 
                     <div class="bg-purple-50 border border-purple-100 rounded-xl p-5 text-center">
                         <div class="text-sm text-purple-700 font-medium mb-1">میانگین هر سرمایه‌گذاری</div>
                         <div class="text-3xl font-bold text-purple-800">
-                            {{ number_format($investments->avg('amount') ?? 0) }} <span class="text-xl">ریال</span>
+                            {{ number_format($averageAmount) }} <span class="text-xl">ریال</span>
                         </div>
                     </div>
                 </div>
@@ -59,7 +152,7 @@
                 <div class="overflow-x-auto rounded-lg border border-gray-200">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
-                            <tr>
+                            32
                                 <th class="px-4 py-3.5 text-right text-sm font-semibold text-gray-700">#</th>
                                 <th class="px-4 py-3.5 text-right text-sm font-semibold text-gray-700">خودرو</th>
                                 <th class="px-4 py-3.5 text-right text-sm font-semibold text-gray-700">سرمایه‌گذار</th>
@@ -67,7 +160,7 @@
                                 <th class="px-4 py-3.5 text-right text-sm font-semibold text-gray-700">درصد مشارکت</th>
                                 <th class="px-4 py-3.5 text-right text-sm font-semibold text-gray-700">تاریخ سرمایه‌گذاری</th>
                                 <th class="px-4 py-3.5 text-right text-sm font-semibold text-gray-700">عملیات</th>
-                            </tr>
+                            
                         </thead>
                         <tbody class="divide-y divide-gray-200 bg-white">
                             @forelse($investments as $index => $investment)
@@ -82,7 +175,7 @@
                                     <td class="px-4 py-4 whitespace-nowrap text-sm">
                                         <a href="{{ route('investors.show', $investment->investor) }}"
                                            class="text-blue-600 hover:text-blue-800 hover:underline font-medium">
-                                            {{ $investment->investor->full_name ?? '—' }}
+                                            {{ $investment->investor->person->full_name ?? '—' }}
                                         </a>
                                     </td>
                                     <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-green-700">
@@ -156,3 +249,48 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+
+<script>
+$(document).ready(function() {
+    // تقویم شمسی برای فیلتر تاریخ‌ها
+    $('.jalali-datepicker').persianDatepicker({
+        format: 'YYYY/MM/DD',
+        autoClose: true,
+        initialValue: false,
+        calendar: {
+            persian: true
+        }
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // فرمت عدد با ویرگول برای فیلدهای مبلغ
+    const priceInputs = document.querySelectorAll('.price-input');
+    
+    priceInputs.forEach(function(input) {
+        // تنظیم مقدار اولیه
+        if (input.value && !isNaN(input.value)) {
+            input.value = Number(input.value).toLocaleString('en-US');
+        }
+        
+        input.addEventListener('input', function(e) {
+            let value = this.value.replace(/[^\d]/g, '');
+            if (value) {
+                this.value = Number(value).toLocaleString('en-US');
+            } else {
+                this.value = '';
+            }
+        });
+        
+        input.addEventListener('blur', function(e) {
+            let value = this.value.replace(/[^\d]/g, '');
+            if (value) {
+                this.value = Number(value).toLocaleString('en-US');
+            }
+        });
+    });
+});
+</script>
+@endpush
