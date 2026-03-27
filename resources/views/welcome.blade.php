@@ -38,7 +38,7 @@
         @else
             <style>
                 /*! tailwindcss v4.0.7 | MIT License | https://tailwindcss.com */
-                @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap');
+                /* @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap'); */
                 *{font-family: 'Vazirmatn', sans-serif;}
                 /* بقیه استایل‌های tailwind مثل قبل */
             </style>

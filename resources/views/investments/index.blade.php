@@ -44,7 +44,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">حداقل مبلغ (ریال)</label>
                             <input type="text" name="min_amount" id="min_amount" value="{{ request('min_amount') }}" 
                                    class="price-input w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" 
-                                   placeholder="مثال: ۱۰,۰۰۰,۰۰۰">
+                                   placeholder="">
                         </div>
 
                         <!-- فیلتر بر اساس حداکثر مبلغ -->
@@ -52,7 +52,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">حداکثر مبلغ (ریال)</label>
                             <input type="text" name="max_amount" id="max_amount" value="{{ request('max_amount') }}" 
                                    class="price-input w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" 
-                                   placeholder="مثال: ۱۰۰,۰۰۰,۰۰۰">
+                                   placeholder="">
                         </div>
 
                         <!-- فیلتر بر اساس خودرو -->
@@ -62,7 +62,7 @@
                                 label="خودرو"
                                 :options="$carOptions"
                                 :selected="request('car_id')"
-                                placeholder="همه خودروها"
+                                placeholder=""
                             />
                         </div>
 
@@ -73,7 +73,7 @@
                                 label="سرمایه‌گذار"
                                 :options="$investorOptions"
                                 :selected="request('investor_id')"
-                                placeholder="همه سرمایه‌گذاران"
+                                placeholder=""
                             />
                         </div>
 

@@ -195,10 +195,11 @@ class InvestmentController extends Controller
         return view('investments.show', compact('investment'));
     }
 
-  public function edit(Investment $investment)
+ public function edit(Investment $investment)
 {
     // دریافت لیست خودروهای موجود
     $cars = Car::where('status', 'available')
+        ->orWhere('id', $investment->car_id)
         ->with('investments')
         ->get();
     
@@ -218,43 +219,56 @@ class InvestmentController extends Controller
             'subtext' => number_format($car->purchase_price) . ' ریال - ' . 
                          number_format($fundedPercentage, 1) . '% تأمین - ' .
                          number_format($remaining) . ' ریال باقی‌مانده',
-            'data' => [
-                'price' => $car->purchase_price,
-                'remaining' => $remaining,
-                'total_invested' => $totalInvested
-            ]
+            'data-price' => $car->purchase_price,
+            'data-remaining' => $remaining,
+            'data-invested' => $totalInvested
         ];
-    })->values();
+    })->prepend(['id' => '', 'text' => 'انتخاب کنید...'])->values()->toArray();
     
     // فرمت کردن سرمایه‌گذاران برای کامپوننت searchable-select
-    $investors = Investor::all();
+    $investors = Investor::with('person')->get();
     $formattedInvestors = $investors->map(function($investor) {
         return [
             'id' => $investor->id,
             'text' => $investor->full_name,
-            'subtext' => $investor->user_id == auth()->id() ? 'شما' : '',
-            'data' => [
-                'national_code' => $investor->national_code,
-                'phone' => $investor->phone
-            ]
+            'subtext' => $investor->user_id == auth()->id() ? 'شما' : ($investor->person?->phone ?? ''),
+            'data-national-code' => $investor->national_code,
+            'data-phone' => $investor->person?->phone ?? ''
         ];
-    })->values();
+    })->prepend(['id' => '', 'text' => 'انتخاب کنید...'])->values()->toArray();
     
-    // تاریخ رو به فرمت صحیح تبدیل کن
-    // اگه تاریخ به صورت شمسی در دیتابیسه، باید اول به میلادی تبدیل بشه
-    $investmentDate = $investment->investment_date;
-    
-    // بررسی کن ببینیم تاریخ میلادی هست یا شمسی
-    if (preg_match('/^[1-4]\d{3}\/\d{1,2}\/\d{1,2}/', $investmentDate)) {
-        // اگه شمسی بود، به میلادی تبدیل کن
-        $gregorianDate = jalali_to_gregorian($investmentDate);
-        $carbonDate = Carbon::parse($gregorianDate);
-    } else {
-        // اگه میلادی بود، مستقیم استفاده کن
-        $carbonDate = Carbon::parse($investmentDate);
+    // تبدیل تاریخ به شمسی با مدیریت خطا
+    $jalaliDate = '';
+    if ($investment->investment_date) {
+        try {
+            // اگر تاریخ از نوع Carbon هست
+            if ($investment->investment_date instanceof \Carbon\Carbon) {
+                $jalaliDate = \Morilog\Jalali\Jalalian::fromCarbon($investment->investment_date)->format('Y/m/d');
+            } 
+            // اگر تاریخ استرینگ هست
+            elseif (is_string($investment->investment_date) && !empty($investment->investment_date)) {
+                // بررسی کن ببینیم تاریخ میلادی هست یا شمسی
+                if (preg_match('/^[1-4]\d{3}\/\d{1,2}\/\d{1,2}/', $investment->investment_date)) {
+                    // اگه شمسی بود، همون رو نگه دار
+                    $jalaliDate = $investment->investment_date;
+                } else {
+                    // اگه میلادی بود، به شمسی تبدیل کن
+                    try {
+                        $carbonDate = \Carbon\Carbon::parse($investment->investment_date);
+                        $jalaliDate = \Morilog\Jalali\Jalalian::fromCarbon($carbonDate)->format('Y/m/d');
+                    } catch (\Exception $e) {
+                        // اگر تاریخ نامعتبر بود، از تاریخ امروز استفاده کن
+                        $jalaliDate = now_jalali('Y/m/d');
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            // در صورت هرگونه خطا، از تاریخ امروز استفاده کن
+            $jalaliDate = now_jalali('Y/m/d');
+        }
     }
     
-    $investment->jalali_date = Jalalian::fromCarbon($carbonDate)->format('Y/m/d');
+    $investment->jalali_date = $jalaliDate;
     
     // محاسبه باقی‌مانده برای این خودرو
     $car = $investment->car;

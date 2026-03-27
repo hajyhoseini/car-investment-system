@@ -202,6 +202,17 @@
                                                         </svg>
                                                     </a>
                                                 @endcan
+                                                
+                                                @can('delete liabilities')
+                                                    <button type="button"
+                                                            onclick="confirmDelete({{ $liability->id }})"
+                                                            class="text-red-600 hover:text-red-800 transition"
+                                                            title="حذف">
+                                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                @endcan
                                             </div>
                                         </div>
                                     </div>
@@ -280,6 +291,17 @@
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                         </svg>
                                                     </a>
+                                                @endcan
+                                                
+                                                @can('delete liabilities')
+                                                    <button type="button"
+                                                            onclick="confirmDelete({{ $liability->id }})"
+                                                            class="text-red-600 hover:text-red-800 transition"
+                                                            title="حذف">
+                                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
                                                 @endcan
                                             </div>
                                         </div>
@@ -360,6 +382,17 @@
                                                         </svg>
                                                     </a>
                                                 @endcan
+                                                
+                                                @can('delete liabilities')
+                                                    <button type="button"
+                                                            onclick="confirmDelete({{ $liability->id }})"
+                                                            class="text-red-600 hover:text-red-800 transition"
+                                                            title="حذف">
+                                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                @endcan
                                             </div>
                                         </div>
                                     </div>
@@ -379,14 +412,42 @@
         </div>
     </div>
 </div>
+
+<!-- مودال تأیید حذف -->
+<div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 transform transition-all">
+        <div class="p-6">
+            <div class="flex items-center justify-center mb-4">
+                <div class="bg-red-100 rounded-full p-3">
+                    <svg class="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 text-center mb-2">تأیید حذف</h3>
+            <p class="text-gray-600 text-center mb-6">
+                آیا از حذف این تعهد اطمینان دارید؟ این عملیات غیرقابل بازگشت است.
+            </p>
+            <div class="flex gap-3">
+                <button onclick="closeDeleteModal()"
+                        class="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition font-medium">
+                    انصراف
+                </button>
+                <form id="deleteForm" method="POST" action="" class="flex-1">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit"
+                            class="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-medium">
+                        حذف
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
-<script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
-<script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
 <script>
 $(document).ready(function() {
     // تقویم شمسی برای فیلتر تاریخ‌ها
@@ -398,6 +459,27 @@ $(document).ready(function() {
             persian: true
         }
     });
+});
+
+function confirmDelete(liabilityId) {
+    const modal = document.getElementById('deleteModal');
+    const form = document.getElementById('deleteForm');
+    form.action = '/liabilities/' + liabilityId;
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+    modal.classList.remove('flex');
+    modal.classList.add('hidden');
+}
+
+// بستن مودال با کلیک خارج از آن
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDeleteModal();
+    }
 });
 </script>
 @endpush

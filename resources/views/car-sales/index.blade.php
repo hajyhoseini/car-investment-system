@@ -45,7 +45,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">حداقل قیمت فروش (ریال)</label>
                             <input type="text" name="min_price" id="min_price" value="{{ request('min_price') }}" 
                                    class="price-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                                   placeholder="مثال: ۱۰۰,۰۰۰,۰۰۰">
+                                   placeholder="">
                         </div>
 
                         <!-- فیلتر بر اساس حداکثر قیمت فروش -->
@@ -53,7 +53,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">حداکثر قیمت فروش (ریال)</label>
                             <input type="text" name="max_price" id="max_price" value="{{ request('max_price') }}" 
                                    class="price-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                                   placeholder="مثال: ۵۰۰,۰۰۰,۰۰۰">
+                                   placeholder="">
                         </div>
 
                         <!-- فیلتر بر اساس خودرو -->
@@ -63,7 +63,7 @@
                                 label="خودرو"
                                 :options="$carOptions"
                                 :selected="request('car_id')"
-                                placeholder="همه خودروها"
+                                placeholder=""
                             />
                         </div>
 
@@ -74,7 +74,7 @@
                                 label="خریدار"
                                 :options="$buyerOptions"
                                 :selected="request('buyer_person_id')"
-                                placeholder="همه خریداران"
+                                placeholder=""
                             />
                         </div>
 

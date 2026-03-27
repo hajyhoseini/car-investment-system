@@ -48,15 +48,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
                     <div>
                         <span class="text-sm text-gray-600">خودرو:</span>
-                        <span class="text-lg font-bold text-blue-600 mr-2">{{ $investment->car->title }}</span>
+                        <span class="text-lg font-bold text-blue-600 mr-2">{{ $investment->car->title ?? '---' }}</span>
                     </div>
                     <div>
                         <span class="text-sm text-gray-600">سرمایه‌گذار:</span>
-                        <span class="text-lg font-bold text-green-600 mr-2">{{ $investment->investor->full_name }}</span>
+                        <span class="text-lg font-bold text-green-600 mr-2">{{ $investment->investor->full_name ?? '---' }}</span>
                     </div>
                     <div>
                         <span class="text-sm text-gray-600">قیمت خودرو:</span>
-                        <span class="text-lg font-bold text-purple-600 mr-2">{{ number_format($investment->car->purchase_price) }} ریال</span>
+                        <span class="text-lg font-bold text-purple-600 mr-2">{{ number_format($investment->car->purchase_price ?? 0) }} ریال</span>
                     </div>
                 </div>
 
@@ -165,31 +165,19 @@
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div>
                                 <span class="text-sm text-gray-600">قیمت خودرو:</span>
-                                <span class="text-lg font-bold text-blue-600" id="summaryCarPrice">{{ number_format($investment->car->purchase_price) }} ریال</span>
+                                <span class="text-lg font-bold text-blue-600" id="summaryCarPrice">0 ریال</span>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">مجموع سرمایه‌گذاری شده:</span>
-                                <span class="text-lg font-bold text-green-600" id="summaryTotalInvested">
-                                    {{ number_format($investment->car->investments->sum('amount')) }} ریال
-                                </span>
+                                <span class="text-lg font-bold text-green-600" id="summaryTotalInvested">0 ریال</span>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">مبلغ باقی‌مانده:</span>
-                                <span class="text-lg font-bold text-orange-600" id="summaryRemaining">
-                                    {{ number_format($investment->car->purchase_price - $investment->car->investments->sum('amount')) }} ریال
-                                </span>
+                                <span class="text-lg font-bold text-orange-600" id="summaryRemaining">0 ریال</span>
                             </div>
                             <div>
                                 <span class="text-sm text-gray-600">درصد تأمین شده:</span>
-                                <span class="text-lg font-bold text-purple-600" id="summaryPercentage">
-                                    @php
-                                        $totalInvested = $investment->car->investments->sum('amount');
-                                        $percentage = $investment->car->purchase_price > 0 
-                                            ? ($totalInvested / $investment->car->purchase_price) * 100 
-                                            : 0;
-                                    @endphp
-                                    {{ number_format($percentage, 2) }}%
-                                </span>
+                                <span class="text-lg font-bold text-purple-600" id="summaryPercentage">0%</span>
                             </div>
                         </div>
                     </div>
@@ -210,11 +198,6 @@
 @endsection
 
 @push('scripts')
-<script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
-<script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
 <script>
 $(document).ready(function() {
     // تقویم شمسی
@@ -290,6 +273,11 @@ function updateSummaryFromCar(price, invested, remaining) {
     if (price > 0 && invested > 0) {
         var percentage = (invested / price * 100).toFixed(2);
         $('#summaryPercentage').text(percentage + '%');
+    } else if (price > 0) {
+        var percentage = (invested / price * 100).toFixed(2);
+        $('#summaryPercentage').text(percentage + '%');
+    } else {
+        $('#summaryPercentage').text('0%');
     }
 }
 
@@ -298,6 +286,7 @@ $('#investmentEditForm').on('submit', function(e) {
     const amount = document.querySelector('[name="amount"]').value;
     const carId = document.querySelector('select[name="car_id"]').value;
     const investorId = document.querySelector('select[name="investor_id"]').value;
+    const investmentDate = document.querySelector('[name="investment_date"]').value;
     
     if (!amount || amount == '0') {
         e.preventDefault();
@@ -314,6 +303,12 @@ $('#investmentEditForm').on('submit', function(e) {
     if (!investorId) {
         e.preventDefault();
         alert('لطفاً یک سرمایه‌گذار انتخاب کنید');
+        return false;
+    }
+    
+    if (!investmentDate) {
+        e.preventDefault();
+        alert('لطفاً تاریخ سرمایه‌گذاری را وارد کنید');
         return false;
     }
     
