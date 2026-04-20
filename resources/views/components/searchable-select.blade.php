@@ -46,7 +46,7 @@
             </svg>
         </div>
 
-        <!-- دراپ دان جستجو با اسکرول درست - ریسپانسیو -->
+        <!-- دراپ دان جستجو با اسکرول عمودی درست -->
         <div 
             x-show="isOpen" 
             @click.away="closeDropdown()"
@@ -56,16 +56,15 @@
             x-transition:leave="transition ease-in duration-75"
             x-transition:leave-start="transform opacity-100 scale-100"
             x-transition:leave-end="transform opacity-0 scale-95"
-            class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg overflow-hidden"
+            class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg"
             :class="{
                 'fixed inset-x-0 bottom-0 top-auto rounded-b-none rounded-t-xl md:absolute md:inset-auto': isMobile
             }"
-            style="max-height: 350px; display: flex; flex-direction: column;"
             x-init="checkMobile()"
             @resize.window="checkMobile()"
         >
-            <!-- باکس جستجو (ثابت) با ریسپانسیو -->
-            <div class="sticky top-0 bg-white p-2 md:p-3 border-b z-10">
+            <!-- باکس جستجو (ثابت) -->
+            <div class="sticky top-0 bg-white p-2 md:p-3 border-b z-10 rounded-t-xl">
                 <div class="relative">
                     <input type="text" 
                            x-model="searchText"
@@ -82,11 +81,13 @@
                 </div>
             </div>
 
-            <!-- لیست گزینه‌ها با اسکرول و ارتفاع داینامیک برای موبایل -->
-            <div class="overflow-y-auto" :style="'max-height: ' + (isMobile ? '50vh' : '250px')" x-ref="optionsContainer">
+            <!-- لیست گزینه‌ها با اسکرول عمودی فعال -->
+            <div class="overflow-y-auto" 
+                 :style="'max-height: ' + (isMobile ? '300px' : '280px') + '; min-height: 100px;'"
+                 x-ref="optionsContainer">
                 <template x-for="(option, index) in filteredOptions" :key="option.id">
                     <div 
-                        class="px-3 md:px-4 py-2 md:py-3 cursor-pointer transition"
+                        class="px-3 md:px-4 py-2 md:py-3 cursor-pointer transition border-b border-gray-100 last:border-b-0"
                         :class="{
                             'bg-purple-50': selectedValue == option.id,
                             'hover:bg-purple-50': selectedValue != option.id,
@@ -109,8 +110,9 @@
                 </div>
             </div>
             
-            <!-- نمایش تعداد نتایج با ریسپانسیو -->
-            <div class="sticky bottom-0 bg-gray-50 px-3 md:px-4 py-1.5 text-xs text-gray-500 border-t" x-show="filteredOptions.length > 0">
+            <!-- نمایش تعداد نتایج (ثابت در پایین) -->
+            <div class="sticky bottom-0 bg-gray-50 px-3 md:px-4 py-1.5 text-xs text-gray-500 border-t rounded-b-xl" 
+                 x-show="filteredOptions.length > 0">
                 <span x-text="filteredOptions.length"></span> مورد یافت شد
             </div>
         </div>
@@ -152,11 +154,11 @@ function searchableSelect(config) {
                 this.hoveredIndex = -1;
             });
             
-            // تنظیم observer برای اسکرول خودکار
+            // تنظیم observer برای اسکرول خودکار به آیتم هایلایت شده
             this.$watch('hoveredIndex', (index) => {
                 if (index >= 0 && this.$refs.optionsContainer) {
                     this.$nextTick(() => {
-                        const items = this.$refs.optionsContainer.children;
+                        const items = this.$refs.optionsContainer.querySelectorAll('[x-ref="optionItems"]');
                         if (items[index]) {
                             items[index].scrollIntoView({ 
                                 behavior: 'smooth', 
@@ -201,6 +203,11 @@ function searchableSelect(config) {
                 this.$nextTick(() => {
                     const input = this.$el.querySelector('input[type="text"]');
                     if (input) input.focus();
+                    
+                    // ریست اسکرول به بالای لیست
+                    if (this.$refs.optionsContainer) {
+                        this.$refs.optionsContainer.scrollTop = 0;
+                    }
                     
                     // در موبایل، اسکرول به بالای صفحه
                     if (this.isMobile && this.$el) {
