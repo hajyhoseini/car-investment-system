@@ -5,7 +5,7 @@
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6 bg-white border-b border-gray-200">
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
                     <h2 class="text-2xl font-bold">لیست خودروها</h2>
                     
                     @can('create cars')
@@ -30,53 +30,69 @@
                     </div>
                 @endif
 
-                <!-- فیلتر و جستجو پیشرفته - با سلکت معمولی -->
-                <div class="mb-6 bg-gray-50 p-4 rounded-xl border-2 border-gray-300">
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <div>
-                            <input type="text" id="search" placeholder="جستجوی خودرو..." 
-                                   class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <!-- فیلتر و جستجو پیشرفته -->
+                <form method="GET" action="{{ route('cars.index') }}" id="filter-form">
+                    <div class="mb-6 bg-gray-50 p-4 rounded-xl border-2 border-gray-300">
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                            <div class="relative">
+                                <input type="text" name="search" id="search" placeholder="جستجوی خودرو..." 
+                                       value="{{ request('search') }}"
+                                       class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <select name="status" id="status-filter" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>همه وضعیت‌ها</option>
+                                    <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>موجود</option>
+                                    <option value="sold" {{ request('status') == 'sold' ? 'selected' : '' }}>فروخته شده</option>
+                                    <option value="reserved" {{ request('status') == 'reserved' ? 'selected' : '' }}>رزرو</option>
+                                </select>
+                            </div>
+                            <div>
+                                <select name="brand" id="brand-filter" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="all" {{ request('brand') == 'all' ? 'selected' : '' }}>همه برندها</option>
+                                    @foreach($brands ?? [] as $brand)
+                                        <option value="{{ $brand }}" {{ request('brand') == $brand ? 'selected' : '' }}>{{ $brand }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <select name="priority" id="priority-filter" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="all" {{ request('priority') == 'all' ? 'selected' : '' }}>همه اولویت‌ها</option>
+                                    <option value="high" {{ request('priority') == 'high' ? 'selected' : '' }}>زیاد</option>
+                                    <option value="medium" {{ request('priority') == 'medium' ? 'selected' : '' }}>متوسط</option>
+                                    <option value="low" {{ request('priority') == 'low' ? 'selected' : '' }}>کم</option>
+                                </select>
+                            </div>
+                            <div>
+                                <select name="owner" id="owner-filter" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="all" {{ request('owner') == 'all' ? 'selected' : '' }}>همه مالک‌ها</option>
+                                    <option value="personal" {{ request('owner') == 'personal' ? 'selected' : '' }}>شخصی</option>
+                                    <option value="exhibition" {{ request('owner') == 'exhibition' ? 'selected' : '' }}>نمایشگاه</option>
+                                    <option value="consignment" {{ request('owner') == 'consignment' ? 'selected' : '' }}>امانی</option>
+                                </select>
+                            </div>
                         </div>
-                        <div>
-                            <select id="status-filter" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                <option value="all">همه وضعیت‌ها</option>
-                                <option value="available">موجود</option>
-                                <option value="sold">فروخته شده</option>
-                                <option value="reserved">رزرو</option>
-                            </select>
-                        </div>
-                        <div>
-                            <select id="brand-filter" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                <option value="all">همه برندها</option>
-                                @foreach($brands ?? [] as $brand)
-                                    <option value="{{ $brand }}">{{ $brand }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <select id="priority-filter" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                <option value="all">همه اولویت‌ها</option>
-                                <option value="high">زیاد</option>
-                                <option value="medium">متوسط</option>
-                                <option value="low">کم</option>
-                            </select>
-                        </div>
-                        <div>
-                            <select id="owner-filter" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                <option value="all">همه مالک‌ها</option>
-                                <option value="personal">شخصی</option>
-                                <option value="exhibition">نمایشگاه</option>
-                                <option value="consignment">امانی</option>
-                            </select>
+                        <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mt-3">
+                            <div class="flex gap-2">
+                                <button type="submit" id="search-btn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition transform hover:scale-105 flex items-center gap-2">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                    جستجو
+                                </button>
+                                <button type="reset" id="reset-filters" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg transition transform hover:scale-105 flex items-center gap-2">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                    </svg>
+                                    حذف فیلترها
+                                </button>
+                            </div>
+                            <span id="filter-count" class="text-sm text-gray-500 bg-white px-3 py-1 rounded-full">
+                                <span class="font-bold">{{ fa_number($cars->total()) }}</span> مورد یافت شد
+                            </span>
                         </div>
                     </div>
-                    <div class="flex justify-between items-center mt-3">
-                        <button id="reset-filters" class="text-sm text-gray-500 hover:text-gray-700">
-                            🗑️ حذف فیلترها
-                        </button>
-                        <span id="filter-count" class="text-sm text-gray-500"></span>
-                    </div>
-                </div>
+                </form>
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full border-2 border-gray-400">
@@ -103,22 +119,18 @@
                                 <th class="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-2 border-gray-400">تاریخ استعلام</th>
                                 <th class="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-2 border-gray-400">تاریخ خرید</th>
                                 <th class="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-2 border-gray-400">تاریخ ثبت</th>
-                                <th class="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-2 border-gray-400"> قیمت خرید(ریال)</th>
-                                <th class="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-2 border-gray-400"> قیمت بازار(ریال)</th>
+                                <th class="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-2 border-gray-400">قیمت خرید(ریال)</th>
+                                <th class="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-2 border-gray-400">قیمت بازار(ریال)</th>
                                 <th class="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-2 border-gray-400">قیمت هلدینگ</th>
-                                <th class="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-2 border-gray-400">حدپایین(ریال) </th>
+                                <th class="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-2 border-gray-400">حدپایین(ریال)</th>
                                 <th class="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-2 border-gray-400">وضعیت سرمایه</th>
                                 <th class="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-2 border-gray-400">وضعیت</th>
                                 <th class="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-2 border-gray-400">عملیات</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white" id="table-body">
-                            @foreach($cars as $index => $car)
-                            <tr class="hover:bg-gray-50 transition border-b border-gray-300" 
-                                data-status="{{ $car->status }}"
-                                data-brand="{{ $car->brand }}"
-                                data-priority="{{ $car->purchase_priority ?? 'medium' }}"
-                                data-owner="{{ $car->owner_type ?? '' }}">
+                            @forelse($cars as $index => $car)
+                            <tr class="hover:bg-gray-50 transition border-b border-gray-300">
                                 <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500 border-2 border-gray-300 text-center">{{ fa_number($cars->firstItem() + $index) }}</td>
                                 <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">
                                     <div class="flex justify-center">
@@ -130,13 +142,13 @@
                                 <td class="px-3 py-4 whitespace-nowrap font-medium border-2 border-gray-300 text-center">
                                     <a href="{{ route('cars.show', $car) }}" class="text-blue-600 hover:text-blue-900">{{ $car->title }}</a>
                                 </td>
-                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->brand }}</div>
-                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->model }}</div>
-                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ fa_number($car->year) }}</div>
-                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ fa_number($car->kilometers) }} km</div>
-                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->color ?? '-' }}</div>
-                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->transmission ?? '-' }}</div>
-                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->fuel_type ?? '-' }}</div>
+                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->brand }}</td>
+                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->model }}</td>
+                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ fa_number($car->year) }}</td>
+                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ fa_number($car->kilometers) }} km</td>
+                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->color ?? '-' }}</td>
+                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->transmission ?? '-' }}</td>
+                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->fuel_type ?? '-' }}</td>
                                 <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">
                                     @php
                                         $priorityColors = ['high' => 'red', 'medium' => 'orange', 'low' => 'green'];
@@ -146,26 +158,26 @@
                                     <span class="px-2 py-1 text-xs rounded-full bg-{{ $priorityColors[$priority] }}-100 text-{{ $priorityColors[$priority] }}-800">
                                         {{ $priorityTexts[$priority] }}
                                     </span>
-                                </div>
-                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->body_condition_persian ?? '-' }}</div>
-                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->technical_condition_persian ?? '-' }}</div>
-                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->document_status_persian ?? '-' }}</div>
-                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->storage_location_persian ?? '-' }}</div>
-                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->owner_type_persian ?? '-' }}</div>
-                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->customer_type_persian ?? '-' }}</div>
-                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->phone_number ?? '-' }}</div>
-                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ jalali_date($car->inquiry_date) ?? '-' }}</div>
-                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ jalali_date($car->purchase_date) ?? '-' }}</div>
+                                </td>
+                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->body_condition_persian ?? '-' }}</td>
+                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->technical_condition_persian ?? '-' }}</td>
+                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->document_status_persian ?? '-' }}</td>
+                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->storage_location_persian ?? '-' }}</td>
+                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->owner_type_persian ?? '-' }}</td>
+                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->customer_type_persian ?? '-' }}</td>
+                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ $car->phone_number ?? '-' }}</td>
+                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ jalali_date($car->inquiry_date) ?? '-' }}</td>
+                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ jalali_date($car->purchase_date) ?? '-' }}</td>
                                 <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">
                                     <div class="flex flex-col items-center">
                                         <span>{{ jalali_date($car->created_at) }}</span>
                                         <span class="text-xs text-gray-500">{{ jalali_time($car->created_at) }}</span>
                                     </div>
-                                </div>
-                                <td class="px-3 py-4 whitespace-nowrap font-bold text-blue-600 border-2 border-gray-300 text-center">{{ fa_currency($car->purchase_price) }}</div>
-                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ fa_currency($car->market_price) ?? '-' }}</div>
-                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ fa_currency($car->holding_price) ?? '-' }}</div>
-                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ fa_currency($car->min_price) ?? '-' }}</div>
+                                </td>
+                                <td class="px-3 py-4 whitespace-nowrap font-bold text-blue-600 border-2 border-gray-300 text-center">{{ fa_currency($car->purchase_price) }}</td>
+                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ fa_currency($car->market_price) ?? '-' }}</td>
+                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ fa_currency($car->holding_price) ?? '-' }}</td>
+                                <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">{{ fa_currency($car->min_price) ?? '-' }}</td>
                                 <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">
                                     @php
                                         $fundedPercentage = $car->purchase_price > 0 ? ($car->total_invested / $car->purchase_price) * 100 : 0;
@@ -184,7 +196,7 @@
                                             <span class="text-xs text-blue-600 mt-1">{{ fa_currency($car->purchase_price - $car->total_invested) }} باقی</span>
                                         @endif
                                     </div>
-                                </div>
+                                </td>
                                 <td class="px-3 py-4 whitespace-nowrap border-2 border-gray-300 text-center">
                                     @if($car->status == 'available')
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">موجود</span>
@@ -193,7 +205,7 @@
                                     @else
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">رزرو</span>
                                     @endif
-                                </div>
+                                </td>
                                 <td class="px-3 py-4 whitespace-nowrap text-sm font-medium border-2 border-gray-300 text-center">
                                     <div class="flex items-center justify-center space-x-2 rtl:space-x-reverse">
                                         @can('view cars')
@@ -230,19 +242,29 @@
                                             </form>
                                         @endcan
                                     </div>
-                                </div>
+                                </td>
                             </tr>
-                            @endforeach
+                            @empty
+                            <tr>
+                                <td colspan="28" class="px-3 py-8 text-center text-gray-500 border-2 border-gray-300">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <p class="text-lg">خودرویی یافت نشد</p>
+                                    <p class="text-sm mt-1">لطفاً معیارهای جستجو را تغییر دهید</p>
+                                </td>
+                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
 
                 <div class="mt-4">
-                    {{ $cars->links() }}
+                    {{ $cars->appends(request()->query())->links() }}
                 </div>
 
                 <div class="mt-6 p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
-                    <div class="grid grid-cols-1 md:grid-cols-6 gap-4 text-sm text-center">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-sm text-center">
                         <div><span class="text-gray-600">تعداد کل:</span> <span class="font-bold mr-2">{{ fa_number($cars->total()) }}</span></div>
                         <div><span class="text-gray-600">موجود:</span> <span class="font-bold text-green-600 mr-2">{{ fa_number($cars->where('status', 'available')->count()) }}</span></div>
                         <div><span class="text-gray-600">فروخته شده:</span> <span class="font-bold text-red-600 mr-2">{{ fa_number($cars->where('status', 'sold')->count()) }}</span></div>
@@ -261,100 +283,69 @@
 <script>
     let currentSortColumn = -1;
     let sortDirection = 'asc';
+    let sortColumn = null;
 
     function filterTable() {
-        const searchText = document.getElementById('search').value.toLowerCase();
-        const statusFilter = document.getElementById('status-filter').value;
-        const brandFilter = document.getElementById('brand-filter').value;
-        const priorityFilter = document.getElementById('priority-filter').value;
-        const ownerFilter = document.getElementById('owner-filter').value;
-        
-        const rows = document.querySelectorAll('#table-body tr');
-        let visibleCount = 0;
-
-        rows.forEach(row => {
-            const status = row.dataset.status;
-            const brand = row.dataset.brand;
-            const priority = row.dataset.priority;
-            const owner = row.dataset.owner;
-            const rowText = row.textContent.toLowerCase();
-            
-            const matchesSearch = searchText === '' || rowText.includes(searchText);
-            const matchesStatus = statusFilter === 'all' || status === statusFilter;
-            const matchesBrand = brandFilter === 'all' || brand === brandFilter;
-            const matchesPriority = priorityFilter === 'all' || priority === priorityFilter;
-            const matchesOwner = ownerFilter === 'all' || owner === ownerFilter;
-            
-            const isVisible = matchesSearch && matchesStatus && matchesBrand && matchesPriority && matchesOwner;
-            row.style.display = isVisible ? '' : 'none';
-            if (isVisible) visibleCount++;
-        });
-        
-        document.getElementById('filter-count').innerHTML = visibleCount + ' مورد یافت شد';
+        document.getElementById('filter-form').submit();
     }
 
     function sortTable(columnIndex) {
-        const table = document.querySelector('#table-body');
-        const rows = Array.from(table.querySelectorAll('tr'));
+        const columnNames = ['id', 'image', 'title', 'brand', 'model', 'year'];
+        const columnName = columnNames[columnIndex];
         
-        if (currentSortColumn === columnIndex) {
+        if (sortColumn === columnName) {
             sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
-            currentSortColumn = columnIndex;
+            sortColumn = columnName;
             sortDirection = 'asc';
         }
         
-        rows.sort((a, b) => {
-            let aValue = getCellValue(a, columnIndex);
-            let bValue = getCellValue(b, columnIndex);
-            
-            if (columnIndex === 5) {
-                aValue = parseInt(aValue) || 0;
-                bValue = parseInt(bValue) || 0;
-            } else {
-                aValue = aValue.toString();
-                bValue = bValue.toString();
-            }
-            
-            return sortDirection === 'asc' ? (aValue > bValue ? 1 : -1) : (aValue < bValue ? 1 : -1);
-        });
-        
-        rows.forEach(row => table.appendChild(row));
-        updateSortIndicators(columnIndex);
+        const url = new URL(window.location.href);
+        url.searchParams.set('sort', columnName);
+        url.searchParams.set('direction', sortDirection);
+        window.location.href = url.toString();
     }
 
-    function getCellValue(row, columnIndex) {
-        const cells = row.querySelectorAll('td');
-        return cells[columnIndex] ? cells[columnIndex].textContent.trim() : '';
-    }
-
-    function updateSortIndicators(activeColumn) {
-        const headers = document.querySelectorAll('thead th');
-        headers.forEach((header, index) => {
-            if (index === activeColumn) {
-                header.innerHTML = header.innerHTML.replace(/ ⬍| ⬆| ⬇/g, '') + (sortDirection === 'asc' ? ' ⬆' : ' ⬇');
-            } else {
-                header.innerHTML = header.innerHTML.replace(/ ⬆| ⬇/g, ' ⬍');
-            }
-        });
-    }
-
-    // Event Listeners
-    document.getElementById('search').addEventListener('keyup', filterTable);
-    document.getElementById('status-filter').addEventListener('change', filterTable);
-    document.getElementById('brand-filter').addEventListener('change', filterTable);
-    document.getElementById('priority-filter').addEventListener('change', filterTable);
-    document.getElementById('owner-filter').addEventListener('change', filterTable);
+    // Event Listeners برای فیلترها
+    const searchInput = document.getElementById('search');
+    const searchBtn = document.getElementById('search-btn');
+    const resetBtn = document.getElementById('reset-filters');
     
-    document.getElementById('reset-filters').addEventListener('click', function() {
-        document.getElementById('search').value = '';
-        document.getElementById('status-filter').value = 'all';
-        document.getElementById('brand-filter').value = 'all';
-        document.getElementById('priority-filter').value = 'all';
-        document.getElementById('owner-filter').value = 'all';
-        filterTable();
-    });
-
-    filterTable();
+    // جستجو با دکمه
+    if (searchBtn) {
+        searchBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            filterTable();
+        });
+    }
+    
+    // جستجو با Enter
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                filterTable();
+            }
+        });
+    }
+    
+    // فیلترهای select
+    const statusFilter = document.getElementById('status-filter');
+    const brandFilter = document.getElementById('brand-filter');
+    const priorityFilter = document.getElementById('priority-filter');
+    const ownerFilter = document.getElementById('owner-filter');
+    
+    if (statusFilter) statusFilter.addEventListener('change', filterTable);
+    if (brandFilter) brandFilter.addEventListener('change', filterTable);
+    if (priorityFilter) priorityFilter.addEventListener('change', filterTable);
+    if (ownerFilter) ownerFilter.addEventListener('change', filterTable);
+    
+    // دکمه حذف فیلترها
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = window.location.pathname;
+        });
+    }
 </script>
 @endpush

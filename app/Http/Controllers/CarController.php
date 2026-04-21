@@ -10,19 +10,57 @@ class CarController extends Controller
 {
     use JalaliDateTrait;
 
-    public function index()
-    {
-        $cars = Car::latest()->paginate(10);
-        
-        // دریافت برندهای یکتا برای فیلتر
-        $brands = Car::select('brand')->distinct()->pluck('brand');
-        
-        foreach ($cars as $car) {
-            $car->jalali_purchase_date = jalali_date($car->purchase_date);
-        }
-        
-        return view('cars.index', compact('cars', 'brands'));
+public function index(Request $request)
+{
+    $query = Car::query();
+    
+    // فیلتر جستجو
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('title', 'like', "%{$search}%")
+              ->orWhere('brand', 'like', "%{$search}%")
+              ->orWhere('model', 'like', "%{$search}%");
+        });
     }
+    
+    // فیلتر وضعیت
+    if ($request->filled('status') && $request->status != 'all') {
+        $query->where('status', $request->status);
+    }
+    
+    // فیلتر برند
+    if ($request->filled('brand') && $request->brand != 'all') {
+        $query->where('brand', $request->brand);
+    }
+    
+    // فیلتر اولویت
+    if ($request->filled('priority') && $request->priority != 'all') {
+        $query->where('purchase_priority', $request->priority);
+    }
+    
+    // فیلتر مالک
+    if ($request->filled('owner') && $request->owner != 'all') {
+        $query->where('owner_type', $request->owner);
+    }
+    
+    // مرتب‌سازی
+    $sort = $request->get('sort', 'created_at');
+    $direction = $request->get('direction', 'desc');
+    $query->orderBy($sort, $direction);
+    
+    $cars = $query->paginate(10);
+    
+    // دریافت برندهای یکتا برای فیلتر
+    $brands = Car::select('brand')->distinct()->pluck('brand');
+    
+    foreach ($cars as $car) {
+        $car->jalali_purchase_date = jalali_date($car->purchase_date);
+        $car->jalali_inquiry_date = jalali_date($car->inquiry_date);
+    }
+    
+    return view('cars.index', compact('cars', 'brands'));
+}
 
     public function create()
     {
